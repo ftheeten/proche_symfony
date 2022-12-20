@@ -1,0 +1,11 @@
+nelmio_solarium:
+    endpoints:
+        default:
+            scheme: http
+            host: localhost
+            port: 8983
+            path: /
+            core: proche-symfony
+    clients:
+        default:
+            endpoints: [default]

@@ -1,0 +1,111 @@
+{% extends "base.html.twig" %}
+{% import "macros.html.twig" as macros  %}
+{% block title %}
+	{{ parent() }} - All
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+{% endblock %}
+
+{% block javascript %}
+{{ parent() }}
+{% endblock %}
+{% block body %}
+{{ parent() }}
+<h1 style="text-align:center;">PROCHE - Search portal</h1>
+<br/>
+<br/>
+<div id="module" class="container">
+<div class="row">
+		<div class="col-sm-2">Recherche libre</div>
+		<div class="col-sm-4"><input type="text" id="free_search" name="free_search"></div>
+</div>
+<div class="row">
+<div class="col-sm-2">Numero de collection</div>
+<div class="col-sm-4">{{ macros.select2_multiple("search_colnum","search_colnum", path("terms"),"object_number", "", "width:100%") }}</div>
+<div class="col-sm-2">Description</div>
+<div class="col-sm-4">{{ macros.select2_multiple("search_desc","search_desc", path("terms"),"title|short_description", "", "width:100%") }}</div>
+</div>
+<div class="row">
+<div class="col-sm-2">Culture</div>
+<div class="col-sm-4">{{ macros.select2_multiple("search_culture","search_culture", path("terms"),"culture_str|culture_of_production_str", "", "width:100%") }}</div>
+<div class="col-sm-2">Localisation</div>
+<div class="col-sm-4">{{ macros.select2_multiple("search_geo","search_geo", path("terms"),"geo_production_str|geo_field_collection_str", "", "width:100%") }}</div>
+</div>
+<div class="row">
+<div class="col-sm-2">Constituent</div>
+<div class="col-sm-4">{{ macros.select2_multiple("search_const","search_const", path("terms"),"FACET_constituents", "", "width:100%") }}</div>
+<div class="col-sm-2">Méthode d'acquisition</div>
+<div class="col-sm-4">{{ macros.select2_multiple("search_acq","search_acq", path("terms"),"acquisition_method", "", "width:100%") }}</div>
+</div>
+<div class="row">
+<div class="col-sm-2">Medium</div>
+<div class="col-sm-4">{{ macros.select2_multiple("search_medium","search_medium", path("terms"),"medium", "", "width:100%") }}</div>
+</div>
+<div class="container">
+	<div class="row">
+	 <div class="col-sm-2"></div>
+	 <div class="col-sm-2"><input type="button" value="search" id="go_search_alldocs"/></div>
+	</div>
+	<div id="div_results_searchall" class="row"></div>
+</div>
+
+<script language="Javascript">
+
+ var search_all_docs=function(current_page, page_size)
+{
+	search_logic_all_docs(current_page, page_size,false)
+					
+}
+
+	 var search_logic_all_docs=function(current_page, page_size, csv)
+		{
+					
+					console.log("SEARCH_CALLED");
+					criterias={}
+					criterias["current_page"]=current_page;
+                    criterias["page_size"]=page_size;
+					criterias["free_search"]=$("#free_search").val();
+					criterias["search_colnum"]=$("#search_colnum").val();
+					criterias["search_desc"]=$("#search_desc").val();
+					criterias["search_culture"]=$("#search_culture").val();
+					criterias["search_geo"]=$("#search_geo").val();
+                    criterias["search_const"]=$("#search_const").val();
+					criterias["search_acq"]=$("#search_acq").val();
+					criterias["search_medium"]=$("#search_medium").val();
+					
+					/*if(Object.keys(global_sort).length>0)
+					{
+						criterias["order"]=Object.keys(global_sort)[0];
+						criterias["order_dir"]=global_sort[Object.keys(global_sort)[0]];
+					}*/
+					console.log(criterias);
+					$.post("{{ path('main_search')}}", criterias,
+						function(data)
+						{
+							
+						$("#div_results_searchall").html(data);
+							
+						}
+					);
+		}
+		
+
+$(document).ready(
+	function()
+	{
+		$("#go_search_alldocs").click(
+				function()
+				{
+					search=search_all_docs;
+					search_all_docs(1, $("#page_size").val());
+				});
+	}
+);
+</script>
+
+{% endblock %}
+
+
+

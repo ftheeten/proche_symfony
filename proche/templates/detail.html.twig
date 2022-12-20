@@ -1,0 +1,138 @@
+{% extends "base.html.twig" %}
+{% import "macros.html.twig" as macros  %}
+{% block title %}
+	{{ parent() }} - All
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+{% endblock %}
+
+{% block javascript %}
+{{ parent() }}
+{% endblock %}
+{% block body %}
+{{ parent() }}
+<h1 style="text-align:center;">PROCHE - Détail de l'objet</h1>
+<br/>
+<br/>
+<div id="module" class="container">
+<h3>{{doc["object_number"]??""}}</h3>
+	<div class="row">
+	<div class="col-sm-12">{{doc["title"]??"TITLE UNKNOWN"}}</div>
+	</div>
+	<div class="row">
+	<div class="col-sm-2">Medium</div><div class="col-sm-10">{{doc["medium"]??""}}</div>
+	</div>
+	<div class="row">
+	<div class="col-sm-2">Dimensions</div><div class="col-sm-10">{{doc["dimensions"]??""}}</div>
+	</div>
+	<div class="row">
+	<div class="col-sm-2">Date d'acquisition</div><div class="col-sm-10">{{doc["date_of_acquisition"]??""}}</div>
+	</div>
+	<div class="row">
+	<div class="col-sm-2">Méthode d'acquisition</div><div class="col-sm-10">{{doc["acquisition_method"]??""}}</div>
+	</div>
+	<div class="row">
+	{% if doc["culture"] is defined %}
+	<div class="col-sm-2">Culture</div>
+	<div class="col-sm-10">{{(doc["culture"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["culture_of_production"] is defined %}
+	<div class="col-sm-2">Culture (production)</div>
+	<div class="col-sm-10">{{(doc["culture_of_production"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["geo_field_collection"] is defined %}
+	<div class="col-sm-2">Lieu de collecte</div>
+	<div class="col-sm-10">{{(doc["geo_field_collection"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["geo_production"] is defined %}
+	<div class="col-sm-2">Lieu de production</div>
+	<div class="col-sm-10">{{(doc["geo_production"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_maker"] is defined %}
+	<div class="col-sm-2">Constituent - Fabricant </div>
+	<div class="col-sm-10">{{(doc["cons_maker"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_excol_field_collector"] is defined %}
+	<div class="col-sm-2">Constituent - collecteur </div>
+	<div class="col-sm-10">{{(doc["cons_excol_field_collector"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_expeditor"] is defined %}
+	<div class="col-sm-2">Constituent - Expéditeur </div>
+	<div class="col-sm-10">{{(doc["cons_expeditor"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_identification"] is defined %}
+	<div class="col-sm-2">Constituent - Identification </div>
+	<div class="col-sm-10">{{(doc["cons_identification"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_client"] is defined %}
+	<div class="col-sm-2">Constituent - client </div>
+	<div class="col-sm-10">{{(doc["cons_client"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_exchange"] is defined %}
+	<div class="col-sm-2">Constituent - échange </div>
+	<div class="col-sm-10">{{(doc["cons_exchange"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_excol_collector"] is defined %}
+	<div class="col-sm-2">Constituent - collecteur </div>
+	<div class="col-sm-10">{{(doc["cons_excol_collector"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_excol_depot"] is defined %}
+	<div class="col-sm-2">Constituent - depot </div>
+	<div class="col-sm-10">{{(doc["cons_excol_depot"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_excol_donor"] is defined %}
+	<div class="col-sm-2">Constituent - donateur </div>
+	<div class="col-sm-10">{{(doc["cons_excol_donor"]|join(", "))}}</div>
+	{% endif %}
+	
+	
+	{% if doc["cons_excol_intermediary"] is defined %}
+	<div class="col-sm-2">Constituent - intermédiaire </div>
+	<div class="col-sm-10">{{(doc["cons_excol_intermediary"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_excol_legator"] is defined %}
+	<div class="col-sm-2">Constituent - Légataire </div>
+	<div class="col-sm-10">{{(doc["cons_excol_legator"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_excol_mission"] is defined %}
+	<div class="col-sm-2">Constituent - Mission </div>
+	<div class="col-sm-10">{{(doc["cons_excol_mission"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_mission"] is defined %}
+	<div class="col-sm-2">Constituent - Mission </div>
+	<div class="col-sm-10">{{(doc["cons_mission"]|join(", "))}}</div>
+	{% endif %}
+	{% if doc["cons_excol_vendor"] is defined %}
+	<div class="col-sm-2">Constituent - Vendeur </div>
+	<div class="col-sm-10">{{(doc["cons_excol_vendor"]|join(", "))}}</div>
+	{% endif %}
+
+	{% if doc["cons_previous_owner"] is defined %}
+	<div class="col-sm-2">Constituent - Précédent propriétaire </div>
+	<div class="col-sm-10">{{(doc["cons_previous_owner"]|join(", "))}}</div>
+	{% endif %}
+	
+	
+	{% if doc["objtitle_vernacular"] is defined %}
+	<div class="col-sm-2">Titre - vernaculaire</div>
+	<div class="col-sm-10">{{(doc["objtitle_vernacular"]|join(", "))}}</div>
+	{% endif %}
+	
+	{% if doc["objtitle_legacy"] is defined %}
+	<div class="col-sm-2">Titre - legacy</div>
+	<div class="col-sm-10">{{(doc["objtitle_legacy"]|join(", "))}}</div>
+	{% endif %}
+	
+	<div class="row">
+	<div class="col-sm-2">Description sommaire</div><div class="col-sm-10">{{doc["short_description"]??""}}</div>
+	</div>
+	<div class="row">
+	<div class="col-sm-2">Création de la donnée</div><div class="col-sm-10">{{doc["creation_date"]??""}}</div>
+	</div>
+	
+	</div>
+	
+</div>
+{% endblock %}

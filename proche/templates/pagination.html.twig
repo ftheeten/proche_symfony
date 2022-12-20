@@ -1,0 +1,72 @@
+<div class="pagination">
+	<div class="pagination-buttons">
+	    {% if pagination.page>1 %}
+		<button type="button" class="pager" value="1"><<</button>
+		<button type="button"  class="pager" {{pagination.page - 1}} ><</button>
+	    {% endif %}
+	    {#display p numbers only from p-4 to p+4 but don't go <1 or >pages_count#}
+	    {% for p in range(max(pagination.page-4, 1), 
+	min(pagination.page+4, pagination.pages_count)) %}
+		<button type="button" {% if p == pagination.page %} class="current-page pager" {% else %} class="pager" {% endif %} value="{{ p }}">{{ p }}</button>
+	    {% endfor %}
+	    {% if pagination.page<pagination.pages_count %}
+		<button type="button" value="{{ pagination.page + 1 }}" class="pager">></button>
+		
+		<button type="button" value="{{ pagination.pages_count }}" class="pager">>></button>
+		<input type="text" id="direct_page" value="{{ pagination.page }}" style="width:50px;"/>
+		<input type="button" id="go_page" value="go"/>
+	    {% endif %}
+	</div>
+    Size <select id="page_size" name="page_size">
+        <option value="5" {{ page_size=="5" ? 'selected="selected"' : '' }} >5</option>
+        <option value="10" {{ page_size=="10" ? 'selected="selected"' : '' }} >10</option>
+        <option value="20" {{ page_size=="20" ? 'selected="selected"' : '' }} >20</option>
+        <option value="25" {{ page_size=="25" ? 'selected="selected"' : '' }} >25</option>
+        <option value="50" {{ page_size=="50" ? 'selected="selected"' : '' }} >50</option>
+        <option value="100" {{ page_size=="100" ? 'selected="selected"' : '' }} >100</option>
+    </select>
+</div>
+<br/>
+<div>page {{ pagination.page }} of {{ pagination.pages_count }}</div>
+<script type="text/javascript">
+
+    Number.isInteger = Number.isInteger || function(value) {
+			return typeof value === "number" &&
+				   isFinite(value) &&
+				   Math.floor(value) === value;
+		};
+	$(document).ready(	  
+		function()
+		{	
+           
+
+			$('.pager').click(
+				function()
+				{
+                    console.log($(this).val());
+					search($(this).val(),$("#page_size").val());
+					
+				});	
+            $('#go_page').click(
+				function()
+				{
+					console.log($('#direct_page').val());
+					var p=parseInt($('#direct_page').val())
+					
+						if(p>=1 && p <= {{ pagination.pages_count }})
+						{
+							search(p,$("#page_size").val());
+						}
+					
+					
+				});
+
+           $('#page_size').change(
+                function()
+                {
+                    search(1,$("#page_size").val());
+                }
+           );                
+		}	
+	);
+</script>
