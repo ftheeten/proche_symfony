@@ -1,4 +1,11 @@
+<div class="row">
+<div class="d-flex align-items-center justify-content-center"><b>page {{ pagination.page }} of {{ pagination.pages_count }}</b></div>
+<div>
+<div class="row">
+<div class="d-flex align-items-center justify-content-center">
 <div class="pagination">
+	
+	<br/>
 	<div class="pagination-buttons">
 	    {% if pagination.page>1 %}
 		<button type="button" class="pager" value="1"><<</button>
@@ -26,8 +33,10 @@
         <option value="100" {{ page_size=="100" ? 'selected="selected"' : '' }} >100</option>
     </select>
 </div>
+</div>
+</div>
 <br/>
-<div>page {{ pagination.page }} of {{ pagination.pages_count }}</div>
+
 <script type="text/javascript">
 
     Number.isInteger = Number.isInteger || function(value) {

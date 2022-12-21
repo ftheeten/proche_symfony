@@ -1,18 +1,60 @@
-{{nb_result}}  Resultats
+{% import "macros.html.twig" as macros  %}
 
-{% include 'pagination.html.twig' %}
+<div class="d-flex align-items-center justify-content-center"><b>{{nb_result}}  Resultats</b></div>
+<br/>
+<br/>
 
+<div class="d-flex align-items-center justify-content-center">{% include 'pagination.html.twig' %}</div>
+<br/>
+<br/>
+
+<br/>
+
+<div class="row" >
+<div class="col-sm-4">
+	{{ macros.proche_facet("Medium", facet_medium, "facet_medium", "#search_medium", display_facets) }}
+	{{ macros.proche_facet("Acquisition", facet_acquisition, "facet_acquisition","#search_acq", display_facets) }}
+	{{ macros.proche_facet("Localisation", facet_geo, "facet_geo","#search_geo", display_facets) }}
+	{{ macros.proche_facet("Culture", facet_culture, "facet_culture","#search_culture", display_facets) }}
+	
+</div>
+<div class="col-sm-8">
+{% set base_result= (page-1)* page_size %}
 {% for key, doc in results %}
+
 <div style="border:solid;margin-bottom:5px;">
-<h3>{{ key +1}}. {{doc["object_number"]}}</h3>
-<div class="row" >
-<div class="col-sm-2"><a href="{{ path('detail')}}?q={{doc["id"]}}" target="_blank">Détail</a></div>
-</div>
-<div class="row" >
-<div class="col-sm-12">{{doc["title"]??"TITLE UNKNOWN"}}</div>
+<h3>{{ base_result+ key +1}}. {{doc["object_number"]}}</h3>
 
-<div class="col-sm-2">Date d'acquisition</div><div class="col-sm-10">{{doc["date_of_acquisition"]??""}}</div>
+	
+
+
+<div class="row" >
+	<div class="row" >
+	<div class="col-sm-2"><a href="{{ path('detail')}}?q={{doc["id"]}}" target="_blank">Détail</a></div>
+	</div>
+	<div class="row" >
+	<div class="col-sm-12">{{doc["title"]??"TITLE UNKNOWN"}}</div>
+
+	<div class="col-sm-2">Date d'acquisition</div><div class="col-sm-10">{{doc["date_of_acquisition"]??""}}</div>
+	</div>
+</div>
 </div>
 
-</div>
 {% endfor %}
+<script language="Javascript">
+$(".buttoncollapsed").click(
+			function()
+			{
+				console.log("test_collapsed");
+				
+				$('.proche_collapsible').each(function(i, obj) {
+					
+					test_collapsed("#"+$(obj).attr("id"));
+					
+				});
+				
+			}
+		);
+</script>
+</div>
+</div>

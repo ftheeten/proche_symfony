@@ -47,6 +47,13 @@ class ProcheController extends AbstractController
         return $this->render('home.html.twig',[]);
     }
 	
+	#[Route('/detailed_searches', name: 'detailed_search')]	
+    public function home_detail(): Response
+    {
+		//$this->init_client();
+        return $this->render('home_details.html.twig',[]);
+    }
+	
 	#[Route('/detail', name: 'detail')]
 	public function detail(Request $request): Response
     {
@@ -169,7 +176,26 @@ class ProcheController extends AbstractController
 		 return $this->json($returned); 	
 	}
 	
+	protected function createFacet($facet_set, $name_facet, $name_field, $limit=10)
+	{
+		$facet_set->createFacetField($name_facet)->setField($name_field)->setMinCount(1)->setSort('count desc')->setLimit($limit);
+	}
 	
+	protected function returnSolrFacet($facet_set, $name_facet)
+	{
+		$facets_title =$facet_set->getFacet($name_facet);
+		$results=[];
+		foreach($facets_title as $vf => $count) 
+		{
+			if($count>0)
+			{
+				$results[$vf]=$count;
+			}
+				
+		}
+		arsort($results);
+		return $results;
+	}
 	#[Route('/main_search', name: 'main_search')]
 	public function main_search(Request $request): Response
     {
@@ -181,11 +207,13 @@ class ProcheController extends AbstractController
 		$rs=[];
 		$current_page=$request->get("current_page",1);
         $page_size=$request->get("page_size",$this->page_size);
+		$display_facets=$request->get("display_facets",[]);
+		
 		$offset=(((int)$current_page)-1)* (int)$page_size;
 		$pagination=Array();
 		
-		$free_search=$this->escapeSolr($helper,$request->get("free_search",""));
-		print($free_search);
+		//$free_search=$this->escapeSolr($helper,$request->get("free_search",""));
+		$free_search=$this->escapeSolrArray($helper,$request->get("free_search",[]));
 		$search_colnum=$this->escapeSolrArray($helper,$request->get("search_colnum",[]));
 		$search_desc=$this->escapeSolrArray($helper,$request->get("search_desc",[]));
 		$search_culture=$this->escapeSolrArray($helper,$request->get("search_culture",[]));
@@ -196,15 +224,22 @@ class ProcheController extends AbstractController
 		
 		$params_and=[];
 		
-		
+		$query_build="*:*";
 		$query->setStart($offset)->setRows($page_size);
-		$go=false;
-		if(strlen(trim($free_search))>0)
+		$go=true;
+		/*if(strlen(trim($free_search))>0)
 		{
-			$go=true;
-			print("all:*".$free_search."*");
+			//$go=true;
+			//print("all:*".$free_search."*");
 			$query->setQuery("all:*".$free_search."*");
+		}*/
+		
+		if(count($free_search)>0)
+		{		
+			$params_and[]="(all_str: (".implode(" OR ", $free_search)."))";
+			
 		}
+		
 		if(count($search_colnum)>0)
 		{
 			
@@ -260,14 +295,32 @@ class ProcheController extends AbstractController
 		}
 		if(count($params_and)>0||$go)
 		{
-			$q_pattern=implode(" AND ",$params_and); 
-			
+			if(count($params_and)>0)
+			{
+				$q_pattern=implode(" AND ",$params_and); 
+			}
 			
 			
 			$query->addSort("sort_number", $query::SORT_ASC);
-			$rs_tmp= $client->select($query);
+			
+			//facets
+			$facetSet = $query->getFacetSet();
+			$this->createFacet($facetSet, "facet_title", "title");
+			$this->createFacet($facetSet, "facet_medium", "medium");
+			$this->createFacet($facetSet, "facet_geo", "geo_field_collection_str");
+			$this->createFacet($facetSet, "facet_culture", "culture_str");
+			$this->createFacet($facetSet, "facet_acquisition", "acquisition_method");				
+			$rs_tmp= $client->select($query);			
+			$resp_facet_titles=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_title");
+			$resp_facet_medium=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_medium");
+			$resp_facet_geo=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_geo");
+			$resp_facet_culture=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_culture");
+			$resp_facet_acquisition=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_acquisition");
+			
+			
 			$nb_result=$rs_tmp->getNumFound();
 			$i=0;
+			
 			foreach ($rs_tmp as $document) 
 			{
 				$doc=[];
@@ -284,32 +337,16 @@ class ProcheController extends AbstractController
 				'pages_count' => ceil($nb_result / $page_size)
 			);
 
-			return $this->render('results.html.twig',["results"=>$rs, "nb_result"=>$nb_result, "page_size"=>$page_size, "pagination"=>$pagination]);
+			return $this->render('results.html.twig',["results"=>$rs, "nb_result"=>$nb_result, "page_size"=>$page_size, "pagination"=>$pagination,
+			'page' => $current_page,
+			"facet_title"=>$resp_facet_titles, 
+			"facet_medium"=> $resp_facet_medium,
+			"facet_geo"=>$resp_facet_geo, 
+			"facet_culture"=> $resp_facet_culture, 
+			"facet_acquisition"=>$resp_facet_acquisition,
+			"display_facets"=>$display_facets]);
 		}
-		else
-		{
-			$query->setQuery("all:*".$free_search."*");
-			$rs_tmp= $client->select($query);
-			$nb_result=$rs_tmp->getNumFound();
-			$i=0;
-			foreach ($rs_tmp as $document) 
-			{
-				$doc=[];
-				foreach ($document as $field => $value) 
-				{
-					$doc[$field]=$value;
-				}
-				$rs[]=$doc;
-				$i++;
-			}
-			$pagination = array(
-				'page' => $current_page,
-				'route' => 'search_main',
-				'pages_count' => ceil($nb_result / $page_size)
-			);
-
-			return $this->render('results.html.twig',["results"=>$rs, "nb_result"=>$nb_result, "page_size"=>$page_size, "pagination"=>$pagination]);
-		}
+	
 		
 		return $this->render('noresults.html.twig');
 	}

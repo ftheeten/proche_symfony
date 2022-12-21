@@ -1,4 +1,12 @@
 var search;
+var collapsed_visible_state={}
+
+var test_collapsed=function(id_ctrl)
+{
+	var is_visible= $(id_ctrl).css("display");
+	console.log(is_visible);
+	collapsed_visible_state[id_ctrl]=is_visible;	
+}
 
 var select2_generic=function(url, key, val, minlen)
 {
