@@ -3,7 +3,7 @@
 
 <select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }}" style="{{ style_control }}" multiple="multiple"></select> 
 {% if and_mode=="TRUE" %}
-<input type="checkbox" id="chkand_{{ id_control }}" name="chkand_{{ name_control }}" >  <label>{{'and'|trans}}</label>
+<input type="checkbox" id="chkand_{{ id_control }}" name="chkand_{{ name_control }}" class="chkand">  <label>{{'and'|trans}}</label>
 {% endif %}
 		<script type="text/javascript">
 				$(document).ready(
