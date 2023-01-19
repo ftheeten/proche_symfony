@@ -1,0 +1,14 @@
+# translations/messages.nl.yaml
+title: PROCHE - Zoekportaal
+simple_search: Eenvoudig zoeken
+detailed_search: Gedetailleerd zoeken
+free_text_search: Vrij tekst zoeken
+collection_number: Collectienummer
+culture: Cultuur
+acquisition_method: Methode van acquisitie
+description: Beschrijving
+location : Geografische locatie
+medium: Medium
+show_hide: Tonen/verbergen
+download_csv: CSV bestand downloaden
+and: Verzamelen

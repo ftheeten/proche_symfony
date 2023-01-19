@@ -1,13 +1,15 @@
-{% macro select2_multiple( id_control, name_control, ajax_url, field_select2, class_control, style_control) %}
+{% macro select2_multiple( id_control, name_control, ajax_url, field_select2, class_control, style_control, and_mode) %}
+{% set and_mode=and_mode??"FALSE" %}
 
-<select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }}" style="{{ style_control }}" multiple="multiple"></select>
+<select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }}" style="{{ style_control }}" multiple="multiple"></select> 
+{% if and_mode=="TRUE" %}
+<input type="checkbox" id="chkand_{{ id_control }}" name="chkand_{{ name_control }}" >  <label>{{'and'|trans}}</label>
+{% endif %}
 		<script type="text/javascript">
 				$(document).ready(
 					function()
 					{
 						$("{{'#'}}{{ id_control }}").select2(select2_generic("{{ ajax_url }}","{{ field_select2 }}","{{ field_select2 }}",1, true ));
-						
-						
 					});
 			</script>
 {% endmacro %}
@@ -42,7 +44,7 @@
 				{% endfor %}
 			<br/>	
 			</div>
-			<a role="button" id="button_collapse_{{class_links}}" class="buttoncollapsed " data-bs-toggle="collapse" href="#collapse_{{class_links}}" aria-bs-expanded="false" aria-bs-controls="collapse_{{class_links}}">Show/hide</a>
+			<a role="button" id="button_collapse_{{class_links}}" class="buttoncollapsed " data-bs-toggle="collapse" href="#collapse_{{class_links}}" aria-bs-expanded="false" aria-bs-controls="collapse_{{class_links}}">{{'show_hide'|trans}}</a>
 		</div>
 	</div>
 	</div>
@@ -52,12 +54,11 @@
 	
 		$(".{{class_links}}").click(
 			function()
-			{
-				console.log("debut");
-				console.log($(this).attr("data-modal-key"));
+			{	
 				var tmp=$(this).attr("data-modal-key");				
 				var $newOption = $("<option selected='selected'></option>").val(tmp).text(tmp);
 				$("{{select_2_id}}").append($newOption).trigger('change');  
+				$("#chkand_{{select_2_id|replace({"#":""})}}").prop('checked', true);
 				$("#go_search_alldocs").click();
 			}
 		)

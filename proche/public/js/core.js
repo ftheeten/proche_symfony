@@ -1,4 +1,5 @@
 var search;
+var search_csv;
 var collapsed_visible_state={}
 
 var test_collapsed=function(id_ctrl)

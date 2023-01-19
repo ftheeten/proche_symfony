@@ -1,7 +1,12 @@
 {% import "macros.html.twig" as macros  %}
-
 <div class="d-flex align-items-center justify-content-center"><b>{{nb_result}}  Resultats</b></div>
 <br/>
+<div class="row justify-content-center">
+
+<div class="col-sm-2 ">
+<input type="button" id="get_csv" name="get_csv" value="{{'download_csv'|trans}}">
+</div>
+</div>
 <br/>
 
 <div class="d-flex align-items-center justify-content-center">{% include 'pagination.html.twig' %}</div>
@@ -12,10 +17,10 @@
 
 <div class="row" >
 <div class="col-sm-4">
-	{{ macros.proche_facet("Medium", facet_medium, "facet_medium", "#search_medium", display_facets) }}
-	{{ macros.proche_facet("Acquisition", facet_acquisition, "facet_acquisition","#search_acq", display_facets) }}
-	{{ macros.proche_facet("Localisation", facet_geo, "facet_geo","#search_geo", display_facets) }}
-	{{ macros.proche_facet("Culture", facet_culture, "facet_culture","#search_culture", display_facets) }}
+	{{ macros.proche_facet('medium'|trans, facet_medium, "facet_medium", "#search_medium", display_facets) }}
+	{{ macros.proche_facet('acquisition_method'|trans, facet_acquisition, "facet_acquisition","#search_acq", display_facets) }}
+	{{ macros.proche_facet('location'|trans, facet_geo, "facet_geo","#search_geo", display_facets) }}
+	{{ macros.proche_facet('culture'|trans, facet_culture, "facet_culture","#search_culture", display_facets) }}
 	
 </div>
 <div class="col-sm-8">
@@ -35,7 +40,14 @@
 	<div class="row" >
 	<div class="col-sm-12">{{doc["title"]??"TITLE UNKNOWN"}}</div>
 
-	<div class="col-sm-2">Date d'acquisition</div><div class="col-sm-10">{{doc["date_of_acquisition"]??""}}</div>
+	<div class="col-sm-2">Date d'acquisition</div><div class="col-sm-10">{{doc["date_of_acquisition"]??""}}
+	</div>
+	{% if doc["thumbnail_path_ss"] is defined %}
+		{% if doc["thumbnail_path_ss"]|length >0 %}
+			<div class="col-sm-12"><img src="{{doc["thumbnail_path_ss"][0]??""}}" />
+			</div>
+		{% endif %}
+	{% endif %}
 	</div>
 </div>
 </div>
@@ -53,6 +65,14 @@ $(".buttoncollapsed").click(
 					
 				});
 				
+			}
+		);
+		
+		$("#get_csv").click(
+			function()
+			{
+				console.log("get csv");
+				search_csv(1,1);
 			}
 		);
 </script>

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 	<head>
 		<meta charset="utf-8">
@@ -18,6 +19,14 @@
 		{% endblock %}
 	</head>
 	<body>
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-4">
+				<a id="lang_nl" name="lang_nl" href="{{ path('homelang')}}nl">nl</a>/<a id="lang_fr" name="lang_fr" href="{{ path('homelang')}}fr" >fr</a>/<a id="lang_en" name="lang_en" href="{{ path('homelang')}}en" >en</a>
+				
+				</div>
+			</div>
+		</div>
 		{% block body %}
 		{% endblock %}
 	</body>

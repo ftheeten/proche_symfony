@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,18 +13,41 @@ use Solarium\Client;
 //use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
+use Symfony\Component\Translation\LocaleSwitcher;
+use Symfony\Contracts\Translation\TranslatorInterface;
+
 class ProcheController extends AbstractController
 {
 
     private $client;
 	private $page_size=10;
 	
+	private $localeSwitcher;
+	//private $session;
+
+	private $list_included_fields_csv=["id","object_number", "sort_number",	"title"	, "dimensions",	"date_of_acquisition","acquisition_method",	"creation_date","culture","objtitle_legacy","_version_",	"score"];
+
+	
 	
 	
 	/** @var \Solarium\Client */
-   public function __construct(\Solarium\Client $client) {
+   public function __construct(\Solarium\Client $client,  LocaleSwitcher $localeSwitcher ) {
+	   
        $this->client = $client;
+	   $this->localeSwitcher=$localeSwitcher;
+	   //$this->localeSwitcher->setLocale('fr');
     }
+	
+	/*protected function get_current_locale()
+	{
+		print("1");
+		if($this->session!==null)
+		{
+			print("2");
+			$this->localeSwitcher->setLocale($this->session->get('current_locale','nl'));
+		}
+		
+	}*/
 	
 	protected function escapeSolr($helper, $input)
 	{
@@ -41,22 +65,33 @@ class ProcheController extends AbstractController
 	}
 	
 	#[Route('/', name: 'home')]	
-    public function home(): Response
+    public function home(Request $request): Response
+    {		
+		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','nl'));
+        return $this->render('home.html.twig',[]);
+    }
+	
+	#[Route('/{locale}', name: 'homelang', requirements: ['locale' => '(en|fr|nl)'])]	
+    public function homelang(Request $request, $locale="en"): Response
     {
-		//$this->init_client();
+		$session=$request->getSession();
+		$this->localeSwitcher->setLocale($locale);
+		$session->set('current_locale', $locale);
         return $this->render('home.html.twig',[]);
     }
 	
 	#[Route('/detailed_searches', name: 'detailed_search')]	
-    public function home_detail(): Response
+    public function home_detail(Request $request): Response
     {
-		//$this->init_client();
+		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','nl'));
         return $this->render('home_details.html.twig',[]);
     }
+	
 	
 	#[Route('/detail', name: 'detail')]
 	public function detail(Request $request): Response
     {
+		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','nl'));
 		$client=$this->client;
 		$id=$request->get("q","");
 		if(is_numeric($id))
@@ -86,6 +121,7 @@ class ProcheController extends AbstractController
 		
 		return $this->render('noresults.html.twig');
 	}
+	
 	
 	#[Route('/terms', name: 'terms')]
 	public function terms(Request $request): JsonResponse
@@ -196,9 +232,23 @@ class ProcheController extends AbstractController
 		arsort($results);
 		return $results;
 	}
+	
+	public function test_and_or($field, $request)
+	{
+		if(strtolower($request->get("chkand_search_culture","false"))=="true")
+		{
+			return " AND ";
+		}
+		else
+		{
+			return " OR ";
+		}
+	}
+	
 	#[Route('/main_search', name: 'main_search')]
 	public function main_search(Request $request): Response
     {
+		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','nl'));
 		$client=$this->client;
 		$query = $client->createSelect();
 		$helper = $query->getHelper();
@@ -209,6 +259,12 @@ class ProcheController extends AbstractController
         $page_size=$request->get("page_size",$this->page_size);
 		$display_facets=$request->get("display_facets",[]);
 		
+		$csv=false;
+		if(strtolower($request->get("csv","false"))=="true")
+		{
+			$csv=true;
+		}
+		
 		$offset=(((int)$current_page)-1)* (int)$page_size;
 		$pagination=Array();
 		
@@ -217,15 +273,25 @@ class ProcheController extends AbstractController
 		$search_colnum=$this->escapeSolrArray($helper,$request->get("search_colnum",[]));
 		$search_desc=$this->escapeSolrArray($helper,$request->get("search_desc",[]));
 		$search_culture=$this->escapeSolrArray($helper,$request->get("search_culture",[]));
+		
 		$search_geo=$this->escapeSolrArray($helper, $request->get("search_geo",[]));
 		$search_const=$this->escapeSolrArray($helper,$request->get("search_const",[]));
 		$search_acq=$this->escapeSolrArray($helper,$request->get("search_acq",[]));
 		$search_medium=$this->escapeSolrArray($helper,$request->get("search_medium",[]));
 		
+		
+			
 		$params_and=[];
 		
 		$query_build="*:*";
-		$query->setStart($offset)->setRows($page_size);
+		if($csv)
+		{
+			$query->setStart(0)->setRows(1000000);
+		}
+		else
+		{
+			$query->setStart($offset)->setRows($page_size);
+		}
 		$go=true;
 		/*if(strlen(trim($free_search))>0)
 		{
@@ -250,32 +316,34 @@ class ProcheController extends AbstractController
 		
 		if(count($search_desc)>0)
 		{
-			$params_and[]="(FACET_descriptions: (".implode(" OR ", $search_desc)."))";			
+			$params_and[]="(FACET_descriptions: (".implode($this->test_and_or("chk_search_desc", $request), $search_desc)."))";			
 		}
+		
+		
 		
 		if(count($search_culture)>0)
 		{
-			$params_and[]="(FACET_cultures: (".implode(" OR ", $search_culture)."))";			
+			$params_and[]="(FACET_cultures: (".implode($this->test_and_or("chk_search_colnum", $request), $search_culture)."))";				  
 		}
 		
 		if(count($search_geo)>0)
 		{
-			$params_and[]="(FACET_geographies: (".implode(" OR ", $search_geo)."))";			
+			$params_and[]="(FACET_geographies: (".implode($this->test_and_or("chk_search_geo", $request), $search_geo)."))";			
 		}
 		
 		if(count($search_const)>0)
 		{
-			$params_and[]="(FACET_constituents: (".implode(" OR ", $search_const)."))";			
+			$params_and[]="(FACET_constituents: (".implode($this->test_and_or("chk_search_const", $request), $search_const)."))";			
 		}
 		
 		if(count($search_acq)>0)
 		{
-			$params_and[]="(acquisition_method: (".implode(" OR ", $search_acq)."))";			
+			$params_and[]="(acquisition_method: (".implode($this->test_and_or("chk_search_acq", $request), $search_acq)."))";			
 		}
 		
 		if(count($search_medium)>0)
 		{
-			$params_and[]="(medium: (".implode(" OR ", $search_medium)."))";			
+			$params_and[]="(medium: (".implode($this->test_and_or("chk_search_medium", $request), $search_medium)."))";			
 		}
 		
 		if(count($params_and)>0)
@@ -310,41 +378,101 @@ class ProcheController extends AbstractController
 			$this->createFacet($facetSet, "facet_geo", "geo_field_collection_str");
 			$this->createFacet($facetSet, "facet_culture", "culture_str");
 			$this->createFacet($facetSet, "facet_acquisition", "acquisition_method");				
-			$rs_tmp= $client->select($query);			
-			$resp_facet_titles=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_title");
-			$resp_facet_medium=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_medium");
-			$resp_facet_geo=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_geo");
-			$resp_facet_culture=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_culture");
-			$resp_facet_acquisition=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_acquisition");
+			$rs_tmp= $client->select($query);	
 			
-			
-			$nb_result=$rs_tmp->getNumFound();
-			$i=0;
-			
-			foreach ($rs_tmp as $document) 
+			if($csv)
 			{
-				$doc=[];
-				foreach ($document as $field => $value) 
-				{
-					$doc[$field]=$value;
-				}
-				$rs[]=$doc;
-				$i++;
+				
+				$response = new StreamedResponse();
+				$response->setCallback(
+					function () use ($rs_tmp) 
+					{
+						$filler=array_fill_keys($this->list_included_fields_csv, '');
+						ob_start();
+						$handle = fopen('php://output', 'r+');
+						$i=0;
+						foreach ($rs_tmp as $document) 
+						{
+							
+							$doc=[];
+							foreach ($document as $field => $value) 
+							{
+								if( in_array($field, $this->list_included_fields_csv))
+								{
+									if(is_array($value))
+									{
+										$value=implode(",", $value);
+									}
+									$doc[$field]=$value;
+									
+								}
+							}
+							foreach($this->list_included_fields_csv as $field)
+							{
+								if(!array_key_exists($field,$doc ))
+								{
+									$doc[$field]="";
+								}
+							}
+							$order=array_keys($this->list_included_fields_csv);
+							uksort($doc, function($key1, $key2) use ($order) {
+								return (array_search($key1,$this->list_included_fields_csv) > array_search($key2,$this->list_included_fields_csv));
+							});
+							if($i==0)
+							{
+								fputcsv($handle,array_values(array_keys($doc)), "\t");
+							}
+							fputcsv($handle,array_values($doc), "\t");
+							$i++;
+						}
+							
+						
+						fclose($handle);
+						ob_flush();
+					}
+				);
+				$response->headers->set('Content-Type', 'text/csv');       
+				$response->headers->set('Content-Disposition', 'attachment; filename="testing.csv"');
+				
+				return $response;
 			}
-			$pagination = array(
-				'page' => $current_page,
-				'route' => 'search_main',
-				'pages_count' => ceil($nb_result / $page_size)
-			);
+			else
+			{
+				$resp_facet_titles=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_title");
+				$resp_facet_medium=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_medium");
+				$resp_facet_geo=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_geo");
+				$resp_facet_culture=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_culture");
+				$resp_facet_acquisition=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_acquisition");
+				
+				
+				$nb_result=$rs_tmp->getNumFound();
+				$i=0;
+				
+				foreach ($rs_tmp as $document) 
+				{
+					$doc=[];
+					foreach ($document as $field => $value) 
+					{
+						$doc[$field]=$value;
+					}
+					$rs[]=$doc;
+					$i++;
+				}
+				$pagination = array(
+					'page' => $current_page,
+					'route' => 'search_main',
+					'pages_count' => ceil($nb_result / $page_size)
+				);
 
-			return $this->render('results.html.twig',["results"=>$rs, "nb_result"=>$nb_result, "page_size"=>$page_size, "pagination"=>$pagination,
-			'page' => $current_page,
-			"facet_title"=>$resp_facet_titles, 
-			"facet_medium"=> $resp_facet_medium,
-			"facet_geo"=>$resp_facet_geo, 
-			"facet_culture"=> $resp_facet_culture, 
-			"facet_acquisition"=>$resp_facet_acquisition,
-			"display_facets"=>$display_facets]);
+				return $this->render('results.html.twig',["results"=>$rs, "nb_result"=>$nb_result, "page_size"=>$page_size, "pagination"=>$pagination,
+				'page' => $current_page,
+				"facet_title"=>$resp_facet_titles, 
+				"facet_medium"=> $resp_facet_medium,
+				"facet_geo"=>$resp_facet_geo, 
+				"facet_culture"=> $resp_facet_culture, 
+				"facet_acquisition"=>$resp_facet_acquisition,
+				"display_facets"=>$display_facets]);
+			}
 		}
 	
 		

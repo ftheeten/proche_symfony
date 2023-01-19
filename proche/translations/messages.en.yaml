@@ -1,0 +1,14 @@
+# translations/messages.en.yaml
+title: PROCHE - Search portal
+simple_search: Simple search
+detailed_search: Detailed search
+free_text_search: Free text search
+collection_number: Collection number
+culture: Culture
+acquisition_method: Acquisition method
+description: Description
+location : Géographical location
+medium: Medium
+show_hide: Show/hide
+download_csv: Download csv
+and: Union
