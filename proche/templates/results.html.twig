@@ -17,10 +17,13 @@
 
 <div class="row" >
 <div class="col-sm-4">
-	{{ macros.proche_facet('medium'|trans, facet_medium, "facet_medium", "#search_medium", display_facets) }}
-	{{ macros.proche_facet('acquisition_method'|trans, facet_acquisition, "facet_acquisition","#search_acq", display_facets) }}
-	{{ macros.proche_facet('location'|trans, facet_geo, "facet_geo","#search_geo", display_facets) }}
-	{{ macros.proche_facet('culture'|trans, facet_culture, "facet_culture","#search_culture", display_facets) }}
+	{% set i=0 %}
+
+	{% for facet in dyna_field_facets %}
+		
+		{{ macros.proche_facet(facet["label"]|trans, facet["facet"], "facet_"~facet["label"] ,"#"~facet["callback"], display_facets) }}
+		{% set i=i+1 %}
+	{% endfor %}
 	
 </div>
 <div class="col-sm-8">
@@ -28,27 +31,29 @@
 {% for key, doc in results %}
 
 <div style="border:solid;margin-bottom:5px;">
-<h3>{{ base_result+ key +1}}. {{doc["object_number"]}}</h3>
+<h3>{{ base_result+ key +1}}. {{doc[title_field]}}</h3>
 
 	
 
 
 <div class="row" >
 	<div class="row" >
-	<div class="col-sm-2"><a href="{{ path('detail')}}?q={{doc["id"]}}" target="_blank">Détail</a></div>
+	<div class="col-sm-2"><a href="{{ path('detail')}}?q={{doc[link_field]}}" target="_blank">Détail</a></div>
 	</div>
-	<div class="row" >
-	<div class="col-sm-12">{{doc["title"]??"TITLE UNKNOWN"}}</div>
-
-	<div class="col-sm-2">Date d'acquisition</div><div class="col-sm-10">{{doc["date_of_acquisition"]??""}}
-	</div>
+	{% set i=0 %}
+	{% for detail_field in result_fields.fields %}
+		<div class="row">
+			<div class="col-sm-3">{{ (result_fields.labels[i]??"")|trans }}</div><div class="col-sm-9">{{doc[result_fields.fields[i]]??""}}</div>
+		</div>
+		{% set i=i+1 %}
+	{% endfor %}
 	{% if doc["thumbnail_path_ss"] is defined %}
 		{% if doc["thumbnail_path_ss"]|length >0 %}
 			<div class="col-sm-12"><img src="{{doc["thumbnail_path_ss"][0]??""}}" />
 			</div>
 		{% endif %}
 	{% endif %}
-	</div>
+	
 </div>
 </div>
 

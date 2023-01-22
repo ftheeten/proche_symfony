@@ -1,0 +1,28 @@
+parameters:
+    free_text_search_field: 
+        field: all_str
+        label: free_text_search
+        
+    detailed_search_fields:
+        fields: ["object_number", "FACET_descriptions", "FACET_cultures", "FACET_geographies", "acquisition_method", "medium"]
+        labels: ["collection_number", "description","culture", "location", "acquisition_method", "medium" ]
+        
+    facet_fields:
+        fields: ["medium", "acquisition_method", "geo_field_collection_str", "culture_str" ],
+        labels: ["medium", "acquisition_method", "location", "culture"]
+        filter_callback: ["medium", "acquisition_method", "FACET_geographies", "FACET_cultures"]
+        
+    title_field: "object_number"
+    
+    link_field: "id"
+        
+    result_fields:
+        fields: ["title", "date_of_acquisition" ]
+        labels: ["title", "date_of_acquisition"]
+    
+    detail_main_title_field: "object_number"
+    detail_sub_title_field: "title"
+    
+    detail_fields:
+        fields: ["medium","dimensions","date_of_acquisition", "acquisition_method", "culture", "culture_of_production", "geo_field_collection", "geo_production", "objtitle_vernacular", "objtitle_legacy", "short_description", "creation_date"  ]
+        labels: ["medium","dimensions","date_of_acquisition", "acquisition_method", "culture", "culture_of_production", "geo_field_collection", "geo_production", "objtitle_vernacular", "objtitle_legacy", "short_description", "creation_date"]    
