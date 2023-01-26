@@ -13,20 +13,9 @@
 {% endblock %}
 {% block body %}
 {{ parent() }}
-<h1 style="text-align:center;">
-{{'title'|trans}}
+<h1 class="title-page">
+{{ 'detailed_search'|trans }}
 </h1>
-<div id="module" class="container">
-<div class="row justify-content-center">
-<div class="col-sm-3">
-<a href="{{ path('home') }}">{{ 'simple_search'|trans }}</a>&nbsp;
-<a href="{{ path('detailed_search') }}">{{ 'detailed_search'|trans }}</a>
-</div>
-</div>
-</div>
-
-<br/>
-<br/>
-{% include 'home_kern.html.twig' with {'details':'true'} %}
+{% include 'home_kern.html.twig' with {'details':'true', 'dyna_field_free': dyna_field_free, 'dyna_field_details': dyna_field_details} %}
 {% endblock %}
 

@@ -2,6 +2,7 @@
 {% import "macros.html.twig" as macros  %}
 {% block title %}
 	{{ parent() }} - All
+
 {% endblock %}
 
 {% block stylesheets %}
@@ -13,64 +14,37 @@
 {% endblock %}
 {% block body %}
 {{ parent() }}
-<h1 style="text-align:center;">PROCHE - Détail de l'objet</h1>
-<br/>
-<br/>
-<div id="module" class="container">
-<h3>{{doc["object_number"]??""}}</h3>
+
+<h1 class="title-page">{{'proche_object_detail'|trans}}</h1>
+
+<div id="module" class="container object_detail">
+<h3>{{doc[detail_main_title_field]??""}}</h3>
 	<div class="row">
-	<div class="col-sm-12">{{doc["title"]??"TITLE UNKNOWN"}}</div>
-	</div>
-	<div class="row">
-	<div class="col-sm-2">Medium</div><div class="col-sm-10">{{doc["medium"]??""}}</div>
-	</div>
-	<div class="row">
-	<div class="col-sm-2">Dimensions</div><div class="col-sm-10">{{doc["dimensions"]??""}}</div>
-	</div>
-	<div class="row">
-	<div class="col-sm-2">Date d'acquisition</div><div class="col-sm-10">{{doc["date_of_acquisition"]??""}}</div>
-	</div>
-	<div class="row">
-	<div class="col-sm-2">Méthode d'acquisition</div><div class="col-sm-10">{{doc["acquisition_method"]??""}}</div>
-	</div>
-	<div class="row">
-	{% if doc["culture"] is defined %}
-	<div class="col-sm-2">Culture</div>
-	<div class="col-sm-10">{{(doc["culture"]|join(", "))}}</div>
-	{% endif %}
-	{% if doc["culture_of_production"] is defined %}
-	<div class="col-sm-2">Culture (production)</div>
-	<div class="col-sm-10">{{(doc["culture_of_production"]|join(", "))}}</div>
-	{% endif %}
-	{% if doc["geo_field_collection"] is defined %}
-	<div class="col-sm-2">Lieu de collecte</div>
-	<div class="col-sm-10">{{(doc["geo_field_collection"]|join(", "))}}</div>
-	{% endif %}
-	{% if doc["geo_production"] is defined %}
-	<div class="col-sm-2">Lieu de production</div>
-	<div class="col-sm-10">{{(doc["geo_production"]|join(", "))}}</div>
-	{% endif %}
-	
-	
-	
-	{% if doc["objtitle_vernacular"] is defined %}
-	<div class="col-sm-2">Titre - vernaculaire</div>
-	<div class="col-sm-10">{{(doc["objtitle_vernacular"]|join(", "))}}</div>
-	{% endif %}
-	
-	{% if doc["objtitle_legacy"] is defined %}
-	<div class="col-sm-2">Titre - legacy</div>
-	<div class="col-sm-10">{{(doc["objtitle_legacy"]|join(", "))}}</div>
-	{% endif %}
-	
-	<div class="row">
-	<div class="col-sm-2">Description sommaire</div><div class="col-sm-10">{{doc["short_description"]??""}}</div>
-	</div>
-	<div class="row">
-	<div class="col-sm-2">Création de la donnée</div><div class="col-sm-10">{{doc["creation_date"]??""}}</div>
+	<div class="col-sm-12" style="font-size: 1.2em; font-weight: 700; margin-bottom: 8px">{{doc[detail_sub_title_field]??"TITLE UNKNOWN"}}</div>
 	</div>
 	
-	</div>
+	{% set i=0 %}
+	{% for field in detail_fields.fields %}
+		{% if doc[detail_fields.fields[i]] is defined  %}
+			{% if doc[detail_fields.fields[i]]|length>0 %}
+				<div class="row">
+					<div class="col-sm-2" style="font-weight: 600">{{detail_fields.labels[i]|trans}}:</div>
+					{% if doc[detail_fields.fields[i]] is iterable %}
+						<div class="col-sm-3">{{ doc[detail_fields.fields[i]]|join(", ")}}</div>
+					{% else %}
+						<div class="col-sm-3">{{ doc[detail_fields.fields[i]]}}</div>
+					{% endif %}
+					<div class="col-sm-7">
+						{% include 'disclaimer_text2.html.twig' with {"i":i} %}
+					</div>
+				</div>
+			{% endif %}
+		{% endif %}
+		{% set i=i+1 %}
+	{% endfor %}
 	
+
+<!--DISCLAIMER-->
+{% include 'disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}	
 </div>
 {% endblock %}

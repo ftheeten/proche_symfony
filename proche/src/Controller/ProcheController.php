@@ -16,11 +16,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+use Symfony\Component\HttpFoundation\Cookie;
+
 class ProcheController extends AbstractController
 {
 
+
+	protected $default_lang="fr";
     private $client;
 	private $page_size=10;
+
 	
 	private $localeSwitcher;
 	//private $session;
@@ -35,19 +40,10 @@ class ProcheController extends AbstractController
 	   
        $this->client = $client;
 	   $this->localeSwitcher=$localeSwitcher;
-	   //$this->localeSwitcher->setLocale('fr');
+	  
     }
 	
-	/*protected function get_current_locale()
-	{
-		print("1");
-		if($this->session!==null)
-		{
-			print("2");
-			$this->localeSwitcher->setLocale($this->session->get('current_locale','nl'));
-		}
-		
-	}*/
+	
 	
 	protected function escapeSolr($helper, $input)
 	{
@@ -64,38 +60,95 @@ class ProcheController extends AbstractController
 		return  $returned;
 	}
 	
-	#[Route('/', name: 'home')]	
-    public function home(Request $request): Response
-    {		
-		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','nl'));
-        return $this->render('home.html.twig',[]);
-    }
+	protected function set_lang_cookie($lang)
+	{
+		$response = new Response();
+		$response->headers->setCookie( Cookie::create('proche_locale', $lang));
+		$response->sendHeaders();
+		
+		
+	}
 	
-	#[Route('/{locale}', name: 'homelang', requirements: ['locale' => '(en|fr|nl)'])]	
-    public function homelang(Request $request, $locale="en"): Response
+	protected function get_lang_cookie($request)
+	{
+		$lang=$request->cookies->get('proche_locale',$this->default_lang);
+		return $lang;
+		
+	}
+	
+	#[Route('/', name:"home")]
+	public function home(Request $request): Response
+    {
+		$lang=$this->get_lang_cookie($request);
+		$this->localeSwitcher->setLocale($this->default_lang);
+		$this->set_lang_cookie($this->default_lang);
+		return $this->render('extra_pages/pageabout.html.twig',[]);
+	}
+	
+	#[Route('/{locale}', name:"homelang", requirements: ['locale' => '(en|fr|nl)'])]
+	public function homelang(Request $request, $locale="fr"): Response
     {
 		$session=$request->getSession();
 		$this->localeSwitcher->setLocale($locale);
 		$session->set('current_locale', $locale);
-        return $this->render('home.html.twig',[]);
+		$this->set_lang_cookie($locale);
+		return $this->render('extra_pages/pageabout.html.twig',[]);
+	}
+	
+	
+	#[Route('/simplesearch', name: 'simplesearch')]	
+    public function simplesearch(Request $request): Response
+    {		
+		$lang=$this->get_lang_cookie($request);
+		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale',$lang));
+		$dyna_field_free=$this->getParameter('free_text_search_field',[]);		
+		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
+		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+        return $this->render('home.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer]);
+    }
+	
+	#[Route('/simplesearch/{locale}', name: 'simplesearchlang', requirements: ['locale' => '(en|fr|nl)'])]	
+    public function simplesearchlang(Request $request, $locale="fr"): Response
+    {
+		$cookie_locale=$request->cookies->get('proche_locale',"");
+		
+		$session=$request->getSession();
+		$this->localeSwitcher->setLocale($locale);
+		$session->set('current_locale', $locale);
+		$this->set_lang_cookie($locale);
+		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
+		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
+		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+        return $this->render('home.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer]);
     }
 	
 	#[Route('/detailed_searches', name: 'detailed_search')]	
     public function home_detail(Request $request): Response
     {
-		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','nl'));
-        return $this->render('home_details.html.twig',[]);
+		
+		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
+		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
+		
+		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','fr'));
+		$response = new Response();
+		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+        return $this->render('home_details.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer]);
     }
 	
 	
 	#[Route('/detail', name: 'detail')]
 	public function detail(Request $request): Response
     {
-		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','nl'));
+		
+		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','fr'));		
+		$this->set_lang_cookie( $request->getSession()->get('current_locale','fr'));
 		$client=$this->client;
 		$id=$request->get("q","");
 		if(is_numeric($id))
 		{
+			$detail_main_title_field=$this->getParameter("detail_main_title_field", "id");
+			$detail_sub_title_field=$this->getParameter("detail_sub_title_field", "id");
+			$detail_fields=$this->getParameter("detail_fields",[]);
 			if(strlen(trim($id))>0)
 			{
 				$query = $client->createSelect();
@@ -114,7 +167,13 @@ class ProcheController extends AbstractController
 				if(count($rs)>=1)
 				{
 					$detail=$rs[0];
-					return $this->render('detail.html.twig',["doc"=>$detail]);
+					$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+					return $this->render('detail.html.twig',[
+						"doc"=>$detail, 
+						"detail_main_title_field"=> $detail_main_title_field, 
+						"detail_sub_title_field"=> $detail_sub_title_field, 
+						"detail_fields"=>$detail_fields, 
+						"cookie_accepted"=>$cookie_disclaimer]);
 				}
 			}
 		}
@@ -235,7 +294,7 @@ class ProcheController extends AbstractController
 	
 	public function test_and_or($field, $request)
 	{
-		if(strtolower($request->get("chkand_search_culture","false"))=="true")
+		if(strtolower($request->get("chkand_search_".$field,"false"))=="true")
 		{
 			return " AND ";
 		}
@@ -248,7 +307,8 @@ class ProcheController extends AbstractController
 	#[Route('/main_search', name: 'main_search')]
 	public function main_search(Request $request): Response
     {
-		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','nl'));
+		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','fr'));
+		$this->set_lang_cookie( $request->getSession()->get('current_locale','fr'));
 		$client=$this->client;
 		$query = $client->createSelect();
 		$helper = $query->getHelper();
@@ -258,6 +318,25 @@ class ProcheController extends AbstractController
 		$current_page=$request->get("current_page",1);
         $page_size=$request->get("page_size",$this->page_size);
 		$display_facets=$request->get("display_facets",[]);
+		
+		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
+		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
+		$dyna_field_facets=$this->getParameter('facet_fields',[]);
+		$tech_fields_facets=$dyna_field_facets["fields"];
+		$label_facets=$dyna_field_facets["labels"];
+		$call_back_facets=$dyna_field_facets["filter_callback"];
+		$i=0;
+		$facet_labels=[];
+		$facet_callbacks=[];
+		foreach($tech_fields_facets as $tech_field)
+		{
+			$facet_labels[$tech_field]=$label_facets[$i];
+			$facet_callbacks[$tech_field]="search_".$call_back_facets[$i];
+			$i++;
+		}
+		$title_field=$this->getParameter('title_field',"id");
+		$link_field=$this->getParameter('link_field',"id");
+		$result_fields=$this->getParameter('result_fields',[]);		
 		
 		$csv=false;
 		if(strtolower($request->get("csv","false"))=="true")
@@ -269,17 +348,21 @@ class ProcheController extends AbstractController
 		$pagination=Array();
 		
 		//$free_search=$this->escapeSolr($helper,$request->get("free_search",""));
-		$free_search=$this->escapeSolrArray($helper,$request->get("free_search",[]));
-		$search_colnum=$this->escapeSolrArray($helper,$request->get("search_colnum",[]));
-		$search_desc=$this->escapeSolrArray($helper,$request->get("search_desc",[]));
-		$search_culture=$this->escapeSolrArray($helper,$request->get("search_culture",[]));
-		
-		$search_geo=$this->escapeSolrArray($helper, $request->get("search_geo",[]));
-		$search_const=$this->escapeSolrArray($helper,$request->get("search_const",[]));
-		$search_acq=$this->escapeSolrArray($helper,$request->get("search_acq",[]));
-		$search_medium=$this->escapeSolrArray($helper,$request->get("search_medium",[]));
+		if(array_key_exists("field",$dyna_field_free)&&array_key_exists("label", $dyna_field_free))
+		{
+			$free_search=$this->escapeSolrArray($helper,$request->get("free_search",[]));
+		}
 		
 		
+		$list_detailed_fields=[];
+		if(array_key_exists("fields",$dyna_field_details ))
+		{
+			$dyna_fields=$dyna_field_details["fields"];
+			foreach($dyna_fields as $field)
+			{
+				$list_detailed_fields[$field]=$this->escapeSolrArray($helper,$request->get("search_".$field,[]));
+			}
+		}		
 			
 		$params_and=[];
 		
@@ -293,59 +376,26 @@ class ProcheController extends AbstractController
 			$query->setStart($offset)->setRows($page_size);
 		}
 		$go=true;
-		/*if(strlen(trim($free_search))>0)
-		{
-			//$go=true;
-			//print("all:*".$free_search."*");
-			$query->setQuery("all:*".$free_search."*");
-		}*/
 		
-		if(count($free_search)>0)
-		{		
-			$params_and[]="(all_str: (".implode(" OR ", $free_search)."))";
-			
+		if(array_key_exists("field",$dyna_field_free )&&array_key_exists("label", $dyna_field_free))
+		{
+			if(count($free_search)>0)
+			{		
+				$params_and[]="(". $this->getParameter('free_text_search_field')["field"].": (".implode(" OR ", $free_search)."))";
+				
+			}
 		}
 		
-		if(count($search_colnum)>0)
+		//loop detailed criterias
+		foreach($list_detailed_fields as $field=>$filter)
 		{
-			
-		
-			$params_and[]="(object_number: (".implode(" OR ", $search_colnum)."))";
-			
+			if(count($filter)>0)
+			{
+				$params_and[]="(".$field.": (".implode($this->test_and_or($field, $request), $filter)."))";
+			}
 		}
 		
-		if(count($search_desc)>0)
-		{
-			$params_and[]="(FACET_descriptions: (".implode($this->test_and_or("chk_search_desc", $request), $search_desc)."))";			
-		}
-		
-		
-		
-		if(count($search_culture)>0)
-		{
-			$params_and[]="(FACET_cultures: (".implode($this->test_and_or("chk_search_colnum", $request), $search_culture)."))";				  
-		}
-		
-		if(count($search_geo)>0)
-		{
-			$params_and[]="(FACET_geographies: (".implode($this->test_and_or("chk_search_geo", $request), $search_geo)."))";			
-		}
-		
-		if(count($search_const)>0)
-		{
-			$params_and[]="(FACET_constituents: (".implode($this->test_and_or("chk_search_const", $request), $search_const)."))";			
-		}
-		
-		if(count($search_acq)>0)
-		{
-			$params_and[]="(acquisition_method: (".implode($this->test_and_or("chk_search_acq", $request), $search_acq)."))";			
-		}
-		
-		if(count($search_medium)>0)
-		{
-			$params_and[]="(medium: (".implode($this->test_and_or("chk_search_medium", $request), $search_medium)."))";			
-		}
-		
+	
 		if(count($params_and)>0)
 		{
 			$query_build=implode(" AND ", $params_and);
@@ -372,12 +422,15 @@ class ProcheController extends AbstractController
 			$query->addSort("sort_number", $query::SORT_ASC);
 			
 			//facets
-			$facetSet = $query->getFacetSet();
-			$this->createFacet($facetSet, "facet_title", "title");
-			$this->createFacet($facetSet, "facet_medium", "medium");
-			$this->createFacet($facetSet, "facet_geo", "geo_field_collection_str");
-			$this->createFacet($facetSet, "facet_culture", "culture_str");
-			$this->createFacet($facetSet, "facet_acquisition", "acquisition_method");				
+			if(count($dyna_field_facets)>0)
+			{
+				$facetSet = $query->getFacetSet();
+				$facet_fields=$dyna_field_facets["fields"];
+				foreach($facet_fields as $facet)
+				{
+					$this->createFacet($facetSet, "facet_".$facet, $facet);					
+				}				
+			}
 			$rs_tmp= $client->select($query);	
 			
 			if($csv)
@@ -438,13 +491,21 @@ class ProcheController extends AbstractController
 			}
 			else
 			{
-				$resp_facet_titles=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_title");
-				$resp_facet_medium=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_medium");
-				$resp_facet_geo=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_geo");
-				$resp_facet_culture=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_culture");
-				$resp_facet_acquisition=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_acquisition");
+								
+				$facets_twig=[];
 				
-				
+				if(count($dyna_field_facets)>0)
+				{
+					$facet_fields=$dyna_field_facets["fields"];
+					$i=0;
+					foreach($facet_fields as $facet)
+					{
+						$facets_twig[$i]["facet"]=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_".$facet);
+						$facets_twig[$i]["label"]=$facet_labels[$facet];
+						$facets_twig[$i]["callback"]=$facet_callbacks[$facet];
+						$i++;
+					}
+				}
 				$nb_result=$rs_tmp->getNumFound();
 				$i=0;
 				
@@ -463,19 +524,66 @@ class ProcheController extends AbstractController
 					'route' => 'search_main',
 					'pages_count' => ceil($nb_result / $page_size)
 				);
-
-				return $this->render('results.html.twig',["results"=>$rs, "nb_result"=>$nb_result, "page_size"=>$page_size, "pagination"=>$pagination,
-				'page' => $current_page,
-				"facet_title"=>$resp_facet_titles, 
-				"facet_medium"=> $resp_facet_medium,
-				"facet_geo"=>$resp_facet_geo, 
-				"facet_culture"=> $resp_facet_culture, 
-				"facet_acquisition"=>$resp_facet_acquisition,
-				"display_facets"=>$display_facets]);
+				if($nb_result>0)
+				{
+					return $this->render('results.html.twig',["results"=>$rs, "nb_result"=>$nb_result, "page_size"=>$page_size, "pagination"=>$pagination,
+					'page' => $current_page,
+					'dyna_field_facets'=>$facets_twig,
+					"display_facets"=>$display_facets,
+					"title_field"=>$title_field,
+					"link_field"=>$link_field,
+					"result_fields"=>$result_fields ]);
+				
+				}
+				else
+				{
+					return $this->render('noresults.html.twig');
+				}
 			}
 		}
 	
 		
 		return $this->render('noresults.html.twig');
+	}
+	
+	#[Route('/extrapage/{id}', name: 'extrapage')]	
+	public function extraPage($id, Request $request): Response
+	{
+		$lang=$this->get_lang_cookie($request);
+		$this->localeSwitcher->setLocale($this->default_lang);
+		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+		return $this->render('extra_pages/page'.$id.'.html.twig',["cookie_accepted"=>$cookie_disclaimer]);
+	}
+	
+	#[Route('/set_disclaimer_cookie/{var}', name: 'set_disclaimer_cookie')]
+	public function set_disclaimer_cookie($var="not_set"): JsonResponse
+	{
+		$response = new JsonResponse();
+		if($var=="set")
+		{
+			$response->headers->setCookie( Cookie::create('disclaimer_cookie', "true"));
+			 $response->setData(["disclaimer_read"=>"true"]);
+		}
+		else
+		{
+			$response->headers->setCookie( Cookie::create('disclaimer_cookie', "false"));
+			$response->setData(["disclaimer_read"=>"false"]);
+		}
+		return $response;
+	}
+	
+	#[Route('/get_disclaimer_cookie', name: 'get_disclaimer_cookie')]
+	public function get_disclaimer_cookie_http(Request $request): JsonResponse
+	{
+		$response = new JsonResponse();
+		$response->setData(["disclaimer_read"=>$this->get_disclaimer_cookie($request)]);
+		return $response;
+	}
+	
+	protected function get_disclaimer_cookie($request)
+	{
+		$disc=$request->cookies->get('disclaimer_cookie',"false");
+		return $disc;
+		
 	}
 }

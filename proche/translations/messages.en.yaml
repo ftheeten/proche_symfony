@@ -1,14 +1,38 @@
 # translations/messages.en.yaml
-title: PROCHE - Search portal
+title_portal: PROCHE - Search portal - RMCA
 simple_search: Simple search
 detailed_search: Detailed search
+about_title_menu: About PROCHE
+about_title_page: About PROCHE
+bibliography_title_menu: Bibliography
+bibliography_title_page: Indicative bibliography
+disclaimer_title_menu: Disclaimer
+disclaimer_title_page: Disclaimer
 free_text_search: Free text search
+title: Title
 collection_number: Collection number
 culture: Culture
 acquisition_method: Acquisition method
 description: Description
 location : Géographical location
 medium: Medium
-show_hide: Show/hide
+show_hide: Show/Hide
 download_csv: Download csv
-and: Union
+and: AND
+of: of
+Page: Page
+proche_object_detail: Object detail
+RMCA: RMCA
+legal_notices: Legal notices
+detail1: About PROCHE
+detail2: Disclaimer
+show_search : REFINE THE SEARCH
+button_search: SEARCH AMONG THESE CRITERIA
+button_reset: SHOW ALL ITEMS
+results_number: results
+filter_results_facets: Filter results by
+results_list: List of results
+label_detail: Detail
+number_results_per_page: Number of results per page
+go_to_page: Go to page
+url_language_link: en

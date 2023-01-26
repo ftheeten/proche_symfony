@@ -1,41 +1,74 @@
 <div class="row">
-<div class="d-flex align-items-center justify-content-center"><b>page {{ pagination.page }} of {{ pagination.pages_count }}</b></div>
-<div>
-<div class="row">
-<div class="d-flex align-items-center justify-content-center">
-<div class="pagination">
+
+	<div class="d-flex align-items-center justify-content-center" style="margin-top: 20px; margin-bottom: 6px; font-size: 16px">
 	
-	<br/>
-	<div class="pagination-buttons">
-	    {% if pagination.page>1 %}
-		<button type="button" class="pager" value="1"><<</button>
-		<button type="button"  class="pager" {{pagination.page - 1}} ><</button>
-	    {% endif %}
-	    {#display p numbers only from p-4 to p+4 but don't go <1 or >pages_count#}
-	    {% for p in range(max(pagination.page-4, 1), 
-	min(pagination.page+4, pagination.pages_count)) %}
-		<button type="button" {% if p == pagination.page %} class="current-page pager" {% else %} class="pager" {% endif %} value="{{ p }}">{{ p }}</button>
-	    {% endfor %}
-	    {% if pagination.page<pagination.pages_count %}
-		<button type="button" value="{{ pagination.page + 1 }}" class="pager">></button>
+		{{'Page'|trans}} {{ pagination.page }} {{'of'|trans}} {{ pagination.pages_count }}
 		
-		<button type="button" value="{{ pagination.pages_count }}" class="pager">>></button>
-		<input type="text" id="direct_page" value="{{ pagination.page }}" style="width:50px;"/>
-		<input type="button" id="go_page" value="go"/>
-	    {% endif %}
 	</div>
-    Size <select id="page_size" name="page_size">
-        <option value="5" {{ page_size=="5" ? 'selected="selected"' : '' }} >5</option>
-        <option value="10" {{ page_size=="10" ? 'selected="selected"' : '' }} >10</option>
-        <option value="20" {{ page_size=="20" ? 'selected="selected"' : '' }} >20</option>
-        <option value="25" {{ page_size=="25" ? 'selected="selected"' : '' }} >25</option>
-        <option value="50" {{ page_size=="50" ? 'selected="selected"' : '' }} >50</option>
-        <option value="100" {{ page_size=="100" ? 'selected="selected"' : '' }} >100</option>
-    </select>
+	
+	<div>
+	
+		<div class="row">
+		
+			<div class="d-flex align-items-center justify-content-center">
+			
+				<div class="pagination">
+
+					<div class="pagination-buttons">
+					
+						{% if pagination.page>1 %}
+						
+							<button type="button" class="pager" value="1"><<</button>
+							<button type="button"  class="pager" {{pagination.page - 1}} ><</button>
+						
+						{% endif %}
+						
+						{#display p numbers only from p-4 to p+4 but don't go <1 or >pages_count#}
+						
+						{% for p in range(max(pagination.page-4, 1), 
+						min(pagination.page+4, pagination.pages_count)) %}
+						<button type="button" {% if p == pagination.page %} class="current-page pager" {% else %} class="pager" {% endif %} value="{{ p }}">{{ p }}</button>
+						{% endfor %}
+						
+						{% if pagination.page<pagination.pages_count %}
+						
+							<button type="button" value="{{ pagination.page + 1 }}" class="pager">></button>
+							<button type="button" value="{{ pagination.pages_count }}" class="pager">>></button>
+			
+
+		
+						{% endif %}
+		
+					</div>
+					
+					<div class="gotopage">
+						{{'go_to_page'|trans}}
+						<input type="text" id="direct_page" value="{{ pagination.page }}" />
+						<input type="button" id="go_page" value="OK"/>
+					</div>
+	
+					<div class="resultsperpage">
+						{{'number_results_per_page'|trans}}
+						<select id="page_size" name="page_size">
+							<option value="5" {{ page_size=="5" ? 'selected="selected"' : '' }} >5</option>
+							<option value="10" {{ page_size=="10" ? 'selected="selected"' : '' }} >10</option>
+							<option value="20" {{ page_size=="20" ? 'selected="selected"' : '' }} >20</option>
+							<option value="25" {{ page_size=="25" ? 'selected="selected"' : '' }} >25</option>
+							<option value="50" {{ page_size=="50" ? 'selected="selected"' : '' }} >50</option>
+							<option value="100" {{ page_size=="100" ? 'selected="selected"' : '' }} >100</option>
+						</select>
+						
+					</div>
+					
+				</div>
+				
+			</div>
+			
+		</div>
+		
+	</div>
+	
 </div>
-</div>
-</div>
-<br/>
 
 <script type="text/javascript">
 

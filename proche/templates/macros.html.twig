@@ -1,7 +1,7 @@
 {% macro select2_multiple( id_control, name_control, ajax_url, field_select2, class_control, style_control, and_mode) %}
 {% set and_mode=and_mode??"FALSE" %}
 
-<select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }}" style="{{ style_control }}" multiple="multiple"></select> 
+<select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }} select2_proche" style="{{ style_control }}" multiple="multiple"></select> 
 {% if and_mode=="TRUE" %}
 <input type="checkbox" id="chkand_{{ id_control }}" name="chkand_{{ name_control }}" class="chkand">  <label>{{'and'|trans}}</label>
 {% endif %}
@@ -16,7 +16,7 @@
 
 {% macro select2( id_control, name_control, ajax_url, field_select2, class_control, style_control) %}
 
-<select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }}" style="{{ style_control }}" ></select>
+<select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }}  select2_multiple_proche" style="{{ style_control }}" ></select>
 		<script type="text/javascript">
 				$(document).ready(
 					function()
@@ -35,20 +35,21 @@
 	{% else %}
 		{% set show_div="" %}
 	{% endif %}
-	<div style="border:solid;background-color:#eeeee4;" class="" id="module"><b>{{ label }}</b><br/>
+	<div class="results_list_facets" id="module"><b>{{ label }}</b><br/>
 	<div class="row">
 		<div class="col-sm-12">
+			<div style="margin-bottom: 12px">
+				<a role="button" id="button_collapse_{{class_links}}" class="buttoncollapsed " data-bs-toggle="collapse" href="#collapse_{{class_links}}" aria-bs-expanded="false" aria-bs-controls="collapse_{{class_links}}">{{'show_hide'|trans}}</a>
+			</div>
 			<div class="collapse proche_collapsible {{ show_div }}" id="collapse_{{class_links}}" aria-bs-expanded="false">
 				{% for key, val in facet_array %}
 					<i><a class="facet_link {{class_links}}" data-modal-key="{{ key}}" >{{key}}</a> : {{ val }}</i><br/> 
 				{% endfor %}
-			<br/>	
 			</div>
-			<a role="button" id="button_collapse_{{class_links}}" class="buttoncollapsed " data-bs-toggle="collapse" href="#collapse_{{class_links}}" aria-bs-expanded="false" aria-bs-controls="collapse_{{class_links}}">{{'show_hide'|trans}}</a>
 		</div>
 	</div>
 	</div>
-	<br>
+
 	<script language="Javascript">
 		
 	

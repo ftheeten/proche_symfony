@@ -14,11 +14,8 @@
 {% block body %}
 {{ parent() }}
 <h1 class="title-page">
-{{ 'simple_search'|trans }}
+{{ 'bibliography_title_page'|trans }}
 </h1>
-{% include 'home_kern.html.twig' with {'details':"false"} %}
-
+<!--DISCLAIMER-->
+{% include 'disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}
 {% endblock %}
-
-
-

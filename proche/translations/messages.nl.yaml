@@ -1,14 +1,36 @@
 # translations/messages.nl.yaml
-title: PROCHE - Zoekportaal
+title_portal: PROCHE - Zoekportaal - KMMA
 simple_search: Eenvoudig zoeken
 detailed_search: Gedetailleerd zoeken
+about_title_menu: Over PROCHE
+about_title_page: Over PROCHE
+bibliography_title_menu: Bibliografie
+bibliography_title_page: Indicatieve bibliografie
+disclaimer_title_menu: Disclaimer
+disclaimer_title_page: Disclaimer
 free_text_search: Vrij tekst zoeken
+title: Titel
 collection_number: Collectienummer
 culture: Cultuur
 acquisition_method: Methode van acquisitie
 description: Beschrijving
 location : Geografische locatie
 medium: Medium
-show_hide: Tonen/verbergen
+show_hide: Tonen/Verbergen
 download_csv: CSV bestand downloaden
-and: Verzamelen
+and: EN
+of: van
+Page: Pagina
+proche_object_detail: Detail van het object
+RMCA: KMMA
+legal_notices: Juridische mededelingen
+show_search : ZOEK VERFIJNEN
+button_search: ZOEKEN IN DEZE CRITERIA
+button_reset: TONEN ALLE OBJECTEN
+results_number: resultaten
+filter_results_facets: Filter resultaten op
+results_list: Lijst met resultaten
+label_detail: Detail
+number_results_per_page: Aantal resultaten per pagina
+go_to_page: Ga naar pagina
+url_language_link: nl

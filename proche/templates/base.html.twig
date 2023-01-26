@@ -5,29 +5,133 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
-		<title>{% block title %}PROCHE RMCA provenance project{% endblock %}</title>
+		<title>{% block title %}{{ 'title_portal'|trans }}t{% endblock %}</title>
 		{% block stylesheets %}
-			<link rel="stylesheet" href="./js/bootstrap_5_2_3/dist/css/bootstrap.css" type="text/css"/>
-			<link rel="stylesheet" href="./js/select2/dist/css/select2.css" type="text/css"/>
-			<link rel="stylesheet" href="./css/main.css" type="text/css"/>
+			<link rel="stylesheet" href="{{ app.request.baseUrl }}/js/bootstrap_5_2_3/dist/css/bootstrap.css" type="text/css"/>
+			<link rel="stylesheet" href="{{ app.request.baseUrl }}/js/select2/dist/css/select2.css" type="text/css"/>
+			<link rel="stylesheet" href="{{ app.request.baseUrl }}/css/main.css" type="text/css"/>
+			<link rel="stylesheet" href="{{ app.request.baseUrl }}/css/proche.css" type="text/css"/>
 		{% endblock %}
 		{% block javascripts %}
-			<script src="./js/jquery/jquery-3.6.2.min.js"></script>
-			<script src="./js/bootstrap_5_2_3/dist/js/bootstrap.bundle.js"></script>
-            <script src="./js/select2/dist/js/select2.full.min.js"></script>
-			<script src="./js/core.js"></script>
+			<script src="{{ app.request.baseUrl }}/js/jquery/jquery-3.6.2.min.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+			<script src="{{ app.request.baseUrl }}/js/bootstrap_5_2_3/dist/js/bootstrap.bundle.js"></script>
+            <script src="{{ app.request.baseUrl }}/js/select2/dist/js/select2.full.min.js"></script>
+			<script src="{{ app.request.baseUrl }}/js/core.js"></script>
 		{% endblock %}
 	</head>
 	<body>
-		<div class="container">
-			<div class="row">
-				<div class="col-sm-4">
-				<a id="lang_nl" name="lang_nl" href="{{ path('homelang')}}nl">nl</a>/<a id="lang_fr" name="lang_fr" href="{{ path('homelang')}}fr" >fr</a>/<a id="lang_en" name="lang_en" href="{{ path('homelang')}}en" >en</a>
+	
+		<!---------------------------    HEADER   --------------------------->
+		<div ng-view class="view-animate"></div>
+		<header id="site-header">
+
+			<div class="maxwidthwrapper clearfix">
+			
+				<div class="header__logo">
+				
+					<a href="https://proche.africamuseum.be" target="_self"  class="site-logo">
+						<img src="{{ app.request.baseUrl }}/images/logo_africamuseum_proche.svg" alt="Home" />
+					</a>
 				
 				</div>
+				
+				<div class="header__secondary">
+				
+					<div id="block-languageswitcher">
+						 <ul>
+						 	<li><a id="lang_fr" name="lang_fr" href="{{ path('homelang')}}fr" >FR</a></li>
+							<li><a id="lang_en" name="lang_en" href="{{ path('homelang')}}en" >EN</a></li>
+							<li><a id="lang_nl" name="lang_nl" href="{{ path('homelang')}}nl">NL</a></li>
+						</ul>
+					</div>
+					
+				</div>
+			
 			</div>
+			
+			<!---------------------------    SUBMENU    --------------------------->
+
+			<div class="menu" >
+
+				<div class="maxwidthwrapper clearfix">
+					<ul>
+						<li>
+							<a href="{{ path('extrapage', {'id':'about'} )}}">{{ 'about_title_menu'|trans }}</a>
+						</li>
+						<li>
+							<a href="{{ path('simplesearch') }}">{{ 'simple_search'|trans }}</a>
+						</li>
+						<li>
+							<a href="{{ path('detailed_search') }}">{{ 'detailed_search'|trans }}</a>
+						</li>
+						<li >
+							<a href="{{ path('extrapage', {'id':'bibliography'}) }}">{{ 'bibliography_title_menu'|trans }}</a>
+						</li>
+						<li>
+							<a href="{{ path('extrapage', {'id':'disclaimer'}) }}">{{ 'disclaimer_title_menu'|trans }}</a>
+						</li>
+					</ul>
+				</div>
+
+			</div>
+
+			<!---------------------------    END SUBMENU    --------------------------->
+			
+		</header>
+
+		<!---------------------------    END HEADER    --------------------------->
+		
+		<!---------------------------    MAIN CONTENT    --------------------------->
+	
+		<div class="container">
+
 		</div>
+		
 		{% block body %}
 		{% endblock %}
+		
+		<!---------------------------    END MAIN CONTENT    --------------------------->
+		
+		<!---------------------------    FOOTER   --------------------------->
+
+		<footer id="site-footer">
+
+			<div class="maxwidthwrapper clearfix">
+
+				<div class="footer__sponsors clearfix">
+					
+						<ul>
+							<li>
+								<a href="https://www.africamuseum.be/{{'url_language_link'|trans}}" target="_blank" title="africamuseum.be"><img alt="Musée royal de l'Afrique centrale" src="{{ app.request.baseUrl }}/images/logo_africamuseum.png"></a>
+							</li>
+							<li>
+								<a href="http://www.belspo.be/" target="_blank" title="belspo.be"><img alt="Belspo" src="{{ app.request.baseUrl }}/images/logo_belspo.png"></a>
+							</li>
+						</ul>
+						
+				</div>
+			
+				<div class="footer__bottom clearfix">
+						
+						<div class="footer__legal-notices">
+
+							<div style="font-size: 0.9em">
+								Copyright (c) - {{ 'RMCA' | trans }} - 2023
+							</div>
+							<div>
+								<a href="https://www.africamuseum.be/{{'url_language_link'|trans}}/legal" target="_blank" style="font-weight: 800; border-bottom: none">{{ 'legal_notices'|trans }}</a>
+							</div>
+
+						</div>
+				</div>
+				
+			</div>
+
+		</footer>
+
+		<!---------------------------    END FOOTER    --------------------------->
+		
+		
 	</body>
 </html>

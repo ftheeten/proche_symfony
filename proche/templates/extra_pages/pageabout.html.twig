@@ -1,0 +1,60 @@
+{% extends "base.html.twig" %}
+
+{% block title %}
+	{{ parent() }} - All
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+{% endblock %}
+
+{% block javascript %}
+{{ parent() }}
+{% endblock %}
+{% block body %}
+{{ parent() }}
+<h1 class="title-page">
+{{ 'about_title_page'|trans }}
+</h1>
+
+<div class="container">
+
+<p class="introparagraph">
+<br />
+Le <strong>projet PROCHE </strong>(MB21 - <em> Recherches de <strong>PRO</strong>venance sur la <strong>C</strong>ollection ethnographique - <strong>H</strong>erkomstonderzoek op de <strong>E</strong>thografische collectie</em>) est un programme de la politique scientifique fédérale mis en oeuvre par le Musée royal de l'Afrique centrale (MRAC).
+</p>
+
+<p>Son lancement répond aux nombreuses discussions sociales et politiques qui se sont intensifiées ces dernières années pour comprendre le contexte historique et les modes d'acquisition des objets du patrimoine culturel congolais collectés pendant la période coloniale. C'est ainsi que le MRAC a été engagé dans un projet de recherche sur la provenance de ses collections ethnographiques, en particulier celles provenant de la République démocratique du Congo.<br />
+Afin d'assurer une transparence dans les discussions sur l'origine du patrimoine culturel qu'il gère, le MRAC souhaite donner accès à l'inventaire des collections concernées. Cet inventaire de 83 200 objets culturels gérés par le MRAC, provenant de la RDC et plus largement de l'Afrique centrale, a été transmis au Premier Ministre congolais Jean-Michel Sama Lukonde en février 2022, en présence du Premier Ministre Alexander De Croo et du Secrétaire d'état Thomas Dermine.</p>
+
+<p>&nbsp;</p>
+
+<h4>Un inventaire en ligne alimenté de recherches de provenance</h4>
+
+<p>L'objectif des recherches est de préciser l'ensemble de la chaine des acquisitions d'un objet et de contextualiser leurs différents ancrages historiques afin que toute personne ou organisation puisse mener ses propres enquêtes pour déterminer la nature licite, illicite ou indéfinissable d'une transaction (par exemple un pillage, un vol, une cession ou encore un don). Il s'agit d'un travail évolutif qui sera sans cesse renouvelé par l'apport de nouvelles données et connaissances, amenant de nouveaux questionnements quant au contexte d'acquisition mais aussi aux rapports actuels que nous entretenons avec nos connaissances scientifiques.<br />
+Le projet de recherche de provenance ne tend pas à déterminer le statut des collections mais à compiler, indexer et analyser les données disponibles sur les circonstances qui ont mené à leur entrée dans le patrimoine culturel du gouvernement fédéral belge. Cela passera en premier lieu par la mise en ligne des informations recueillies par le biais d'une base de données libre d'accès afin de permettre un accès le plus large possible à toute personne intéressée.<br />
+Des recherches approfondies seront menées par une équipe mixtes composée de chercheur.se.s du MRAC et des institutions universitaires et patrimoniales congolaises spécialisées en histoire, anthropologie, histoire de l'art et droit. Cette équipe sera renforcée par des recherches de terrain et la valorisation d'autres formes de savoirs qui permettront l'approfondissement et une lecture critique des données présentes dans les archives. Ce volet qualitatif est nécessaire à une meilleure connaissance historique et sociale de la création des collections du musée.</p>
+
+<p>&nbsp;</p>
+
+<h4>Une approche évolutive à plusieurs voix</h4>
+
+<p>Par son réseau d'institutions nationales à valeur patrimoniale, l'<em>Institut des musées nationaux du Congo</em> (IMNC) représente un interlocuteur essentiel de ces recherches en partenariat avec le secteur universitaire et d'autres institutions patrimoniales en RDC. L'IMNC et le MRAC constituent en effet deux institutions ayant une imbrication historique durable.<sup>1</sup> Cette bilatéralité est nécessaire afin de privilégier toute forme de connaissances et offrir une contextualisation plus large.<br />
+Un programme de résidences de recherche, des doctorats et une communication permanente entre les partenaires, permettront de poser un regard nouveau sur les collections et une meilleure compréhension des objets qu'elles comportent. Offrir un accès aux informations et faciliter des discussions en toute transparence sont des préalables indispensables afin de permettre à différents regards, connaissances et lectures de se rencontrer au sein de ces collections.
+
+<h4>
+>&nbsp;<a href="{{ path('simplesearch') }}">Recherche simple</a>
+</h4>
+<h4>
+>&nbsp;<a href="{{ path('detailed_search') }}">Recherche détaillée</a>
+</h4>
+____________</p>
+
+<p>1. Voir à ce sujet: S. Van Beurden, <em>Authentically African: Arts and the Transnational politics of Congolese Culture</em>, Ohio University Press, Colombus, 2015</p>
+
+
+
+</div>
+<!--DISCLAIMER-->
+{% include 'disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}
+{% endblock body %}

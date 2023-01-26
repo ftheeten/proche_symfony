@@ -1,14 +1,40 @@
 # translations/messages.fr.yaml
-title: PROCHE - Portail de recherche
+title_portal: PROCHE - Projet de recherche de provenance - MRAC
 simple_search: Recherche simple
-detailed_search: recherche détaillée
-free_text_search: recherche texte libre
-collection_number: Numéro de collection
+detailed_search: Recherche détaillée
+about_title_menu: À propos de PROCHE
+about_title_page: PROCHE - Projet de recherche de provenance
+bibliography_title_menu: Bibliographie indicative
+bibliography_title_page: Bibliographie indicative
+disclaimer_title_menu: Avertissement
+disclaimer_title_page: Avertissement
+free_text_search: Recherche texte libre
+title: Titre original 
+collection_number: Numéro d’inventaire 
 culture: Culture
-acquisition_method: Méthode d'acqusition
+acquisition_method: Méthode d'acquisition
+date_of_acquisition: Date d’acquisition 
 description: Description
+dimensions: Dimensions
+objtitle_legacy: Titre historique
 location : Localisation géographique
-medium: Medium
-show_hide: Afficher/masquer
+medium: Matériaux & techniques 
+show_hide: Afficher/Masquer
+creation_date: Date de création de la donnée
 download_csv: Télécharger fichier csv
-and: Union
+and: ET
+of: de
+Page: Page
+proche_object_detail: Détail de l'objet
+RMCA: MRAC
+legal_notices: Mentions juridiques
+show_search : AFFINER LA RECHERCHE
+button_search: RECHERCHER PARMI CES CRITÈRES
+button_reset: MONTRER TOUS LES OBJETS
+results_number: résultats
+filter_results_facets: Filtrer les résultats par
+results_list: Liste des résultats
+label_detail: Détail
+number_results_per_page: Nombre de résultats par page
+go_to_page: Aller à la page
+url_language_link: fr

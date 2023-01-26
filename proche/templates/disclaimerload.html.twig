@@ -1,0 +1,45 @@
+<div class="modal  hide fade in" tabindex="-1" role="dialog" id="modal_disclaimer"  data-bs-keyboard="false" data-bs-backdrop="static">
+  <div class="modal-dialog" role="document"  >
+    <div class="modal-content">
+      <div class="modal-header">
+		<div style="margin-left: auto; margin-right: auto; max-width: 260px">
+			<img src="/images/logo_africamuseum_proche.svg">
+		</div>
+		
+		<!---------------------------
+        <button type="button" class="close_button" data-bs-dismiss="modal" aria-bs-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+		--------------------------->
+      </div>
+      <div class="modal-body">
+		<div style="text-align: center">
+			<h1 class="title-page">Disclaimer</h1>
+		</div>
+        <p>{% include 'disclaimer_text1.html.twig'%}</p>
+		<div style="text-align: center">
+			<button type="button" id="button_disclaimer" class="ok_button" data-bs-dismiss="modal">OK, I have read and agree to these terms and conditions of usage</button>
+			<br /><br />
+		</div>
+      </div>
+     
+    </div>
+  </div>
+</div>
+<script>
+			
+			$(document).ready(
+				function()
+				{
+					$("#modal_disclaimer").modal('show');
+					$("#button_disclaimer").click(
+						function()
+						{
+							
+							$.getJSON( "{{ path('set_disclaimer_cookie', {'var':'set'}) }}", function( data ) {
+								});
+						}
+					);
+				}
+			);
+</script>

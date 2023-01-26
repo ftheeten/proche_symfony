@@ -14,11 +14,6 @@
 {% block body %}
 {{ parent() }}
 <h1 class="title-page">
-{{ 'simple_search'|trans }}
+{{ 'disclaimer_title_page'|trans }}
 </h1>
-{% include 'home_kern.html.twig' with {'details':"false"} %}
-
-{% endblock %}
-
-
-
+{% endblock body %}
