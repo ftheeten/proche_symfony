@@ -77,6 +77,11 @@
 	  max-width: 90%;
 	}
 	
+	.object_detail .row .col-sm-7 {
+		margin-top: 6px;
+		margin-bottom: 4px;
+	}
+	
 }
 
 /* END POP UP DISCLAIMER */
@@ -198,13 +203,18 @@ header {
 	font-size: 18px;
 	font-weight: 800;
 	line-height: 1.2;
+	padding-right: 20px;
+	text-align: center
+}
+
+.menu li:last-child {
+	padding-right: 0;
 }
 
 .menu li a {
 	text-decoration: none;
 	border-bottom: none;
 	color: #111;
-	padding: 9px 40px 16px 0;
 }
 
 .menu li a:hover {
@@ -316,7 +326,7 @@ footer ul, footer ul li {
 
 }
 
-@media only screen and (max-width: 1024px) {
+@media only screen and (max-width: 1050px) {
 	
 	.header__logo {
 		float: left;
@@ -346,6 +356,8 @@ footer ul, footer ul li {
 		float: none;
 		margin-bottom: 10px;
 		line-height: 1.1;
+		padding-right: 0;
+		text-align: left;
 	}
 	
 	.menu li::before {
@@ -355,6 +367,7 @@ footer ul, footer ul li {
 		line-height: 0.5;
 		margin-right: 3px;
 	}
+	
 }
 
 @media only screen and (max-width: 600px) {
@@ -590,6 +603,17 @@ input#get_csv {
 	padding: 0;
 }
 
+ul.list_facets {
+  padding: 0;
+  margin: 0 0 8px 16px;
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+ul.list_facets li {
+  margin-bottom: 3px;
+}
+
 .results_list {
 	border: 1px solid gray;
 	margin-bottom: 5px;
@@ -608,7 +632,7 @@ input#get_csv {
 
 .object_detail .row {
 	border-bottom: 1px solid #d4d4d4;
-	padding: 6px 0;
+	padding: 8px 0;
 }
 
 .object_detail h3 {
@@ -623,6 +647,19 @@ input#get_csv {
   margin-top: 16px;
   margin-bottom: 20px;
   background: #0023f9;
+}
+
+.info_disclaimer_detail .info_disclaimer_buttons {
+	color: #0023f9;
+	cursor: pointer;
+}
+
+.info_disclaimer_buttons img {
+	max-width: 18px;
+	height: auto;
+	border: 0;
+	display: inline;
+	vertical-align: text-top;
 }
 
 .pagination {
@@ -1130,6 +1167,18 @@ a.ol-popup-closer:hover, a.ol-popup-closer:focus {
 	
 	.row-2columns .col-sm-4 {
 	  width: 50%;
+	}
+	
+	.object_detail .row .col-sm-2 {
+		width: 25%;
+	}
+	
+	.object_detail .row .col-sm-3 {
+		width: 40%;
+	}
+	
+	.object_detail .row .col-sm-7 {
+		width: 35%;
 	}
 
 }

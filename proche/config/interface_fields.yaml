@@ -1,0 +1,32 @@
+parameters:
+    sort_field: "sort_number"
+    free_text_search_field: 
+        field: all
+        label: free_text_search
+        
+    detailed_search_fields:
+        fields: ["object_number", "title", "material_and_technique", "site_of_collection", "site_of_production", "method_of_acquisition","year_of_acquisition_str", "date_of_acquisition" ]
+        autocomplete_fields: ["object_number", "title_str", "material_and_technique_str", "site_of_collection_str", "site_of_production_str", "method_of_acquisition_str","year_of_acquisition","" ]
+        labels: ["object_number", "title", "material_and_technique", "site_of_collection", "site_of_production", "method_of_acquisition", "year_of_acquisition", "date_of_acquisition" ]
+        types:  ["string", "string", "string", "string", "string", "string", "hidden_string", "date"]
+        matching:  ["fuzzy", "fuzzy", "fuzzy", "fuzzy", "fuzzy", "fuzzy", "exact","date"]
+        
+    facet_fields:
+        fields: ["title_str", "material_and_technique_str", "method_of_acquisition_str", "site_of_collection_str", "site_of_production_str" , "year_of_acquisition_str"],
+        labels: ["title","material_and_technique", "method_of_acquisition", "site_of_collection", "site_of_production" , "year_of_acquisition"]
+        filter_callback: ["title", "material_and_technique", "method_of_acquisition", "site_of_collection", "site_of_production" , "year_of_acquisition_str"]
+        
+    title_field: "object_number"
+    
+    link_field: "id"
+        
+    result_fields:
+        fields: ["title", "date_of_acquisition" ]
+        labels: ["title", "date_of_acquisition"]
+    
+    detail_main_title_field: "object_number"
+    detail_sub_title_field: "title"
+    
+    detail_fields:
+        fields: ["material_and_technique","dimensions", "method_of_acquisition", "site_of_collection", "site_of_production" , "date_of_acquisition", "creation_date"]
+        labels: ["material_and_technique", "dimensions", "method_of_acquisition", "site_of_collection", "site_of_production" , "date_of_acquisition", "creation_date"]

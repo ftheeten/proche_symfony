@@ -51,7 +51,7 @@
 				
 					<div class="row" >
 					
-						<div class="col-sm-2">
+						<div class="col-sm-2" style="margin-bottom: 4px">
 						
 							<a href="{{ path('detail')}}?q={{doc[link_field]}}" target="_blank">{{'label_detail'|trans}}</a>
 							
@@ -66,8 +66,18 @@
 					
 						<div class="col-sm-3">
 						
-							{{ (result_fields.labels[i]??"")|trans }}</div><div class="col-sm-9">{{doc[result_fields.fields[i]]??""}}
+							{{ (result_fields.labels[i]??"")|trans }}:
 							
+						</div>
+						
+						<div class="col-sm-9">
+						{% if   doc[result_fields.fields[i]] is defined %}
+							{% if doc[result_fields.fields[i]] is iterable %}
+								{{(doc[result_fields.fields[i]]|join(","))}}
+							{% else %}
+								{{doc[result_fields.fields[i]]??""}}
+							{% endif %}
+						{% endif %}	
 						</div>
 						
 					</div>

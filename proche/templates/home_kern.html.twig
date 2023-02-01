@@ -17,7 +17,14 @@
 		<div class="row row-2columns">	
 			{% endif %}
 				{% set solr_field=dyna_field_details.fields[i] %}
-					<div class="col-sm-4"><div class="label">{{ dyna_field_details.labels[i]|trans}}</div>{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_field , "", "width:86%", "TRUE") }}</div>
+				{% set solr_autocomplete_field=dyna_field_details.autocomplete_fields[i] %}
+					{% if dyna_field_details.types[i] =="hidden_string" %}
+						<div style="display:none">{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", "TRUE") }}</div>
+					{% elseif  dyna_field_details.types[i] =="date" %}
+						{{ macros.date_field("search_" ~solr_field, "search_" ~solr_field, dyna_field_details.labels[i]|trans ) }}
+					{% else %}
+						<div class="col-sm-4"><div class="label">{{ dyna_field_details.labels[i]|trans}}</div>{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", "TRUE") }}</div>
+					{% endif %}
 				{% if (i%2 !=0) or (i==(dyna_field_details.fields|length)-1) %}
 					<!-- Attention do not remove even if it makes the number of closing div not matching openin ones !!!-->
 				</div>
@@ -91,10 +98,17 @@
 					
 					{% set i=0 %}
 					{% for detail_field in dyna_field_details.fields %}
-						{% set solr_search_field="search_"~ dyna_field_details.fields[i] %}
-						criterias["{{ solr_search_field }}"]=$("#{{ solr_search_field }}").val();
-						console.log('criterias["{{ solr_search_field }}"]');
-						criterias=check_and_or("chkand_{{ solr_search_field }}", criterias);
+						{% if  dyna_field_details.types[i] =="date" %}
+							{% set solr_search_field_begin="search_"~ dyna_field_details.fields[i]~"_from" %}
+							{% set solr_search_field_to="search_"~ dyna_field_details.fields[i]~"_to" %}
+							criterias["{{ solr_search_field_begin }}"]=$("#{{ solr_search_field_begin }}").val();
+							criterias["{{ solr_search_field_to }}"]=$("#{{ solr_search_field_to }}").val();
+						{% else %}
+							{% set solr_search_field="search_"~ dyna_field_details.fields[i] %}
+							criterias["{{ solr_search_field }}"]=$("#{{ solr_search_field }}").val();
+							console.log('criterias["{{ solr_search_field }}"]');
+							criterias=check_and_or("chkand_{{ solr_search_field }}", criterias);
+						{% endif %}
 						{% set i=i+1 %}
 					{% endfor %}
 					criterias["display_facets"]=collapsed_visible_state;

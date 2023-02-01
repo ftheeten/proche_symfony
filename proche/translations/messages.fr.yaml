@@ -4,10 +4,12 @@ simple_search: Recherche simple
 detailed_search: Recherche détaillée
 about_title_menu: À propos de PROCHE
 about_title_page: PROCHE - Projet de recherche de provenance
-bibliography_title_menu: Bibliographie indicative
+bibliography_title_menu: Bibliographie
 bibliography_title_page: Bibliographie indicative
-disclaimer_title_menu: Avertissement
-disclaimer_title_page: Avertissement
+disclaimer_title_menu: Clause de non-responsabilité
+disclaimer_title_page: Clause de non-responsabilité
+disclaimer_ok_button: OK, j'ai lu et j'accepte les termes et conditions d'utilisation
+disclaimer_info_button: Avertissement sur la donnée
 free_text_search: Recherche texte libre
 title: Titre original 
 collection_number: Numéro d’inventaire 

@@ -44,18 +44,56 @@ class ProcheController extends AbstractController
     }
 	
 	
-	
-	protected function escapeSolr($helper, $input)
+	protected function remove_punctuation($val)
 	{
-		return  trim($helper->escapePhrase($input),'"');
+		$val=str_replace("-"," ",$val);
+		$val=str_replace(":"," ",$val);
+		$val=str_replace(","," ",$val);
+		$val=str_replace(";"," ",$val);
+		$val=str_replace("!"," ",$val);
+		$val=str_replace("?"," ",$val);
+		$val=str_replace("."," ",$val);
+		$val=str_replace("("," ",$val);
+		$val=str_replace(")"," ",$val);
+		$val=str_replace("'"," ",$val);
+		$val=str_replace('"'," ",$val);
+		$val = preg_replace('/\s+/', ' ', $val);
+		return $val;
 	}
 	
-	protected function escapeSolrArray($helper, $vals)
+	protected function escapeSolr($helper, $input, $fuzzy=true)
+	{
+		
+		if($fuzzy)
+		{
+			$tmp=trim($helper->escapePhrase($input),'"');
+			$tmp=$this->remove_punctuation($tmp);
+			return "*".$tmp."*";
+		}
+		else
+		{
+			$input=trim($helper->escapePhrase($input),'"');
+			$input=$this->remove_punctuation($input);
+			return  $input;
+		}
+	}
+	
+	protected function escapeSolrArray($helper, $vals, $fuzzy=true)
 	{
 		$returned=[];
 		foreach($vals as $val)
 		{
-			$returned[]=$helper->escapePhrase( $val);
+			$val=$this->remove_punctuation($val);
+			if($fuzzy)
+			{
+				
+				$returned[]="*".trim($helper->escapePhrase( $val),'"')."*";
+				
+			}
+			else
+			{
+				$returned[]=trim($helper->escapePhrase( $val));
+			}
 		}
 		return  $returned;
 	}
@@ -271,24 +309,29 @@ class ProcheController extends AbstractController
 		 return $this->json($returned); 	
 	}
 	
-	protected function createFacet($facet_set, $name_facet, $name_field, $limit=10)
+	protected function createFacet($facet_set, $name_facet, $name_field, $limit=100000)
 	{
-		$facet_set->createFacetField($name_facet)->setField($name_field)->setMinCount(1)->setSort('count desc')->setLimit($limit);
+		$facet_set->createFacetField($name_facet)->setField($name_field)->setMinCount(1)->setSort('desc')->setLimit($limit);
 	}
 	
-	protected function returnSolrFacet($facet_set, $name_facet)
+	protected function returnSolrFacet($facet_set, $name_facet, $limit=10)
 	{
 		$facets_title =$facet_set->getFacet($name_facet);
 		$results=[];
+		$i=0;
+		//print_r($facets_title);
 		foreach($facets_title as $vf => $count) 
 		{
+			
 			if($count>0)
 			{
 				$results[$vf]=$count;
 			}
-				
+			
+			$i++;	
 		}
 		arsort($results);
+		$results=array_slice($results, 0, $limit, true);
 		return $results;
 	}
 	
@@ -319,6 +362,7 @@ class ProcheController extends AbstractController
         $page_size=$request->get("page_size",$this->page_size);
 		$display_facets=$request->get("display_facets",[]);
 		
+		$sort_field=$this->getParameter('sort_field',"id");
 		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
 		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
 		$dyna_field_facets=$this->getParameter('facet_fields',[]);
@@ -355,16 +399,41 @@ class ProcheController extends AbstractController
 		
 		
 		$list_detailed_fields=[];
+		$params_and=[];
 		if(array_key_exists("fields",$dyna_field_details ))
 		{
 			$dyna_fields=$dyna_field_details["fields"];
+			$dyna_fields_matching=$dyna_field_details["matching"];
+			$dyna_fields_types=$dyna_field_details["types"];
+			$i=0;
 			foreach($dyna_fields as $field)
 			{
-				$list_detailed_fields[$field]=$this->escapeSolrArray($helper,$request->get("search_".$field,[]));
+				if($dyna_fields_types[$i]=="date")
+				{
+					$date_begin=$request->get("search_".$field."_from","");
+					$date_end=$request->get("search_".$field."_to","");
+					if(strlen(trim($date_begin))>0&&strlen(trim($date_end))>0)
+					{
+					
+						if($date_begin<=$date_end)
+						{
+							$params_and[]=$field.":[".$date_begin." TO ".$date_end."]";
+						}
+					}
+				}
+				elseif($dyna_fields_matching[$i]=="exact")
+				{
+					$list_detailed_fields[$field]=$this->escapeSolrArray($helper,$request->get("search_".$field,[]), false);
+				}
+				else
+				{
+					$list_detailed_fields[$field]=$this->escapeSolrArray($helper,$request->get("search_".$field,[]));
+				}
+				$i++;
 			}
 		}		
 			
-		$params_and=[];
+		
 		
 		$query_build="*:*";
 		if($csv)
@@ -389,37 +458,29 @@ class ProcheController extends AbstractController
 		//loop detailed criterias
 		foreach($list_detailed_fields as $field=>$filter)
 		{
+			
 			if(count($filter)>0)
 			{
-				$params_and[]="(".$field.": (".implode($this->test_and_or($field, $request), $filter)."))";
+				$params_and[]="(".$field.": (".implode($this->test_and_or($field, $request),$filter)."))";
 			}
 		}
 		
 	
-		if(count($params_and)>0)
-		{
-			$query_build=implode(" AND ", $params_and);
-		
-			$query->setQuery($query_build);
-		}
 		
 		if(count($params_and)>0)
 		{
 			$query_build=implode(" AND ", $params_and);
-		
 			$query->setQuery($query_build);
 			
+			
+		}
+		else
+		{
 			
 		}
 		if(count($params_and)>0||$go)
 		{
-			if(count($params_and)>0)
-			{
-				$q_pattern=implode(" AND ",$params_and); 
-			}
-			
-			
-			$query->addSort("sort_number", $query::SORT_ASC);
+			$query->addSort($sort_field, $query::SORT_ASC);
 			
 			//facets
 			if(count($dyna_field_facets)>0)
@@ -431,6 +492,7 @@ class ProcheController extends AbstractController
 					$this->createFacet($facetSet, "facet_".$facet, $facet);					
 				}				
 			}
+			$query->setQueryDefaultOperator("AND");
 			$rs_tmp= $client->select($query);	
 			
 			if($csv)

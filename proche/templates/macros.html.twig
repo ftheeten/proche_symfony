@@ -15,7 +15,6 @@
 {% endmacro %}
 
 {% macro select2( id_control, name_control, ajax_url, field_select2, class_control, style_control) %}
-
 <select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }}  select2_multiple_proche" style="{{ style_control }}" ></select>
 		<script type="text/javascript">
 				$(document).ready(
@@ -26,6 +25,33 @@
 						
 					});
 			</script>
+{% endmacro %}
+
+{% macro date_field(id_control, name_control, label_field)  %}
+<div class="col-sm-4"><div class="label">{{ label_field}} {{'from'|trans}} </div><input type="text" name="{{id_control}}_from" id="{{name_control}}_from" /></div>
+<div class="col-sm-4"><div class="label">{{ label_field}} {{'begin'|trans}}</div><input type="text" name="{{id_control}}_end" id="{{name_control}}_to"/></div>
+<script type="text/javascript">
+	$(document).ready(
+					function()
+					{
+					    $("#{{id_control}}_from").datepicker( 
+							{
+								format: 'yyyy-mm-dd',
+								startView: "years",
+								defaultViewDate: '1900-01-01'
+							}
+						);
+						
+						 $("#{{id_control}}_to").datepicker( 
+							{
+								format: 'yyyy-mm-dd'
+								,
+								startView: "years",
+								defaultViewDate: '1900-01-01'
+							}
+						);
+					});
+</script>
 {% endmacro %}
 
 {%  macro proche_facet(label, facet_array, class_links, select_2_id, display_facets) %}
@@ -42,9 +68,13 @@
 				<a role="button" id="button_collapse_{{class_links}}" class="buttoncollapsed " data-bs-toggle="collapse" href="#collapse_{{class_links}}" aria-bs-expanded="false" aria-bs-controls="collapse_{{class_links}}">{{'show_hide'|trans}}</a>
 			</div>
 			<div class="collapse proche_collapsible {{ show_div }}" id="collapse_{{class_links}}" aria-bs-expanded="false">
-				{% for key, val in facet_array %}
-					<i><a class="facet_link {{class_links}}" data-modal-key="{{ key}}" >{{key}}</a> : {{ val }}</i><br/> 
-				{% endfor %}
+				<ul class="list_facets">
+					{% for key, val in facet_array %}
+						<li>
+							<a class="facet_link {{class_links}}" data-modal-key="{{ key}}" >{{key}}</a>: {{ val }}
+						</li>
+					{% endfor %}
+				</ul>
 			</div>
 		</div>
 	</div>
@@ -56,7 +86,9 @@
 		$(".{{class_links}}").click(
 			function()
 			{	
-				var tmp=$(this).attr("data-modal-key");				
+				var tmp=$(this).attr("data-modal-key");	
+				tmp=tmp.replace(":","");
+				tmp=tmp.replace('"',"");
 				var $newOption = $("<option selected='selected'></option>").val(tmp).text(tmp);
 				$("{{select_2_id}}").append($newOption).trigger('change');  
 				$("#chkand_{{select_2_id|replace({"#":""})}}").prop('checked', true);

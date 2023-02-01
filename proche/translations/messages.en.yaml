@@ -8,6 +8,8 @@ bibliography_title_menu: Bibliography
 bibliography_title_page: Indicative bibliography
 disclaimer_title_menu: Disclaimer
 disclaimer_title_page: Disclaimer
+disclaimer_ok_button: OK, I have read and agree to these terms and conditions of usage
+disclaimer_info_button: Data disclaimer
 free_text_search: Free text search
 title: Title
 collection_number: Collection number
