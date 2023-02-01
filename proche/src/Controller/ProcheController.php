@@ -395,9 +395,12 @@ class ProcheController extends AbstractController
 		$pagination=Array();
 		
 		//$free_search=$this->escapeSolr($helper,$request->get("free_search",""));
+		$free_search=[];
 		if(array_key_exists("field",$dyna_field_free)&&array_key_exists("label", $dyna_field_free))
 		{
-			$free_search=$this->escapeSolrArray($helper,$request->get("free_search",[]));
+			$free_search=$this->escapeSolrArray($helper,$request->get("free_search",[]),false);
+			
+			//$free_search=array_merge($free_search, $free_search2);
 		}
 		
 		
