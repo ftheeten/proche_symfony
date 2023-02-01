@@ -83,7 +83,10 @@ class ProcheController extends AbstractController
 		$returned=[];
 		foreach($vals as $val)
 		{
-			$val=$this->remove_punctuation($val);
+			if($fuzzy)
+			{
+				$val=$this->remove_punctuation($val);
+			}
 			if($fuzzy)
 			{
 				
