@@ -55,7 +55,7 @@
 
 	 var search_all_docs=function(current_page, page_size)
 	{
-		search_logic_all_docs(current_page, page_size,false)
+		search_logic_all_docs(current_page, page_size,false, "")
 						
 	}
 	
@@ -111,40 +111,65 @@
 						{% endif %}
 						{% set i=i+1 %}
 					{% endfor %}
-					criterias["display_facets"]=collapsed_visible_state;
-					criterias["csv"]=false;
-					if(csv)
-					{
-						criterias["csv"]=true;
-					}
 					
-					/*if(Object.keys(global_sort).length>0)
-					{
-						criterias["order"]=Object.keys(global_sort)[0];
-						criterias["order_dir"]=global_sort[Object.keys(global_sort)[0]];
-					}*/
-					console.log(criterias);
-					$.post("{{ path('main_search')}}", criterias,
-						function(data)
+					var facet_array={};
+					$(".chk_facets").each(
+						function()
 						{
-							if(csv)
+							if($(this).is(':checked'))
 							{
-								
-								var encodedUri = encodeURI("data:text/csv;charset=utf-8," +data);
-								var link = document.createElement("a");
-								link.setAttribute("href", encodedUri);
-								link.setAttribute("download", "my_data.csv");
-								document.body.appendChild(link); // Required for FF
-
-								link.click(); // This will download the data file named "my_data.csv".
-							}
-							else
-							{
-								$("#div_results_searchall").html(data);
+								var field=$(this).attr("data-modal-key");	
+								var value=$(this).attr("data-modal-value");
+								console.log("facet");
+								console.log(field);
+								console.log(value);
+								if(!(field in facet_array))
+								{
+									facet_array[field]=Array();
+								}
+								value=value.replace(":","");
+								value=value.replace('"',"");
+								var tmp_array=facet_array[field];
+								tmp_array.push(value);
+								facet_array[field]=tmp_array;
 							}
 							
 						}
 					);
+					criterias["facet_filters"]=facet_array;
+					criterias["display_facets"]=collapsed_visible_state;
+					criterias["expand_facets"]=expand_facets;
+					criterias["csv"]=false;
+					if(csv)
+					{
+						console.log("handle csv");
+						criterias["csv"]=true;
+						//criterias["md5_csv"]=md5_csv;
+						$.post("{{ path('main_search')}}", criterias,
+						function(data)
+						{
+							var encodedUri = encodeURI("data:text/csv;charset=utf-8," +data);
+							var link = document.createElement("a");
+							link.setAttribute("href", encodedUri);
+							link.setAttribute("download", "my_data.csv");
+							document.body.appendChild(link); // Required for FF
+							link.click(); // This will download the data file named "my_data.csv".
+						});
+					}
+					else
+					{
+						$.post("{{ path('main_search')}}", criterias,
+						function(data)
+						{
+							console.log("done");
+							console.log("page");
+							$("#div_results_searchall").html(data);
+						});
+					}
+					
+					//console.log(criterias);
+					
+					
 		}
 		
 
@@ -158,7 +183,7 @@ $(document).ready(
 				
 				$(".select2_proche").val(null).trigger('change');
 				$(".select2_multiple_proche").val(null).trigger('change');
-				
+				$(".chk_facets").prop("checked", false);
 				$("#go_search_alldocs").click();
 				$(".chkand").prop("checked", false);
 			}

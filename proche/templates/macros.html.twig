@@ -29,7 +29,7 @@
 
 {% macro date_field(id_control, name_control, label_field)  %}
 <div class="col-sm-4"><div class="label">{{ label_field}} {{'from'|trans}} </div><input type="text" name="{{id_control}}_from" id="{{name_control}}_from" /></div>
-<div class="col-sm-4"><div class="label">{{ label_field}} {{'begin'|trans}}</div><input type="text" name="{{id_control}}_end" id="{{name_control}}_to"/></div>
+<div class="col-sm-4"><div class="label">{{ label_field}} {{'to'|trans}}</div><input type="text" name="{{id_control}}_end" id="{{name_control}}_to"/></div>
 <script type="text/javascript">
 	$(document).ready(
 					function()
@@ -54,7 +54,7 @@
 </script>
 {% endmacro %}
 
-{%  macro proche_facet(label, facet_array, class_links, select_2_id, display_facets) %}
+{%  macro proche_facet(label, facet_array, class_links, callback_field, display_facets) %}
 	
 	{% if (display_facets["#collapse_"~class_links]??"")=="block" %}
 		{% set show_div="show" %}
@@ -69,32 +69,46 @@
 			</div>
 			<div class="collapse proche_collapsible {{ show_div }}" id="collapse_{{class_links}}" aria-bs-expanded="false">
 				<ul class="list_facets">
-					{% for key, val in facet_array %}
-						<li>
-							<a class="facet_link {{class_links}}" data-modal-key="{{ key}}" >{{key}}</a>: {{ val }}
+					{% set i=0 %}
+					{% for key, sub_array in facet_array %}
+						<li>							
+							<input {{ sub_array["checked"]? "checked" : "" }}  class="chk_facets" type="checkbox" data-modal-key="{{ callback_field }}" data-modal-value="{{ key }}"  /> {{key}} : {{ sub_array["value"] }} 
 						</li>
+						{% set i=i+1 %}
 					{% endfor %}
 				</ul>
+				<a role="button" id="button_facet_next_{{class_links}}" class="button_facet_next">{{'10_next'|trans}}
+				</a>
+				{% if i >10 %}
+				<br/><a role="button" id="button_facet_less_{{class_links}}" class="button_facet_less">{{'10_less'|trans}}</a>
+				{% endif %}
 			</div>
+			
 		</div>
 	</div>
 	</div>
 
 	<script language="Javascript">
-		
-	
-		$(".{{class_links}}").click(
+		if(!("{{callback_field}}" in expand_facets))
+		{
+			expand_facets["{{callback_field}}"]={{i}};
+		}
+		$("#button_facet_next_{{class_links}}").click(
 			function()
-			{	
-				var tmp=$(this).attr("data-modal-key");	
-				tmp=tmp.replace(":","");
-				tmp=tmp.replace('"',"");
-				var $newOption = $("<option selected='selected'></option>").val(tmp).text(tmp);
-				$("{{select_2_id}}").append($newOption).trigger('change');  
-				$("#chkand_{{select_2_id|replace({"#":""})}}").prop('checked', true);
-				$("#go_search_alldocs").click();
+			{
+				increase_facet_size("{{callback_field}}", 10);
+				$("#refine_search").click();
 			}
-		)
+		);
+		
+		$("#button_facet_less_{{class_links}}").click(
+			function()
+			{
+				increase_facet_size("{{callback_field}}", -10);
+				$("#refine_search").click();
+			}
+		);
+		
 	
 	</script>
 {% endmacro %}

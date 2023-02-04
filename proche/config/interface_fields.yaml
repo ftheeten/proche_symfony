@@ -30,3 +30,5 @@ parameters:
     detail_fields:
         fields: ["material_and_technique","dimensions", "method_of_acquisition", "site_of_collection", "site_of_production" , "date_of_acquisition", "creation_date"]
         labels: ["material_and_technique", "dimensions", "method_of_acquisition", "site_of_collection", "site_of_production" , "date_of_acquisition", "creation_date"]
+
+    csv_fields: ["id", "sort_number", "object_number", "title", "material_and_technique", "dimensions", "site_of_collection", "site_of_production", "method_of_acquisition","year_of_acquisition", "date_of_acquisition" ]

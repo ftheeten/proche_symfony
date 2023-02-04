@@ -12,15 +12,18 @@ disclaimer_ok_button: OK, j'ai lu et j'accepte les termes et conditions d'utilis
 disclaimer_info_button: Avertissement sur la donnée
 free_text_search: Recherche texte libre
 title: Titre original 
-collection_number: Numéro d’inventaire 
+object_number: Numéro d’inventaire 
 culture: Culture
-acquisition_method: Méthode d'acquisition
+method_of_acquisition: Méthode d'acquisition
 date_of_acquisition: Date d’acquisition 
+year_of_acquisition: Année d’acquisition 
 description: Description
 dimensions: Dimensions
 objtitle_legacy: Titre historique
 location : Localisation géographique
-medium: Matériaux & techniques 
+material_and_technique: Matériaux & techniques 
+site_of_collection: Site de collection
+site_of_production: Site de production
 show_hide: Afficher/Masquer
 creation_date: Date de création de la donnée
 download_csv: Télécharger fichier csv
@@ -30,7 +33,8 @@ Page: Page
 proche_object_detail: Détail de l'objet
 RMCA: MRAC
 legal_notices: Mentions juridiques
-show_search : AFFINER LA RECHERCHE
+show_search : MODIFIER LA RECHERCHE
+refine_search : AFFINER LA RECHERCHE (FACETTES)
 button_search: RECHERCHER PARMI CES CRITÈRES
 button_reset: MONTRER TOUS LES OBJETS
 results_number: résultats
@@ -40,3 +44,7 @@ label_detail: Détail
 number_results_per_page: Nombre de résultats par page
 go_to_page: Aller à la page
 url_language_link: fr
+from: depuis
+to: jusqu'à
+10_next: 10 valeurs suivantes
+10_less: Fermer les 10 dernières valeurs

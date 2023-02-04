@@ -1,3 +1,4 @@
+{% set include_javascript=include_javascript??true %}
 <div class="row">
 
 	<div class="d-flex align-items-center justify-content-center" style="margin-top: 20px; margin-bottom: 6px; font-size: 16px">
@@ -69,9 +70,9 @@
 	</div>
 	
 </div>
-
+{% if include_javascript %}
 <script type="text/javascript">
-
+	
     Number.isInteger = Number.isInteger || function(value) {
 			return typeof value === "number" &&
 				   isFinite(value) &&
@@ -85,6 +86,7 @@
 			$('.pager').click(
 				function()
 				{
+					console.log("page=");
                     console.log($(this).val());
 					search($(this).val(),$("#page_size").val());
 					
@@ -111,4 +113,5 @@
            );                
 		}	
 	);
+{% endif %}
 </script>

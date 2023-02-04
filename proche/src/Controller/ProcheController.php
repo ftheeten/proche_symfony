@@ -17,6 +17,9 @@ use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+//use Symfony\Component\Messenger\MessageBusInterface;
+//use App\Message\ProcheCsv;
 
 class ProcheController extends AbstractController
 {
@@ -28,18 +31,24 @@ class ProcheController extends AbstractController
 
 	
 	private $localeSwitcher;
+	//private $bus;
+	private $facet_size=10;
 	//private $session;
 
-	private $list_included_fields_csv=["id","object_number", "sort_number",	"title"	, "dimensions",	"date_of_acquisition","acquisition_method",	"creation_date","culture","objtitle_legacy","_version_",	"score"];
+	//private $list_included_fields_csv=["id","object_number", "sort_number",	"title"	, "dimensions",	"date_of_acquisition","acquisition_method",	"creation_date","culture","objtitle_legacy","_version_",	"score"];
+	
+	private $http_client;
 
 	
 	
 	
 	/** @var \Solarium\Client */
-   public function __construct(\Solarium\Client $client,  LocaleSwitcher $localeSwitcher ) {
+   public function __construct(\Solarium\Client $client,  LocaleSwitcher $localeSwitcher, HttpClientInterface $http_client ) {
 	   
        $this->client = $client;
 	   $this->localeSwitcher=$localeSwitcher;
+	   //$this->bus=$bus;
+	   $this->http_client=$http_client;
 	  
     }
 	
@@ -120,6 +129,7 @@ class ProcheController extends AbstractController
 	#[Route('/', name:"home")]
 	public function home(Request $request): Response
     {
+		//print_r($this->getParameter('endpoints',"solr"));
 		$lang=$this->get_lang_cookie($request);
 		$this->localeSwitcher->setLocale($this->default_lang);
 		$this->set_lang_cookie($this->default_lang);
@@ -317,24 +327,71 @@ class ProcheController extends AbstractController
 		$facet_set->createFacetField($name_facet)->setField($name_field)->setMinCount(1)->setSort('desc')->setLimit($limit);
 	}
 	
-	protected function returnSolrFacet($facet_set, $name_facet, $limit=10)
+	protected function returnSolrFacet($facet_set, $name_facet, $name_callback, $list_facet_fields, $nb_results, $limit=10)
 	{
+		
 		$facets_title =$facet_set->getFacet($name_facet);
+		$results_tmp=[];
 		$results=[];
 		$i=0;
-		//print_r($facets_title);
-		foreach($facets_title as $vf => $count) 
+	
+		$test_check=false;
+		$to_check=[];
+		if(array_key_exists($name_callback,$list_facet_fields))
+		{
+			$test_check=true;
+			
+			$to_check=$list_facet_fields[$name_callback];
+			$to_check=array_map(
+				function($x)
+				{
+					return trim(trim($x,'"'),"'");
+				}
+				, $to_check);
+			
+			
+			
+		}
+	
+		foreach($facets_title as $vf => $count)
+		{
+			$results_tmp[$vf]=$count;
+		}		
+	    arsort($results_tmp);
+		$results_tmp=array_slice($results_tmp, 0, $limit, true);
+		
+		$inter_facets=array_intersect(array_keys($results_tmp) ,$to_check );
+		$force_check=[];
+		if(count($inter_facets)==0)
+		{
+			foreach($to_check as $val)
+			{
+				$results_tmp[$val]=$nb_results;
+				$force_check[]=$val;
+			}
+		}
+		$force_check=array_merge($force_check,$inter_facets );
+		foreach($results_tmp as $vf => $count) 
 		{
 			
 			if($count>0)
 			{
-				$results[$vf]=$count;
+				$results[$vf]=[];
+				$results[$vf]["value"]=$count;
+				if(in_array($vf,$force_check))
+				{
+					$results[$vf]["checked"]=true;
+				}
+				else
+				{
+					$results[$vf]["checked"]=false;
+				}
 			}
 			
 			$i++;	
 		}
-		arsort($results);
-		$results=array_slice($results, 0, $limit, true);
+		
+		
 		return $results;
 	}
 	
@@ -356,19 +413,32 @@ class ProcheController extends AbstractController
 		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','fr'));
 		$this->set_lang_cookie( $request->getSession()->get('current_locale','fr'));
 		$client=$this->client;
+		
+		
+
 		$query = $client->createSelect();
 		$helper = $query->getHelper();
 		
 		$nb_result=0;
+		$size_csv=100;
 		$rs=[];
 		$current_page=$request->get("current_page",1);
         $page_size=$request->get("page_size",$this->page_size);
+		$facet_filters=$request->get("facet_filters",[]);
+		
 		$display_facets=$request->get("display_facets",[]);
+		$expand_facets=$request->get("expand_facets",[]);
+		
 		
 		$sort_field=$this->getParameter('sort_field',"id");
 		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
 		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
 		$dyna_field_facets=$this->getParameter('facet_fields',[]);
+		
+		$list_included_fields_csv=$this->getParameter('csv_fields',[]);
+		
+		
+		
 		$tech_fields_facets=$dyna_field_facets["fields"];
 		$label_facets=$dyna_field_facets["labels"];
 		$call_back_facets=$dyna_field_facets["filter_callback"];
@@ -378,7 +448,7 @@ class ProcheController extends AbstractController
 		foreach($tech_fields_facets as $tech_field)
 		{
 			$facet_labels[$tech_field]=$label_facets[$i];
-			$facet_callbacks[$tech_field]="search_".$call_back_facets[$i];
+			$facet_callbacks[$tech_field]=$call_back_facets[$i];
 			$i++;
 		}
 		$title_field=$this->getParameter('title_field',"id");
@@ -437,14 +507,20 @@ class ProcheController extends AbstractController
 				}
 				$i++;
 			}
-		}		
+		}	
+
+		$list_facet_fields=[];
+		foreach($facet_filters as $field=>$vals)
+		{
+			$list_facet_fields[$field]=$this->escapeSolrArray($helper,$vals, false);
+		}
 			
 		
 		
 		$query_build="*:*";
 		if($csv)
 		{
-			$query->setStart(0)->setRows(1000000);
+			$query->setStart(0)->setRows(0);
 		}
 		else
 		{
@@ -471,6 +547,15 @@ class ProcheController extends AbstractController
 			}
 		}
 		
+		foreach($list_facet_fields as $field=>$filter)
+		{
+			
+			if(count($filter)>0)
+			{
+				$params_and[]="(".$field.": (".implode($this->test_and_or($field, $request),$filter)."))";
+			}
+		}
+		
 	
 		
 		if(count($params_and)>0)
@@ -478,11 +563,10 @@ class ProcheController extends AbstractController
 			$query_build=implode(" AND ", $params_and);
 			$query->setQuery($query_build);
 			
-			
 		}
 		else
 		{
-			
+				//get all
 		}
 		if(count($params_and)>0||$go)
 		{
@@ -500,81 +584,75 @@ class ProcheController extends AbstractController
 			}
 			$query->setQueryDefaultOperator("AND");
 			$rs_tmp= $client->select($query);	
-			
+			$nb_result=$rs_tmp->getNumFound();
 			if($csv)
 			{
+				/*
+				//$md5_csv=$request->get("md5_csv",md5($request->getClientIp().date("Y-m-d H:i:s")), $nb_result);
+				$md5_csv=md5($request->getClientIp().date("Y-m-d H:i:s"));
 				
+				$this->bus->dispatch(new ProcheCsv($this->getParameter('kernel.project_dir')."/public/csv/", $list_included_fields_csv, $md5_csv,$query_build,"id",$nb_result ));
+				$response_csv = new JsonResponse();
+				$response_csv->setData(["launched"=>true, "md5"=>$md5_csv]);
+				return $response_csv;*/
+				$base_url=$client->getEndPoint()->getCoreBaseUri();
+				$list_fields=implode(",",$list_included_fields_csv);
+				$query_url=$base_url."select?fl=".$list_fields."&q.op=AND&q=".$query_build."&rows=1000000&useParams=&wt=csv";
+				$response = $this->http_client->request(
+					'GET',
+						$query_url
+					);
+				$statusCode = $response->getStatusCode();
+				
+				// $statusCode = 200
+				$contentType = $response->getHeaders()['content-type'][0];
+				// $contentType = 'application/json'
+				$content = $response->getContent();
 				$response = new StreamedResponse();
 				$response->setCallback(
-					function () use ($rs_tmp) 
+					function () use ($content) 
 					{
-						$filler=array_fill_keys($this->list_included_fields_csv, '');
 						ob_start();
 						$handle = fopen('php://output', 'r+');
-						$i=0;
-						foreach ($rs_tmp as $document) 
-						{
-							
-							$doc=[];
-							foreach ($document as $field => $value) 
-							{
-								if( in_array($field, $this->list_included_fields_csv))
-								{
-									if(is_array($value))
-									{
-										$value=implode(",", $value);
-									}
-									$doc[$field]=$value;
-									
-								}
-							}
-							foreach($this->list_included_fields_csv as $field)
-							{
-								if(!array_key_exists($field,$doc ))
-								{
-									$doc[$field]="";
-								}
-							}
-							$order=array_keys($this->list_included_fields_csv);
-							uksort($doc, function($key1, $key2) use ($order) {
-								return (array_search($key1,$this->list_included_fields_csv) > array_search($key2,$this->list_included_fields_csv));
-							});
-							if($i==0)
-							{
-								fputcsv($handle,array_values(array_keys($doc)), "\t");
-							}
-							fputcsv($handle,array_values($doc), "\t");
-							$i++;
-						}
-							
-						
+						fwrite($handle, $content);						
 						fclose($handle);
 						ob_flush();
 					}
 				);
 				$response->headers->set('Content-Type', 'text/csv');       
-				$response->headers->set('Content-Disposition', 'attachment; filename="testing.csv"');
+				$response->headers->set('Content-Disposition', 'attachment; filename="dump.csv"');
 				
 				return $response;
+
+			
 			}
 			else
 			{
 								
 				$facets_twig=[];
-				
+				//$nb_result=$rs_tmp->getNumFound();
 				if(count($dyna_field_facets)>0)
 				{
 					$facet_fields=$dyna_field_facets["fields"];
 					$i=0;
 					foreach($facet_fields as $facet)
 					{
-						$facets_twig[$i]["facet"]=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_".$facet);
+						if(array_key_exists($facet_callbacks[$facet], $expand_facets))
+						{
+							$facet_size=$expand_facets[$facet_callbacks[$facet]];
+						}
+						else
+						{
+							$facet_size=$this->facet_size;
+						}
+						$facets_twig[$i]["facet"]=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_".$facet, $facet_callbacks[$facet], $list_facet_fields, $nb_result,$facet_size);
 						$facets_twig[$i]["label"]=$facet_labels[$facet];
 						$facets_twig[$i]["callback"]=$facet_callbacks[$facet];
+						$facets_twig[$i]["facet_size"]=$this->facet_size;
 						$i++;
 					}
 				}
-				$nb_result=$rs_tmp->getNumFound();
+				
 				$i=0;
 				
 				foreach ($rs_tmp as $document) 
@@ -592,6 +670,7 @@ class ProcheController extends AbstractController
 					'route' => 'search_main',
 					'pages_count' => ceil($nb_result / $page_size)
 				);
+				
 				if($nb_result>0)
 				{
 					return $this->render('results.html.twig',["results"=>$rs, "nb_result"=>$nb_result, "page_size"=>$page_size, "pagination"=>$pagination,
@@ -647,6 +726,8 @@ class ProcheController extends AbstractController
 		$response->setData(["disclaimer_read"=>$this->get_disclaimer_cookie($request)]);
 		return $response;
 	}
+	
+
 	
 	protected function get_disclaimer_cookie($request)
 	{
