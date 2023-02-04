@@ -566,7 +566,7 @@ ul ul ul li {
 		margin-top: 10px;
 	}
 	
-input#show_search {
+input.search_button {
 	background-color: #0023f9;
 	border: 1px solid #0023f9;
 	color: white;
@@ -1133,7 +1133,7 @@ a.ol-popup-closer:hover, a.ol-popup-closer:focus {
 	margin-right: auto;
 	}
 	
-	input#show_search {
+	input.search_button {
 		width: 400px;
 	}
 	

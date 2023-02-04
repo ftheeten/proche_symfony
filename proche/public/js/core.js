@@ -1,12 +1,24 @@
 var search;
 var search_csv;
 var collapsed_visible_state={}
+var expand_facets={};
 
 var test_collapsed=function(id_ctrl)
 {
 	var is_visible= $(id_ctrl).css("display");
 	console.log(is_visible);
 	collapsed_visible_state[id_ctrl]=is_visible;	
+}
+
+var increase_facet_size=function(field, value)
+{
+	if(!(field in expand_facets ))
+	{
+		expand_facets[field]=0;
+	}
+	expand_facets[field]=expand_facets[field]+value;
+	console.log(expand_facets);
+	
 }
 
 var select2_generic=function(url, key, val, minlen)
