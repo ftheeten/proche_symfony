@@ -587,14 +587,7 @@ class ProcheController extends AbstractController
 			$nb_result=$rs_tmp->getNumFound();
 			if($csv)
 			{
-				/*
-				//$md5_csv=$request->get("md5_csv",md5($request->getClientIp().date("Y-m-d H:i:s")), $nb_result);
-				$md5_csv=md5($request->getClientIp().date("Y-m-d H:i:s"));
 				
-				$this->bus->dispatch(new ProcheCsv($this->getParameter('kernel.project_dir')."/public/csv/", $list_included_fields_csv, $md5_csv,$query_build,"id",$nb_result ));
-				$response_csv = new JsonResponse();
-				$response_csv->setData(["launched"=>true, "md5"=>$md5_csv]);
-				return $response_csv;*/
 				$base_url=$client->getEndPoint()->getCoreBaseUri();
 				$list_fields=implode(",",$list_included_fields_csv);
 				$query_url=$base_url."select?fl=".$list_fields."&q.op=AND&q=".$query_build."&rows=1000000&useParams=&wt=csv";
@@ -665,6 +658,8 @@ class ProcheController extends AbstractController
 					$rs[]=$doc;
 					$i++;
 				}
+				$current_page=min($current_page, ceil($nb_result / $page_size));
+				$current_page=max($current_page,1);
 				$pagination = array(
 					'page' => $current_page,
 					'route' => 'search_main',
