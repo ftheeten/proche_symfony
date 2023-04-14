@@ -1,6 +1,8 @@
 ﻿{% import "macros.html.twig" as macros  %}
 {% set details=details??"false" %}
-
+<div id="spinner_search" class="spinner-border spinner bg-white" role="status" style="display:none">
+  <span class="sr-only"></span>
+</div>
 <!--begin SEARCH DIV-->
 <div class="container" id="main_search_div" name="main_search_div">
 
@@ -83,6 +85,7 @@
 	
 	var search_logic_all_docs=function(current_page, page_size, csv)
 		{
+					$("#spinner_search").show();
 					//init all twig collapsed
 					if(Object.keys(collapsed_visible_state).length==0)
 					{
@@ -148,6 +151,7 @@
 						$.post("{{ path('main_search')}}", criterias,
 						function(data)
 						{
+							$("#spinner_search").hide();
 							var encodedUri = encodeURI("data:text/csv;charset=utf-8," +data);
 							var link = document.createElement("a");
 							link.setAttribute("href", encodedUri);
@@ -163,6 +167,7 @@
 						{
 							console.log("done");
 							console.log("page");
+							$("#spinner_search").hide();
 							$("#div_results_searchall").html(data);
 						});
 					}

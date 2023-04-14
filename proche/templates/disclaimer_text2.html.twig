@@ -1,3 +1,4 @@
+{% set text_disclaimer=text_disclaimer??"" %}
 <div class="info_disclaimer_detail">
 
 	<div class="info_disclaimer_buttons" id="trigger_disc{{i}}" data-bs-toggle="collapse" data-bs-target="#div_disc{{i}}" aria-expanded="false" aria-controls="collapseExample">
@@ -7,7 +8,7 @@
 
 	<div class="collapse" id="div_disc{{i}}" style="margin-top: 10px">
 		<p>
-		PROCHE collates digital material from institutions, and some of this material is inherently colonial and contains words, terms and phrases that are inaccurate, derogatory and harmful towards African and African diasporic communities. Catalogue transcriptions, book titles, exhibition titles and museum titles may contain harmful terms. We recognise the potential for the material to cause physical and mental distress as well as evoke strong emotions. Owing to the scale of the collection’s data, a process to implement sensitive-content warnings in the displayed data is still incomplete. The material within the catalogue does not represent PROCHE’s views. PROCHE maintains a strong anti-colonial, anti-racist position and affirms its support for centring the humanity of historically marginalised and disenfranchised communities. Read more about the background of this statement here.
+		{{ text_disclaimer | raw }}
 		</p>
 	</div>
 	

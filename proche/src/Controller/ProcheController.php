@@ -495,6 +495,10 @@ class ProcheController extends AbstractController
 						{
 							$params_and[]=$field.":[".$date_begin." TO ".$date_end."]";
 						}
+						else
+						{
+							$params_and[]=$field.":[".$date_end." TO ".$date_begin."]";
+						}
 					}
 				}
 				elseif($dyna_fields_matching[$i]=="exact")

@@ -1,4 +1,5 @@
 {% extends "base.html.twig" %}
+{% import "macros.html.twig" as macros  %}
 
 {% block title %}
 	{{ parent() }} - All
@@ -13,61 +14,65 @@
 {% endblock %}
 {% block body %}
 {{ parent() }}
-
+<style>
+li{
+  margin: 10px 0;
+}
+</style>
 <div class="container">
 	<h1 class="title-page">
 		{{ 'bibliography_title_page'|trans }}
 	</h1>
 	<p>Nous souhaitons faire référence à un corpus de littérature critique sur le développement historique des collections coloniales dans les anciens musées ethnographiques. Ce corpus de littérature met en lumière les lacunes et les insuffisances des inventaires, ainsi que les outils permettant d'utiliser les inventaires comme documents temporels dans le cadre de recherches plus poussées sur la provenance historique de collections et/ou d'objets particuliers.</p>
 <ul>
-<li-	Chambre des représentants de Belgique, Rapport d’experts, « Commission spécial chargée d’examiner l’État indépendant du Congo et le passé colonial de la Belgique au Congo, au Rwanda et au Burundi, ses conséquences et les suites qu’il convient d’y réserver », 26 octobre 2021, doc 55 1462/002.</li>
+<li>	Chambre des représentants de Belgique, Rapport d’experts, <i>Commission spécial chargée d’examiner l’État indépendant du Congo et le passé colonial de la Belgique au Congo, au Rwanda et au Burundi, ses conséquences et les suites qu’il convient d’y réserver</i>, 26 octobre 2021, doc 55 1462/002. <br/>{{ macros.url_link("https://www.dekamer.be/FLWB/PDF/55/1462/55K1462002.pdf") }}</li>
 
-<li>-	Rapport d’experts, « Principes éthiques pour la gestion et la restitution des collections coloniales en Belgique, Juin 2021. [En ligne] https://restitutionbelgium.be/fr/rapport.</li>
+<li>	Rapport d’experts, <i>Principes éthiques pour la gestion et la restitution des collections coloniales en Belgique</i>, Juin 2021. [En ligne]. <br/>{{ macros.url_link("https://restitutionbelgium.be/fr/rapport") }} </li>
 
-<li>-	COUTTENIER, M., « Sociétés scientifiques, musées, universités », Nouv. Archéologie, n°128, 2012, p.23–27.</li>
+<li><strong>COUTTENIER, M.</strong>, <i>Sociétés scientifiques, musées, universités</i> , Nouv. Archéologie, n°128, 2012, p.23–27.</li>
 
-<li>-	COUTTENIER, M., "No Documents, No History. The Moral, Political and Historical Sciences Section of the Museum of the Belgian Congo, Tervuren (1910–1948)", Museum History Journal, 3 (2), 2010, p.123-148.</li>
+<li><strong>COUTTENIER, M.</strong>, <i>No Documents, No History. The Moral, Political and Historical Sciences Section of the Museum of the Belgian Congo, Tervuren (1910–1948)</i>, Museum History Journal, 3 (2), 2010, p.123-148.</li>
 
-<li>-	COUTTENIER, M., Congo tentoongesteld : een geschiedenis van de Belgische antropologie en het museum van Tervuren (1882-1925), Leuven, Acco, 2005.</li>
+<li><strong>COUTTENIER, M.</strong>, <i>Congo tentoongesteld : een geschiedenis van de Belgische antropologie en het museum van Tervuren (1882-1925)</i>, Leuven, Acco, 2005.</li>
 
-<li>-	FÖRSTER, L., “Plea for a More Systematic, Comparative, International and Long-Term Approach to Restitution, Provenance Research and the Historiography of Collections”, Museumskunde, n°81 (1/16), 2016, p.49–54.</li>
+<li><strong>FÖRSTER, L.</strong>, <i>Plea for a More Systematic, Comparative, International and Long-Term Approach to Restitution, Provenance Research and the Historiography of Collections</i>, Museumskunde, n°81 (1/16), 2016, p.49–54.</li>
 
-<li>-	GATHARA, P., “The path to colonial reckoning is through archives, not museums", 2019. [En ligne]. https://www.aljazeera.com/opinions/2019/3/14/the-path-to-colonial-reckoning-is-through-archives-not-museums. (Consulté le 11.25.22).</li>
+<li><strong>GATHARA, P.</strong>, <i>The path to colonial reckoning is through archives, not museums</i>, 2019. [En ligne].<br/>{{ macros.url_link("https://www.aljazeera.com/opinions/2019/3/14/the-path-to-colonial-reckoning-is-through-archives-not-museums") }} (Consulté le 25 novembre 2022).</li>
 
-<li>-	HICKS, D., The Brutish Museums : The Benin Bronzes, Colonial Violence and Cultural Restitution, Pluto Press, London, 2020.</li>
+<li><strong>HICKS, D.</strong>, <i>The Brutish Museums : The Benin Bronzes, Colonial Violence and Cultural Restitution,</i> Pluto Press, London, 2020.</li>
 
-<li>-	HILDEN, I., Absent Presences in the Colonial Archive : Dealing with the Berlin Sound Archive’s Acoustic Legacies, Leuven University Press, Leuven, 2022.</li>
+<li><strong>HILDEN, I.</strong>, <i>Absent Presences in the Colonial Archive : Dealing with the Berlin Sound Archive’s Acoustic Legacies</i>, Leuven University Press, Leuven, 2022.</li>
 
-<li>-	KOPYTOFF, I., “The cultural biography of things: commoditization as process”, in : APPADURAI, A. (Ed.), The Social Life of Things: Commodities in Cultural Perspective. Cambridge University Press, Cambridge, 1986, pp. 64–92. [En ligne] https://doi.org/10.1017/CBO9780511819582.004. </li>
+<li><strong>KOPYTOFF, I., HICKS, D. </strong> <i>The cultural biography of things: commoditization as process</i>, in : APPADURAI, A. (Ed.), The Social Life of Things: Commodities in Cultural Perspective. Cambridge University Press, Cambridge, 1986, pp. 64–92. [En ligne]. <br/>{{ macros.url_link("https://doi.org/10.1017/CBO9780511819582.004") }} </li>
 
-<li>-	MILOSCH, J., PEARCE, N., Collecting and Provenance : A Multidisciplinary Approach. Lanham, Rowman & Littlefield, 2019.</li>
+<li><strong>MILOSCH, J., PEARCE, N.</strong>, <i> Collecting and Provenance : A Multidisciplinary Approach.</i> Lanham, Rowman & Littlefield, 2019.</li>
 
-<li>-	MUMBEMBELE, P., Recherche de provenance : quels enjeux pour les collections ethnographiques, 2021. [En ligne] https://www.youtube.com/watch?v=3SQu0_RK-MI.</li>
+<li><strong>MUMBEMBELE, P.</strong>, <i> Recherche de provenance : quels enjeux pour les collections ethnographiques ? </i> 2021. [En ligne] <br/>{{ macros.url_link("https://www.youtube.com/watch?v=3SQu0_RK-MI") }} </li>
 
-<li>-	PROCTER, A., The Whole Picture : The Colonial Story of the Art in our Museums & Why We need to Talk about It, Cassell, London, 2020.</li>
+<li><strong>PROCTER, A.</strong>, <i>The Whole Picture : The Colonial Story of the Art in our Museums & Why We need to Talk about It</i>, Cassell, London, 2020.</li>
 
-<li>-	SCHILDKROUT, E., CURTIS, A. K., The Scramble for Art in Central Africa, Cambridge University Press, London, 2008.</li>
+<li><strong>SCHILDKROUT, E., CURTIS, A. K.</strong>, <i>The Scramble for Art in Central Africa</i>, Cambridge University Press, London, 2008.</li>
 
-<li>-	STOLER, A.L., Along the Archival Grain : Epistemic Anxieties and Colonial Common Sense, Princeton University Press, Princeton, NJ, 2008.</li>
+<li><strong>STOLER, A.L.</strong>, <i>Along the Archival Grain : Epistemic Anxieties and Colonial Common Sense</i>, Princeton University Press, Princeton, NJ, 2008.</li>
 
-<li>-	STOLER, A.L., “Colonial archives and the arts of governance”, Archival Science, 2, 2002, p. 87–109. [En ligne]. https://doi.org/10.1007/BF02435632.</li>
+<li><strong>STOLER, A.L.</strong>, <i>Colonial archives and the arts of governance</i>, Archival Science, 2, 2002, p. 87–109. [En ligne]. <br/>{{ macros.url_link("https://doi.org/10.1007/BF02435632") }}</li>
 
-<li>-	VAN BEURDEN, S, Congo en vitrine. Art africain, muséologie et politique. Les musées de Kinshasa et de Tervuren, Éditions Musée royal de l’Afrique centrale, Tervuren, 2021, 321p. (Collection « Studies in Social Sciences and Humanities », n° 180).</li>
+<li><strong>VAN BEURDEN, S</strong>, Congo en vitrine. Art africain, muséologie et politique. Les musées de Kinshasa et de Tervuren, Éditions Musée royal de l’Afrique centrale, Tervuren, 2021, 321p. (Collection Studies in Social Sciences and Humanities, n° 180).</li>
 
-<li>-	VON OSWALD, M., “Troubling Colonial Epistemologies in Berlin’s Ethnologisches Museum”, in : VON OSWALD, M., TINIUS, J. (Eds.), Across Anthropology, Troubling Colonial Legacies, Museums, and the Curatorial, Leuven University Press, Leuven, 2020, pp. 106–129. [En ligne]. https://doi.org/10.2307/j.ctv125jqxp.11.</li>
+<li><strong>VON OSWALD, M.</strong>, <i>Troubling Colonial Epistemologies in Berlin’s Ethnologisches Museum</i>, in : <strong>VON OSWALD, M., TINIUS, J. (Eds.)</strong>, <i>Across Anthropology, Troubling Colonial Legacies, Museums, and the Curatorial</i>, Leuven University Press, Leuven, 2020, pp. 106–129. [En ligne]. <br/>{{ macros.url_link("https://doi.org/10.2307/j.ctv125jqxp.11") }} </li>
 
-<li>-	WASTIAU, B., “The Legacy of Collecting: Colonial Collecting in the Belgian Congo and the Duty of Unveiling Provenance”, in : HAMILTON, P., GARDNER, J.B. (Eds.), The Oxford Handbook of Public History, Oxford University Press, Oxford, 2017. 
-[En ligne ]. https://doi.org/10.1093/oxfordhb/9780199766024.013.25. </li>
+<li><strong>WASTIAU, B.</strong>, <i>The Legacy of Collecting: Colonial Collecting in the Belgian Congo and the Duty of Unveiling Provenance</i>, in : <strong>HAMILTON, P., GARDNER, J.B. (Eds.)</strong>, <i>The Oxford Handbook of Public History</i>, Oxford University Press, Oxford, 2017. 
+[En ligne ]. <br/>{{ macros.url_link("https://doi.org/10.1093/oxfordhb/9780199766024.013.25") }} . </li>
 
-<li>-	WASTIAU, B., ExitCongoMuseum. Un essai sur la vie sociale des chefs-d’œuvre du musée de Tervuren, Musée royal de l’Afrique centrale, Tervuren, 2000.</li>
+<li><strong>WASTIAU, B.</strong>, <i>ExitCongoMuseum. Un essai sur la vie sociale des chefs-d’œuvre du musée de Tervuren</i>, Musée royal de l’Afrique centrale, Tervuren, 2000.</li>
 
-<li>-	WASTIAU, B., Congo-Tervuren. Aller-retour, Musée royal d’Afrique centrale, Tervuren, 2000.
+<li><strong>WASTIAU, B.</strong>, <i>Congo-Tervuren. Aller-retour, Musée royal d’Afrique centrale</i>, Tervuren, 2000.
 
-<li>-	ZIAN, Y., “ « Pensée décoloniale » : le rapport Sarr-Savoy et la décolonisation du Musée de Tervuren”, Revue belge d’analyse et de débat, 08.12.2020.</li>
+<li><strong>ZIAN, Y.</strong>, <i> Pensée décoloniale : le rapport Sarr-Savoy et la décolonisation du Musée de Tervuren</i>, Revue belge d’analyse et de débat, 8 décembre 2020.</li>
 <ul>
 
 </div>
 
 <!--DISCLAIMER-->
-{% include 'disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}
+{% include 'disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??false } %}
 {% endblock %}
