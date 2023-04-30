@@ -232,15 +232,12 @@ class ProcheController extends AbstractController
 		return $this->render('noresults.html.twig');
 	}
 	
-	
-	#[Route('/terms', name: 'terms')]
-	public function terms(Request $request): JsonResponse
-    {
+	protected function logic_autocomplete($field, $value)
+	{
 		$returned=[];
 		$client=$this->client;
 		$str="";
-		   $field=$request->get("f","");
-		   $value=$request->get("q","");
+		  
 		  
 		   //$field=urldecode( $field);
 		   $fs=explode("|", $field);
@@ -272,10 +269,11 @@ class ProcheController extends AbstractController
 						{
 							$resp2[]=["id"=>$tmp_v, "text"=>$tmp_v];
 						}
-						array_unshift($resp2, ["id"=>$value, "text"=>$value]);
-						$returned=[
-									"results"=>$resp2
-								];
+						//array_unshift($resp2, ["id"=>$value, "text"=>$value]);
+						$returned=$resp2;
+						//$returned=[
+						//			"results"=>$resp2
+						//		];
 					
 			   }
 		   }
@@ -313,12 +311,88 @@ class ProcheController extends AbstractController
 			  {
 				    $resp2[]=["id"=>$tmp_v, "text"=>$tmp_v];
 			  }
-			  array_unshift($resp, ["id"=>$value, "text"=>$value]);
-			$returned=[
+			 
+			/*$returned=[
 						"results"=>$resp2
-					];
+					];*/
+			   $returned=$resp2;
 			 
 		   }
+		   return $returned;
+	}
+	
+	#[Route('/terms', name: 'terms')]
+	public function terms(Request $request): JsonResponse
+    {
+		$field=$request->get("f","");
+		$value=$request->get("q","");
+		
+		 $response=$this->logic_autocomplete($field, $value);
+		 $mode_append_term=true;
+		  if(count($response)==0)
+		 {
+			 
+			 $settings_autocomplete=$this->getParameter('autocomplete_settings',[]);
+			
+			 $list_excluded_terms=$settings_autocomplete["excluded_terms"];
+			 array_walk($list_excluded_terms, function(&$value)
+			{
+			  $value = strtolower($value);
+			});
+			 $list=preg_split("/\s+/", $value);
+			 
+			 if(count($list)>0)
+			 {
+				 $mode_append_term=false;
+				 $tmp_array=[];
+				 foreach($list as $sub_term)
+				 {
+					 
+					 if(!in_array(strtolower($sub_term),  $list_excluded_terms))
+					 {
+						
+						 $tmp_response=$this->logic_autocomplete($field, $sub_term);
+						
+						 if(count($tmp_response)>0)
+						 {
+							 if(!array_key_exists(count($tmp_response),$tmp_array))
+							 {
+								 $tmp_array[count($tmp_response)]=Array();
+							 }
+							 $tmp_array[count($tmp_response)][]=$tmp_response;
+						 }
+						 
+					 }
+					 
+				 }
+				 if(count( $tmp_array)>0)
+				 {
+					 ksort( $tmp_array);
+					
+					 $response=Array();
+					 foreach ($tmp_array as $arrval) 
+					 {
+						 foreach($arrval as $arrval2)
+						 {
+							foreach($arrval2 as $arrval3)
+							{
+								$response[] = $arrval3;
+							}
+						 }
+					}
+				 }
+			 }
+
+		 }
+		 
+		 if($mode_append_term)
+		 {
+		   array_unshift($response, ["id"=>$value, "text"=>$value]);
+		 }
+		 $returned=[
+								"results"=>$response
+							];
+		
 		 return $this->json($returned); 	
 	}
 	
@@ -434,6 +508,7 @@ class ProcheController extends AbstractController
 		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
 		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
 		$dyna_field_facets=$this->getParameter('facet_fields',[]);
+		
 		
 		$list_included_fields_csv=$this->getParameter('csv_fields',[]);
 		

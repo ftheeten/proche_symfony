@@ -1,0 +1,3 @@
+parameters:
+    autocomplete_settings:
+        excluded_terms: ["le","la","les", "un","une","l'","le","de", "the","vers","du","à","d'","des","van"]
