@@ -18,7 +18,7 @@ h.add_credentials('', '')
 
 
 global_terms={}
-solr_url='https://proche.africamuseum.be/solradmin/solr/proche-prod/'
+solr_url='https://proche.africamuseum.be/solradmin/solr/xxxx'
 main_filter=" PackageID =xxx or  PackageID =xxx or PackageID =xxx  or  PackageID =xxx "
  
  
