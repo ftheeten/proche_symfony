@@ -1,9 +1,9 @@
 {% macro select2_multiple( id_control, name_control, ajax_url, field_select2, class_control, style_control, and_mode) %}
 {% set and_mode=and_mode??"FALSE" %}
-
 <select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }} select2_proche" style="{{ style_control }}" multiple="multiple"></select> 
 {% if and_mode=="TRUE" %}
-<input type="checkbox" id="chkand_{{ id_control }}" name="chkand_{{ name_control }}" class="chkand">  <label>{{'and'|trans}}</label>
+<div><input type="checkbox" id="chkand_{{ id_control }}" name="chkand_{{ name_control }}" class="chkand">
+<label>{{'and'|trans}}</label></div>
 {% endif %}
 		<script type="text/javascript">
 				$(document).ready(
@@ -54,20 +54,28 @@
 </script>
 {% endmacro %}
 
-{%  macro proche_facet(label, facet_array, class_links, callback_field, display_facets) %}
+{%  macro proche_facet(label, facet_array, class_links, callback_field, display_facets, facet_count, and_mode, and_mode_checked) %}
 	
+	{% set and_mode=and_mode??"FALSE" %}
+	{% set and_mode_checked=and_mode_checked??"FALSE" %}
 	{% if (display_facets["#collapse_"~class_links]??"")=="block" %}
 		{% set show_div="show" %}
 	{% else %}
 		{% set show_div="" %}
 	{% endif %}
-	<div class="results_list_facets" id="module"><b>{{ label }}</b><br/>
+	<div class="results_list_facets" id="module"><b>{{ label }}</b>
 	<div class="row">
+		<div class="col-sm-12">
+			<i>{{facet_count}} {{'entries'|trans}}</i>
+		</div>
 		<div class="col-sm-12">
 			<div style="margin-bottom: 12px">
 				<a role="button" id="button_collapse_{{class_links}}" class="buttoncollapsed " data-bs-toggle="collapse" href="#collapse_{{class_links}}" aria-bs-expanded="false" aria-bs-controls="collapse_{{class_links}}">{{'show_hide'|trans}}</a>
 			</div>
 			<div class="collapse proche_collapsible {{ show_div }}" id="collapse_{{class_links}}" aria-bs-expanded="false">
+			{% if and_mode=="TRUE"%}
+			<div style="margin-bottom:15px;">  <label><i>{{'and'|trans}}</i><input {{ and_mode_checked=="TRUE"? "checked" : "" }} type="checkbox" id="chk_facet_and_{{ callback_field }}" name="chk_facet_and_{{ callback_field }}" class="chkand chkand_facet" data-modal-key="{{ callback_field }}" style="margin-left:15px" /></label></div>
+			{% endif %}
 				<ul class="list_facets">
 					{% set i=0 %}
 					{% for key, sub_array in facet_array %}
@@ -77,10 +85,26 @@
 						{% set i=i+1 %}
 					{% endfor %}
 				</ul>
-				<a role="button" id="button_facet_next_{{class_links}}" class="button_facet_next">{{'10_next'|trans}}
-				</a>
+				
+				{% if i < facet_count %}
+				<div class="col-sm-12">
+					{% if i+10 < facet_count %}
+						<a role="button" id="button_facet_next_{{class_links}}" class="button_facet_next">{{'10_next'|trans}}</a>
+					{% else %}
+						<a role="button" id="button_facet_next_{{class_links}}" class="button_facet_next">{{ facet_count - i }} {{'next'|trans}}</a>
+					{% endif %}
+				</div>
+				{% endif %}
 				{% if i >10 %}
-				<br/><a role="button" id="button_facet_less_{{class_links}}" class="button_facet_less">{{'10_less'|trans}}</a>
+					<div class="col-sm-12">
+						{% if i%10 ==0 %}
+							{% set diff= 10 %}
+						{% else %}
+							{% set diff= i - ( i//10 *10) %}
+						{% endif %}
+						<a role="button" id="button_facet_less_{{class_links}}" class="button_facet_less">{{'close'|trans}} {{diff}} {{'less'|trans}}</a>
+					
+					</div>
 				{% endif %}
 			</div>
 			

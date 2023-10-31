@@ -1,20 +1,14 @@
 {% import "macros.html.twig" as macros  %}
 
-<div style="text-align: center; margin-bottom: 6px; font-size: 20px; font-weight: 800">
+<div style="text-align: center; margin-bottom: 6px; font-size: 20px; font-weight: 700">
 	{{nb_result}}  {{'results_number'|trans}}
 </div>
 
 <div style="text-align: center">
 	<div>
 		<div id="div_back_search" name="div_back_search" class="div_back_search" >
-			<input style="display:inline-block" class="search_button"  type="button" name="show_search" id="show_search" value="+ {{'show_search'|trans}}"></input>
-			
+			<input style="display:inline-block" class="search_button"  type="button" name="show_search" id="show_search" value="{{'show_search'|trans}}"></input>
 		</div>
-		<div  class="div_back_search" >
-			<input style="display:inline-block" class="search_button" type="button" id="refine_search" name="refine_search" value="- {{'refine_search'|trans}}">
-		</div>
-		
-		
 		<input style="display:inline-block" type="button" id="get_csv" name="get_csv" value="{{'download_csv'|trans}}">
 	</div>
 </div>
@@ -25,41 +19,71 @@
 
 <div class="row" >
 
-	<div class="col-sm-4">
-		
-		{{'filter_results_facets'|trans}} :
+	<div class="col-sm-4 facet_block" >
 	
-		{% set i=0 %}
+		
+		
+		<div>
+			{{'filter_results_facets'|trans}} :
+		</div>
+		
+		<div class="list-facets-filters">
+		
+			<div class="accordion_facets">
+				<div class="accordion__single">
+					<input class="accordion__single__hidden" type="checkbox" id="question-one">
+					<label class="accordion__single__question" for="question-one">
+						<span style="border-bottom: 1px solid #0023f9">{{'mobile_open_filter_results_facets'|trans}}</span>
+					</label>
+					<div class="accordion__single__answer">
+						<div  class="div_back_search" style="margin-top: 5px">
+							<input style="display:inline-block; width: 100%; margin-top: 0; padding: 8px 5px" class="search_button" type="button" id="refine_search" name="refine_search" value="{{'refine_search'|trans}}">
+						</div>
+						<div style="margin: 8px 0">
+						
 
-		{% for facet in dyna_field_facets %}
-			
-			{{ macros.proche_facet(facet["label"]|trans, facet["facet"], "facet_"~facet["label"] ,facet["callback"], display_facets) }}
-			{% set i=i+1 %}
-		{% endfor %}
-		
-		<br />
-		
+						{% for facet in dyna_field_facets %}
+							{% if facet["facet_count"]>0 %}
+							{% set and_mode="FALSE" %}
+							{% if facet["label"]=="const_maker_creator" or facet["label"]=="const_general" %}
+								{% set and_mode="TRUE" %}
+							{% endif %}
+							
+							{{ macros.proche_facet(facet["label"]|trans, facet["facet"], "facet_"~facet["label"] ,facet["callback"], display_facets,facet["facet_count"], and_mode, facet["boolean_and_checked"] ) }}
+							{% endif %}
+						{% endfor %}
+						</div>
+					</div>
+				</div>
+			</div>
+				
+		</div>
+					
 	</div>
 	
 	<div class="col-sm-8">
 	
-		{{'results_list'|trans}} :
+		<div style="margin-bottom: 4px; font-size: 20px; font-weight: 700">{{'results_list'|trans}} ( {{nb_result}}  {{'results_number'|trans}} )</div>
 
 		{% set base_result= (page-1)* page_size %}
 		
 		{% for key, doc in results %}
 
 			<div class="results_list">
-				<div class="row" >
-				<div class="col-sm-3" style="margin-bottom: 4px"><h3 class="results_list_title">{{doc[title_field]|join(",")}}</h3></div>
-				</div>
-				<div class="row" >
+			
+				<div class="row" style="padding-left: 0; width: 100%">
 				
-					<div class="row" >
+					<div class="col-sm-3" style="margin-bottom: 4px; padding-left: 0"><h3 class="results_list_title">{{doc[title_field]|join(",")}}</h3></div>
 					
-						<div class="col-sm-2" style="margin-bottom: 4px">
+				</div>
+				
+				<div class="row" style="padding-left: 0">
+				
+					<div class="row" style="padding-left: 0">
+					
+						<div class="col-sm-12" style="margin-bottom: 12px; padding-left: 0; font-weight: 700; font-size: 16px">
 						
-							<a href="{{ path('detail')}}?q={{doc[link_field]}}" target="_blank">{{'label_detail'|trans}}</a>
+							<a href="{{ path('detail')}}?q={{doc[link_field]}}" target="_blank"> {{'label_detail'|trans}}</a>
 							
 						</div>
 						
@@ -68,22 +92,24 @@
 					{% set i=0 %}
 					{% for detail_field in result_fields.fields %}
 					
-					<div class="row">
+					<div class="row" style="padding-left: 0; margin-bottom: 8px">
 					
-						<div class="col-sm-3">
+						<div class="col-sm-3" style="padding-left: 0">
 						
 							{{ (result_fields.labels[i]??"")|trans }}:
 							
 						</div>
 						
-						<div class="col-sm-9">
-						{% if   doc[result_fields.fields[i]] is defined %}
-							{% if doc[result_fields.fields[i]] is iterable %}
-								{{(doc[result_fields.fields[i]]|join(","))}}
-							{% else %}
-								{{doc[result_fields.fields[i]]??""}}
-							{% endif %}
-						{% endif %}	
+						<div class="col-sm-9" style="padding-left: 0">
+						
+							{% if   doc[result_fields.fields[i]] is defined %}
+								{% if doc[result_fields.fields[i]] is iterable %}
+									{{(doc[result_fields.fields[i]]|join(","))}}
+								{% else %}
+									{{doc[result_fields.fields[i]]??""}}
+								{% endif %}
+							{% endif %}	
+						
 						</div>
 						
 					</div>
@@ -99,11 +125,11 @@
 		{% endfor %}
 	
 		<script language="Javascript">
-		
+		var first_load=false;
 		$("#refine_search").click(
 			function()
 			{
-				
+				//$("#main_search_div").hide();
 				search(1, $("#page_size").val());
 			}
 		);
@@ -133,7 +159,65 @@
 				$("#show_search").click(function()
 				{
 					$("#main_search_div").show();
-					$(".div_back_search").hide();
+					//$(".div_back_search").hide();
+				}
+			);
+			
+			$("#float_button").on('mouseover',
+				function()
+				{
+					$("#float_button").text("{{'filter'|trans}}");
+				}
+			);
+			
+			$("#float_button").on('mouseleave',
+				function()
+				{
+					$("#float_button").html("...");
+				}
+			);
+			
+			$("#float_button").click(
+				function()
+				{
+					search(1, $("#page_size").val());
+				}
+			);
+			
+			$("#question-one").click(
+				function()
+				{
+					console.log("click");
+					mobile_expand_facet=!mobile_expand_facet;
+					console.log(mobile_expand_facet);
+					if(first_load)
+					{
+						if(mobile_expand_facet)
+						{
+							$(".accordion__single__answer").css("display", "block");
+						}
+						else
+						{
+							$(".accordion__single__answer").css("display", "none");
+						}
+					}
+				}
+			);
+			
+			$(document).ready(
+				function()
+				{
+					console.log("new_page");
+					console.log(mobile_expand_facet);
+					if(mobile_expand_facet)
+					{
+					
+						$(".accordion__single__answer").css("display", "block");
+						$("#question-one").prop("checked", true);
+						//$(".accordion__single__hidden").css("display", "block");
+						//$(".accordion__single__question").css("display", "none");
+						first_load=true;
+					}
 				}
 			);
 					

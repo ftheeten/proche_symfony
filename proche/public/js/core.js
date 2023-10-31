@@ -2,6 +2,7 @@ var search;
 var search_csv;
 var collapsed_visible_state={}
 var expand_facets={};
+var mobile_expand_facet=false;
 
 var test_collapsed=function(id_ctrl)
 {

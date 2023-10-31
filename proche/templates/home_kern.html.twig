@@ -20,12 +20,18 @@
 			{% endif %}
 				{% set solr_field=dyna_field_details.fields[i] %}
 				{% set solr_autocomplete_field=dyna_field_details.autocomplete_fields[i] %}
+				{% set and_mode="FALSE" %}
+					{% if solr_field=="const_general_str" or solr_field=="const_general" or solr_field=="const_trans_general" %}
+						{% set and_mode="TRUE" %}
+				{% endif %}
 					{% if dyna_field_details.types[i] =="hidden_string" %}
-						<div style="display:none">{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", "TRUE") }}</div>
+						
+						
+						<div style="display:none">{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode) }}</div>
 					{% elseif  dyna_field_details.types[i] =="date" %}
 						{{ macros.date_field("search_" ~solr_field, "search_" ~solr_field, dyna_field_details.labels[i]|trans ) }}
 					{% else %}
-						<div class="col-sm-4"><div class="label">{{ dyna_field_details.labels[i]|trans}}</div>{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", "TRUE") }}</div>
+						<div class="col-sm-4"><div class="label">{{ dyna_field_details.labels[i]|trans}}</div>{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode) }}</div>
 					{% endif %}
 				{% if (i%2 !=0) or (i==(dyna_field_details.fields|length)-1) %}
 					<!-- Attention do not remove even if it makes the number of closing div not matching openin ones !!!-->
@@ -123,22 +129,39 @@
 							{
 								var field=$(this).attr("data-modal-key");	
 								var value=$(this).attr("data-modal-value");
+								
 								console.log("facet");
 								console.log(field);
 								console.log(value);
+								var chk_and_or=$(".chkand_facet[data-modal-key='" + field + "']");
+								console.log(".chkand_facet[data-modal-key='" + field + "']");
+								console.log(chk_and_or);
+								console.log(chk_and_or.is(':checked') );
+								var and_mode=chk_and_or.is(':checked');
 								if(!(field in facet_array))
 								{
-									facet_array[field]=Array();
+									//facet_array[field]=Array();
+									facet_array[field]={};
+									facet_array[field]["values"]=Array()
+									
 								}
 								value=value.replace(":","");
 								value=value.replace('"',"");
-								var tmp_array=facet_array[field];
+								var tmp_array=facet_array[field]["values"];								
 								tmp_array.push(value);
-								facet_array[field]=tmp_array;
+								facet_array[field]["values"]=tmp_array;
+								criterias["chk_facet_and_search_"+field]="FALSE";
+								if(and_mode)
+								{
+									criterias["chk_facet_and_search_"+field]="TRUE";
+								}
+								
 							}
 							
 						}
 					);
+					console.log("FACETS=");
+					console.log(facet_array);
 					criterias["facet_filters"]=facet_array;
 					criterias["display_facets"]=collapsed_visible_state;
 					criterias["expand_facets"]=expand_facets;

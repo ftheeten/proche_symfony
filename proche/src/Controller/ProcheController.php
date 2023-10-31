@@ -61,10 +61,12 @@ class ProcheController extends AbstractController
 		$val=str_replace(";"," ",$val);
 		$val=str_replace("!"," ",$val);
 		$val=str_replace("?"," ",$val);
-		$val=str_replace("."," ",$val);
+		//$val=str_replace("."," ",$val);
+		$val=str_replace(". "," ",$val);
+		$val=str_replace(" ."," ",$val);
 		$val=str_replace("("," ",$val);
 		$val=str_replace(")"," ",$val);
-		$val=str_replace("'"," ",$val);
+		//$val=str_replace("'"," ",$val);
 		$val=str_replace('"'," ",$val);
 		$val = preg_replace('/\s+/', ' ', $val);
 		return $val;
@@ -77,7 +79,7 @@ class ProcheController extends AbstractController
 		{
 			$tmp=trim($helper->escapePhrase($input),'"');
 			$tmp=$this->remove_punctuation($tmp);
-			return "*".$tmp."*";
+			return '*"'.$tmp.'*"';
 		}
 		else
 		{
@@ -99,7 +101,7 @@ class ProcheController extends AbstractController
 			if($fuzzy)
 			{
 				
-				$returned[]="*".trim($helper->escapePhrase( $val),'"')."*";
+				$returned[]='"*'.trim(trim($helper->escapePhrase( $val),'"')).'*"';
 				
 			}
 			else
@@ -107,6 +109,7 @@ class ProcheController extends AbstractController
 				$returned[]=trim($helper->escapePhrase( $val));
 			}
 		}
+		
 		return  $returned;
 	}
 	
@@ -389,6 +392,18 @@ class ProcheController extends AbstractController
 		 {
 		   array_unshift($response, ["id"=>$value, "text"=>$value]);
 		 }
+		 
+		 usort($response,
+			 function ($a, $b)
+			 {
+				 if (strlen($a['text']) == strlen($b['text'])) 
+				 {
+					return 0;
+				}
+				return (strlen($a['text']) < strlen($b['text'])) ? -1 : 1;
+			 }
+		 );
+		 
 		 $returned=[
 								"results"=>$response
 							];
@@ -430,8 +445,11 @@ class ProcheController extends AbstractController
 		foreach($facets_title as $vf => $count)
 		{
 			$results_tmp[$vf]=$count;
-		}		
+		}	
+		$nb_entries=count($results_tmp);
+		
 	    arsort($results_tmp);
+		
 		$results_tmp=array_slice($results_tmp, 0, $limit, true);
 		
 		$inter_facets=array_intersect(array_keys($results_tmp) ,$to_check );
@@ -452,6 +470,7 @@ class ProcheController extends AbstractController
 			{
 				$results[$vf]=[];
 				$results[$vf]["value"]=$count;
+				//$results[$vf]["nb_entries"]=$nb_entries;
 				if(in_array($vf,$force_check))
 				{
 					$results[$vf]["checked"]=true;
@@ -465,13 +484,15 @@ class ProcheController extends AbstractController
 			$i++;	
 		}
 		
-		
-		return $results;
+		$returned=Array();
+		$returned["count"]=$nb_entries;
+		$returned["results"]=$results;
+		return $returned;
 	}
 	
-	public function test_and_or($field, $request)
+	public function test_and_or($field, $request, $http_prefix)
 	{
-		if(strtolower($request->get("chkand_search_".$field,"false"))=="true")
+		if(strtolower($request->get($http_prefix.$field,"false"))=="true")
 		{
 			return " AND ";
 		}
@@ -539,13 +560,13 @@ class ProcheController extends AbstractController
 		$offset=(((int)$current_page)-1)* (int)$page_size;
 		$pagination=Array();
 		
-		//$free_search=$this->escapeSolr($helper,$request->get("free_search",""));
+		
 		$free_search=[];
 		if(array_key_exists("field",$dyna_field_free)&&array_key_exists("label", $dyna_field_free))
 		{
 			$free_search=$this->escapeSolrArray($helper,$request->get("free_search",[]),false);
 			
-			//$free_search=array_merge($free_search, $free_search2);
+			
 		}
 		
 		
@@ -590,8 +611,10 @@ class ProcheController extends AbstractController
 
 		$list_facet_fields=[];
 		foreach($facet_filters as $field=>$vals)
-		{
-			$list_facet_fields[$field]=$this->escapeSolrArray($helper,$vals, false);
+		{			
+			$n_values=$vals["values"];
+			$list_facet_fields[$field]=$this->escapeSolrArray($helper,$n_values, false);
+			
 		}
 			
 		
@@ -622,7 +645,7 @@ class ProcheController extends AbstractController
 			
 			if(count($filter)>0)
 			{
-				$params_and[]="(".$field.": (".implode($this->test_and_or($field, $request),$filter)."))";
+				$params_and[]="(".$field.": (".implode($this->test_and_or($field, $request, "chkand_search_"),$filter)."))";
 			}
 		}
 		
@@ -631,7 +654,7 @@ class ProcheController extends AbstractController
 			
 			if(count($filter)>0)
 			{
-				$params_and[]="(".$field.": (".implode($this->test_and_or($field, $request),$filter)."))";
+				$params_and[]="(".$field.": (".implode($this->test_and_or($field, $request, "chk_facet_and_search_"),$filter)."))";
 			}
 		}
 		
@@ -664,6 +687,10 @@ class ProcheController extends AbstractController
 			$query->setQueryDefaultOperator("AND");
 			$rs_tmp= $client->select($query);	
 			$nb_result=$rs_tmp->getNumFound();
+			//debug
+			//$base_url=$client->getEndPoint()->getCoreBaseUri();
+			//$query_url=$base_url."select?q.op=AND&q=".$query_build."&rows=1000000&useParams=&wt=json";
+			//print($query_url);
 			if($csv)
 			{
 				
@@ -703,12 +730,14 @@ class ProcheController extends AbstractController
 								
 				$facets_twig=[];
 				//$nb_result=$rs_tmp->getNumFound();
+				
 				if(count($dyna_field_facets)>0)
 				{
 					$facet_fields=$dyna_field_facets["fields"];
 					$i=0;
 					foreach($facet_fields as $facet)
 					{
+						
 						if(array_key_exists($facet_callbacks[$facet], $expand_facets))
 						{
 							$facet_size=$expand_facets[$facet_callbacks[$facet]];
@@ -717,10 +746,17 @@ class ProcheController extends AbstractController
 						{
 							$facet_size=$this->facet_size;
 						}
-						$facets_twig[$i]["facet"]=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_".$facet, $facet_callbacks[$facet], $list_facet_fields, $nb_result,$facet_size);
+						$facet_tmp=$this->returnSolrFacet($rs_tmp->getFacetSet(), "facet_".$facet, $facet_callbacks[$facet], $list_facet_fields, $nb_result,$facet_size);
+						$facets_twig[$i]["facet"]=$facet_tmp["results"];
+						$facets_twig[$i]["facet_count"]=$facet_tmp["count"];
 						$facets_twig[$i]["label"]=$facet_labels[$facet];
 						$facets_twig[$i]["callback"]=$facet_callbacks[$facet];
 						$facets_twig[$i]["facet_size"]=$this->facet_size;
+						
+						
+						$and_checked=$request->get("chk_facet_and_search_".$facet_callbacks[$facet],"FALSE");
+						$facets_twig[$i]["boolean_and_checked"]=$and_checked;
+						
 						$i++;
 					}
 				}

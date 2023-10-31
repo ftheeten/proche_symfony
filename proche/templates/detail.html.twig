@@ -63,10 +63,18 @@
 					{% elseif label_field=="date_of_acquisition" %}
 						{% set go_disclaimer=true %}
 						{% set text_disclaimer= 'disclaimer_acquisition_date'|trans %}
+						
+					{% elseif label_field  starts with "const_" %}
+						{% set go_disclaimer=true %}
+						{% set text_disclaimer= 'disclaimer_const'|trans %}
 					{% endif  %}
 					<div class="col-sm-2" style="font-weight: 600">{{label_field|trans}}:</div>
 					{% if doc[detail_fields.fields[i]] is iterable %}
-						<div class="col-sm-3">{{ doc[detail_fields.fields[i]]|join(", ")}}</div>
+						{% if 'NOT_DISPLAYED' in doc[detail_fields.fields[i]]|join(", ") %}
+							{{ 'not_displayed'|trans|raw }}
+						{% else %}
+							<div class="col-sm-3">{{ doc[detail_fields.fields[i]]|join(", ")}}</div>
+						{% endif %}
 					{% else %}
 						<div class="col-sm-3">{{ doc[detail_fields.fields[i]]}}</div>
 					{% endif %}

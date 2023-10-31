@@ -21,26 +21,48 @@ description: Description
 dimensions: Dimensions
 objtitle_legacy: Titre historique
 location : Localisation géographique
-material_and_technique: Matériaux & techniques 
+material_and_technique: Matériaux et techniques 
 site_of_collection: Lieu de collecte
 site_of_production: Site de production
+const_general_str: Personnes ou institutions
+const_general: Personnes ou institutions
+const_collector: Collecteur
+const_depositor: Dépositaire
+const_depot: Dépositaire
+const_donor: Donateur
+const_excavation_by: Excavateur
+const_exchange: Echange
+const_field_collector: Collecteur (terrain)
+const_first_owner: Premier propriétaire
+const_intermediary: Intermédiaire
+const_legator: Testateur
+const_lender: Prêteur
+const_maker_creator: Fabricant / Créateur
+const_mission: Mission
+const_owner: Propriétaire
+const_previous_owner: Propriétaire précédent
+const_transfer: Transféré via
+const_unknown: Rôle inconnu
+const_vendor: Vendeur
+not_displayed: "<i>Du fait de la règlementation européenne (GDPR) et de la législation en vigueur, nous ne pouvons publier le contenu de ce champ ; dans le cas d’une recherche spécifique, merci de contacter  <b><a href=\"mailto:proche@africamuseum.be\">proche@africamuseum.be</a></b></i>"
 show_hide: Afficher/Masquer
 creation_date: Date de création de la donnée
 download_csv: Télécharger fichier csv
-and: ET
+and: Afficher uniquement les objets communs à toutes les personnes choisies
 of: de
 Page: Page
-proche_object_detail: Détail de l'objet
+proche_object_detail: "Détail de l'objet"
 RMCA: MRAC
 legal_notices: Mentions juridiques
 show_search : MODIFIER LA RECHERCHE
-refine_search : AFFINER LA RECHERCHE (FACETTES)
+refine_search : FILTRER LES RÉSULTATS
 button_search: RECHERCHER PARMI CES CRITÈRES
 button_reset: MONTRER TOUS LES OBJETS
 results_number: résultats
-filter_results_facets: Filtrer les résultats par facettes
+filter_results_facets: Pour filtrer les résultats, vous devez au préalable faire une sélection parmi les filtres (Facettes)
+mobile_open_filter_results_facets: Ouvrir/Fermer la liste de sélection des filtres
 results_list: Liste des résultats
-label_detail: Détail
+label_detail: "> Détail de l'objet"
 number_results_per_page: Nombre de résultats par page
 go_to_page: Aller à la page
 url_language_link: fr
@@ -48,6 +70,11 @@ from: depuis
 to: jusqu'à
 10_next: 10 valeurs suivantes
 10_less: Fermer les 10 dernières valeurs
+next: valeur(s) suivante(s)
+close: "Fermer les"
+less: dernière(s) valeur(s)
+entries: "Mot(s)-clé(s)"
+filter: - FILTRER
 disclaimer_title: "Il s’agit du titre ou nom avec lequel l’objet a été inscrit au registre de classement des fiches d’inventaire papier.<br/> 
 Certains termes peuvent dès lors être connotés par le contexte colonial, préjudiciables ou offensants."
 disclaimer_collection_site: "Donnée indicative issue des archives/sources historiques du musée dont la précision et/ou la pertinence sont relatives.<br/>  
@@ -57,6 +84,7 @@ Le cas échéant, les toponymes historiques (coloniaux) ont été conservés uni
 disclaimer_acquisition_date: "Il s’agit ici uniquement de la date d’entrée de l’objet à l’Africamuseum et non de la date de son déplacement du Congo. "
 disclaimer_acquisition_method: "Il s’agit ici uniquement de la méthode d’acquisition de l’objet par l’Africamuseum et non de la méthode d'acquisition au Congo.<br/> 
 Le projet PROCHE a pour objectif d’approfondir les connaissances sur les méthodes d’acquisition des collections de l’Africamuseum. Pour toute remarque ou ajout merci de contacter : <b><a href=\"mailto:proche@africamuseum.be\">proche@africamuseum.be</a></b>"
+disclaimer_const: "Certains noms d’institution ou d’association sont connotés par le contexte colonial et peuvent être jugés dénigrants ou offensants. Ces terminologies, issues des sources d'origine, sont néanmoins conservées afin de permettre une recherche scientifique et critique située historiquement.  "
 main_disclaimer: "<p><strong>Le projet PROCHE</strong> (<em>Recherche de <strong>PRO</strong>venance sur la <strong>C</strong>ollection Ethnographique – <strong>H</strong>erkomstonderzoek op de <strong>E</strong>thnografische Collectie</em>) répond à une demande à la fois politique et sociétale. Ce projet vise à mieux connaître et faire connaître à tous les publics les manières dont les collections ethnographiques et musicologiques ont été acquises pendant la période coloniale en RDC. À cette fin, cette base de données reprend l’inventaire des objets du Congo et d’Afrique centrale conservés au <em>Musée royal de l’Afrique centrale</em> (MRAC) de Tervuren qui a été remis en février 2022 au Premier ministre congolais Jean-Michel Sama Lukonde. Cette mise en ligne est une mise en partage indispensable des données, un point de départ destiné à être progressivement complété par la publication de nouveaux champs. Cette base de données sera ainsi régulièrement mise à jour en fonction de l’avancée du projet et des recherches plus approfondies qui seront effectuées sur les collections. </p>
 <p>Il s’avère que certains termes appliqués à ces objets ethnographiques et musicologiques, ainsi que certaines informations qui leur sont associées, posent problème quant à leur signification et leur exactitude. Les informations documentant ces objets sont de nature intrinsèquement coloniale et contiennent des terminologies stigmatisantes pour leurs communautés d’origine ou les diasporas concernées. Nous tenons cependant à préciser que ces informations ne sont pas représentatives de l’opinion du MRAC et du projet PROCHE. En effet, le projet défend une position anticoloniale et antidiscriminatoire et il affirme son soutien aux communautés historiquement marginalisées et privées de leurs droits. Nous sommes donc conscients que notre catalogue peut provoquer des tensions psychologiques et physiques. C’est pourquoi, nous invitons les lectrices et lecteurs à prendre en compte le contexte dans lequel le catalogue est présenté.</p>
 <p>Cet inventaire est, en soi, une source historique et une construction d’un passé plus ou moins récent. En effet, il contient des informations relevant de diverses strates historiques jusqu’à aujourd’hui et pourrait être compris,  perçu et lu comme un palimpseste. Cela rend son étude conflictuelle et laborieuse, car elle conduit aussi inévitablement à reproduire des classifications, des désignations qui sont biaisées et parfois préjudiciables. </p>
