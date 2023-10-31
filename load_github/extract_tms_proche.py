@@ -9,6 +9,7 @@ from collections import OrderedDict
 import sqlalchemy as sa
 from xml.sax.saxutils import escape
 import xml.etree.ElementTree as ET
+import re
  
 print("init")
  
@@ -18,8 +19,8 @@ h.add_credentials('', '')
 
 
 global_terms={}
-solr_url='https://proche.africamuseum.be/solradmin/solr/xxxx'
-main_filter=" PackageID =xxx or  PackageID =xxx or PackageID =xxx  or  PackageID =xxx "
+solr_url='https://wwwwww/be'
+main_filter=" PackageID =xxx "
  
  
 def insert_solr(p_h, p_solr_url,  p_fields, list_multi_fields=None ):
@@ -207,6 +208,9 @@ def sort_for_proche(obj_number):
     if len(returned)>0:
         if returned[0].isnumeric():
             returned="ZZ_"+returned
+    tmp2=re.split('\-|\.', returned)
+    tmp3=list(map(lambda x:str(x).rjust(6,'0'), tmp2))
+    returned='.'.join(tmp3)    
     return returned
     
 def create_doc(id, objnumber, sort_number,  title, material_and_technique, dimensions, site_of_collection, site_of_production, date_of_acquisition, method_of_acquisition, creation_date):
