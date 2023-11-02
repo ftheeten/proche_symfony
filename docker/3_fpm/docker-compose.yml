@@ -1,0 +1,38 @@
+version: '3.1'
+
+services:
+  solr_proche:
+    restart: always
+    container_name: solr_proche
+    image: solr:9.4.0
+    ports:
+      - "8983:8983"
+    volumes:
+      - C:/DOCKER/volumes/solr_proche/data:/var/solr/data
+    networks:
+      - proche_local
+  proche_apache:
+    restart: always
+    container_name: proche_apache
+    image: proche_apache:1.0 
+    ports:
+      - "8098:80"
+    volumes:
+      - c:/DOCKER/volumes/apache_proche_config/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - c:/DOCKER/volumes/apache_proche:/var/www/html
+    networks:
+      - proche_local
+  proche_fpm:
+    restart: always
+    container_name: proche_fpm
+    image: proche_fpm:1.0 
+    ports:
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - c:/DOCKER/volumes/fpm_proche/php.ini:/usr/local/etc/php/php.ini
+      - c:/DOCKER/volumes/apache_proche:/var/www/html
+    networks:
+      - proche_local      
+    
+networks:
+  proche_local:
