@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout , QFileDialog, QButtonGroup, QRadioButton, QLineEdit, QLabel, QCheckBox, QMessageBox, QComboBox, QSizePolicy
+﻿from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout , QFileDialog, QButtonGroup, QRadioButton, QLineEdit, QLabel, QCheckBox, QMessageBox, QComboBox, QSizePolicy
 from PySide6.QtCore import Qt
 import traceback
 import configparser
@@ -42,11 +42,10 @@ def insert_solr(p_h, p_solr_url,  p_fields, list_multi_fields=None ):
     list_fields=[]
     insert_url=p_solr_url+"update"
     commit_url=p_solr_url+"update?commit=true"
+    content=""
     for k, v in p_fields.items():
         if not v is None:
             list_fields.append("<field name='"+k+"'>"+escape(str(v))+"</field>")
-            
-    
     if not list_multi_fields is  None:
         for k, tmp in list_multi_fields.items():
             for v in tmp:
@@ -57,6 +56,7 @@ def insert_solr(p_h, p_solr_url,  p_fields, list_multi_fields=None ):
     resp, content = p_h.request(insert_url, "GET", body=xml.encode('utf-8'), headers={'content-type':'application/xml', 'charset':'utf-8'} )
     #print(insert_url)
     #print(resp)
+    #print(content)
     check_xml = ET.fromstring(content)
     stat=check_xml.findall(".//int[@name='status']")
     if(len(stat)>0):
@@ -86,6 +86,8 @@ def sort_for_proche(obj_number):
 def read_excel(p_file, p_url_solr, p_fields, p_fields_array, p_fields_num, p_fields_date, p_sort_field_source, p_sort_field_name, p_user, p_password):
     print("Excel read, beginning importation")
     print_time()
+    #print(p_user)
+    #print(p_password)
     df_src=pnd.read_excel(p_file)
     df_src.fillna("", inplace=True)
     for index, row in df_src.iterrows():
@@ -116,6 +118,8 @@ def read_excel(p_file, p_url_solr, p_fields, p_fields_array, p_fields_num, p_fie
                 #print(field_num+" (num)\t"+str(tmp))
                 if len(str(tmp)) > 0:
                     doc[field_num]=str(int(tmp))
+                    if field_num !="id":
+                        doc[field_num+"_str"]=str(int(tmp))
             for  field_date in  p_fields_date:
                 tmp=row[field_date]
                 #print(field_date+" (date)\t"+str(tmp))
@@ -140,6 +144,7 @@ def read_excel(p_file, p_url_solr, p_fields, p_fields_array, p_fields_num, p_fie
             print("Stack trace : %s" %stack_trace)
             print("data:")
             print(row)
+            sys.exit(1)
         except KeyboardInterrupt as ex:
             sys.exit()
     print("Done")
@@ -200,7 +205,7 @@ def start():
     global CONFIG_FILE
     
     global field_list
-    global field_list_array
+    global field_list_arrays
     global field_list_num
     global field_list_date
     global sort_field_source
@@ -210,7 +215,7 @@ def start():
     
     try:
         config = configparser.ConfigParser()
-        config.read(CONFIG_FILE)
+        config.read(CONFIG_FILE, encoding="utf-8")
         url_solr_tmp=config["PARAMS"]["solr_url"]
         user_solr_tmp=config["PARAMS"]["solr_user"]
         password_solr_tmp=config["PARAMS"]["solr_password"]
