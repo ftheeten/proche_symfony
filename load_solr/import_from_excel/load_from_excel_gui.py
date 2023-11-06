@@ -32,6 +32,7 @@ field_list_num=[]
 field_list_date=[]
 sort_field_source=None
 sort_field_name=None
+DEBUG_CONTENT=""
 
 def print_time():
     now = datetime.datetime.now()
@@ -39,6 +40,7 @@ def print_time():
     print (now.strftime("%Y-%m-%d %H:%M:%S"))
 
 def insert_solr(p_h, p_solr_url,  p_fields, list_multi_fields=None ):
+    global DEBUG_CONTENT
     list_fields=[]
     insert_url=p_solr_url+"update"
     commit_url=p_solr_url+"update?commit=true"
@@ -54,6 +56,7 @@ def insert_solr(p_h, p_solr_url,  p_fields, list_multi_fields=None ):
     xml="<add><doc>"+"".join(list_fields)+"</doc></add>"
     #print(xml)
     resp, content = p_h.request(insert_url, "GET", body=xml.encode('utf-8'), headers={'content-type':'application/xml', 'charset':'utf-8'} )
+    DEBUG_CONTENT=content
     #print(insert_url)
     #print(resp)
     #print(content)
@@ -88,8 +91,10 @@ def read_excel(p_file, p_url_solr, p_fields, p_fields_array, p_fields_num, p_fie
     print_time()
     #print(p_user)
     #print(p_password)
+    #print(p_sort_field_source)
     df_src=pnd.read_excel(p_file)
     df_src.fillna("", inplace=True)
+    global DEBUG_CONTENT
     for index, row in df_src.iterrows():
         try:
             #print(index)
@@ -104,6 +109,7 @@ def read_excel(p_file, p_url_solr, p_fields, p_fields_array, p_fields_num, p_fie
                     tmp=tmp.replace("\,",",")
                     #print(field+"\t"+tmp+"\t(replace)")
                     if field == p_sort_field_source:
+                        #print("sort")
                         doc[p_sort_field_name]=sort_for_proche(tmp)
                     doc[field]=tmp
             for field_list in p_fields_array:
@@ -144,7 +150,8 @@ def read_excel(p_file, p_url_solr, p_fields, p_fields_array, p_fields_num, p_fie
             print("Stack trace : %s" %stack_trace)
             print("data:")
             print(row)
-            sys.exit(1)
+            print(DEBUG_CONTENT)
+            #sys.exit(1)
         except KeyboardInterrupt as ex:
             sys.exit()
     print("Done")
@@ -225,7 +232,9 @@ def start():
         field_list_num_list=config["PARAMS"]["field_list_num"]
         sort_field_source=config["PARAMS"]["sort_field_source"]
         sort_field_name=config["PARAMS"]["sort_field_name"]
-
+        sort_field_source=sort_field_source.replace("'","").replace("\"","").strip()
+        sort_field_name=sort_field_name.replace("'","").replace("\"","").strip()
+        
         field_list=explode_conf(field_list_list)
         field_list_arrays=explode_conf(field_list_arrays_list)
         field_list_date=explode_conf(field_list_date_list)
