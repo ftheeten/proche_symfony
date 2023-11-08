@@ -315,14 +315,29 @@ footer ul, footer ul li {
 		width: 280px;
 		max-width: 100%;
 	}
+	
+	.header__logo_right {
+		float: right;
+		display: block;
+		margin-left: 20px;
+		padding: 20px 0;
+		height: auto;
+	}
+
+	.header__logo_right img {
+		height: 110px;
+		max-height: 100%;
+	}
 
 	.header__secondary {
 		float: right;
 		display: block;
 		padding: 20px 0;
 		margin-right: 0;
-		width: auto;
+		height: auto;
 	}
+	
+	
 
 }
 
@@ -339,6 +354,19 @@ footer ul, footer ul li {
 	.header__logo img {
 		width: 240px;
 		max-width: 240px;
+	}
+	
+	.header__logo_right{
+		float: right;
+		display: block;
+		margin-left: 2.35765%;
+		width: 31.76157%;
+		padding: 13.33333px 0;
+	}
+	
+	.header__logo_right img {
+		height: 110px;
+		max-width: 110px;
 	}
 }
 
@@ -415,6 +443,19 @@ footer ul, footer ul li {
 		width: 220px;
 		max-width: 220px;
 	}
+	
+	.header__logo_right {
+		float: right;
+		display: block;
+		margin-right: 2.35765%;
+		width: 31.76157%;
+		padding: 13.33333px 0;
+	}
+	
+	.header__logo_right img {
+		height: 110px;
+		max-height: 110px;
+	}
 }
 
 @media only screen and (max-width: 380px) {
@@ -427,6 +468,18 @@ footer ul, footer ul li {
 	.header__logo img {
 		width: 230px;
 		max-width: 230px;
+	}
+	
+	.header__logo_right {
+		float: right;
+		padding-bottom: 0;
+	}
+
+
+	.header__logo_right img {
+		height: 110px;
+		max-height: 110px;
+	}
 	}
 
 

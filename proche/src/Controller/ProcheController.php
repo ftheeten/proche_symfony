@@ -79,7 +79,7 @@ class ProcheController extends AbstractController
 		{
 			$tmp=trim($helper->escapePhrase($input),'"');
 			$tmp=$this->remove_punctuation($tmp);
-			return '*"'.$tmp.'*"';
+			return '"*'.$tmp.'*"';
 		}
 		else
 		{
