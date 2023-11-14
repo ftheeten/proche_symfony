@@ -168,7 +168,7 @@ SELECT * FROM e  "
 def get_tombstone(conn):
     sql="With c as \
   ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
-SELECT t.[ObjectID], t.[ObjectNumber] , t.[SortNumber], t.Medium, t.Dimensions , t.Title FROM \
+SELECT DISTINCT t.[ObjectID], t.[ObjectNumber] , t.[SortNumber], t.Medium, t.Dimensions , t.Title FROM \
 dbo.[vgsrpObjTombstoneD_RO] t  INNER JOIN c ON c.[ID]=t.[ObjectID]  "
     data=pnd.read_sql(sql=sql, con=conn)
     return data
@@ -176,7 +176,7 @@ dbo.[vgsrpObjTombstoneD_RO] t  INNER JOIN c ON c.[ID]=t.[ObjectID]  "
 def get_sites(conn):
     sql="With c as \
   ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
-SELECT t.[ID] as [ObjectID], t.[SitesOfCollectionFlat] , t.[SitesOfProductionFlat]  FROM \
+SELECT DISTINCT  t.[ID] as [ObjectID], t.[SitesOfCollectionFlat] , t.[SitesOfProductionFlat]  FROM \
 dbo.[vRmcaLvObjectsGeography ] t  INNER JOIN c ON c.[ID]=t.[ID]"
     data=pnd.read_sql(sql=sql, con=conn)
     return data
@@ -184,7 +184,7 @@ dbo.[vRmcaLvObjectsGeography ] t  INNER JOIN c ON c.[ID]=t.[ID]"
 def get_acquisition_metadata(conn):
     sql="With c as \
   ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
-SELECT t.[ID] as [ObjectID], t.[AccessionISODate] , t.[AccessionMethod]  FROM \
+SELECT DISTINCT  t.[ID] as [ObjectID], t.[AccessionISODate] , t.[AccessionMethod]  FROM \
 dbo.[vRmcaLvObjectsAcquisitionConstituents] t  INNER JOIN c ON c.[ID]=t.[ID]"
     data=pnd.read_sql(sql=sql, con=conn)
     return data
