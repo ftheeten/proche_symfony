@@ -19,8 +19,8 @@ h.add_credentials('', '')
 
 
 global_terms={}
-solr_url='https://wwwwww/be'
-main_filter=" PackageID =xxx "
+solr_url='https://proche.africamuseum.be/solradmin/solr/proche-prod/'
+main_filter=" PackageID =130507 or  PackageID =130506 or PackageID =130508  or  PackageID =130509 "
  
  
 def insert_solr(p_h, p_solr_url,  p_fields, list_multi_fields=None ):
@@ -168,15 +168,23 @@ SELECT * FROM e  "
 def get_tombstone(conn):
     sql="With c as \
   ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
-SELECT DISTINCT t.[ObjectID], t.[ObjectNumber] , t.[SortNumber], t.Medium, t.Dimensions , t.Title FROM \
+SELECT DISTINCT  t.[ObjectID], t.[ObjectNumber] , t.[SortNumber], t.Medium, t.Dimensions , t.Title FROM \
 dbo.[vgsrpObjTombstoneD_RO] t  INNER JOIN c ON c.[ID]=t.[ObjectID]  "
     data=pnd.read_sql(sql=sql, con=conn)
     return data
    
-def get_sites(conn):
+def get_sites_collection(conn):
     sql="With c as \
   ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
-SELECT DISTINCT  t.[ID] as [ObjectID], t.[SitesOfCollectionFlat] , t.[SitesOfProductionFlat]  FROM \
+SELECT DISTINCT  t.[ID] as [ObjectID], t.[SitesOfCollectionFlat]  FROM \
+dbo.[vRmcaLvObjectsGeography ] t  INNER JOIN c ON c.[ID]=t.[ID]"
+    data=pnd.read_sql(sql=sql, con=conn)
+    return data
+    
+def get_sites_production(conn):
+    sql="With c as \
+  ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
+SELECT DISTINCT t.[ID] as [ObjectID], t.[SitesOfProductionFlat]  FROM \
 dbo.[vRmcaLvObjectsGeography ] t  INNER JOIN c ON c.[ID]=t.[ID]"
     data=pnd.read_sql(sql=sql, con=conn)
     return data
@@ -184,7 +192,7 @@ dbo.[vRmcaLvObjectsGeography ] t  INNER JOIN c ON c.[ID]=t.[ID]"
 def get_acquisition_metadata(conn):
     sql="With c as \
   ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
-SELECT DISTINCT  t.[ID] as [ObjectID], t.[AccessionISODate] , t.[AccessionMethod]  FROM \
+SELECT DISTINCT t.[ID] as [ObjectID], t.[AccessionISODate] , t.[AccessionMethod]  FROM \
 dbo.[vRmcaLvObjectsAcquisitionConstituents] t  INNER JOIN c ON c.[ID]=t.[ID]"
     data=pnd.read_sql(sql=sql, con=conn)
     return data
@@ -213,7 +221,8 @@ def sort_for_proche(obj_number):
     returned='.'.join(tmp3)    
     return returned
     
-def create_doc(id, objnumber, sort_number,  title, material_and_technique, dimensions, site_of_collection, site_of_production, date_of_acquisition, method_of_acquisition, creation_date):
+def create_doc(id, objnumber, sort_number,  title, material_and_technique, dimensions,  creation_date):
+    '''
     year=None
     if date_of_acquisition is not None:
         if len(str(date_of_acquisition).strip())>4:
@@ -221,6 +230,7 @@ def create_doc(id, objnumber, sort_number,  title, material_and_technique, dimen
             if str(year_tmp).isnumeric():
                 if len(year_tmp.strip())==4:
                     year=int(year_tmp)
+    '''
     doc={
         "id":id,
         "object_number":prepare_json_object(objnumber),
@@ -228,23 +238,85 @@ def create_doc(id, objnumber, sort_number,  title, material_and_technique, dimen
         "title":prepare_json_object(title),
         "material_and_technique":prepare_json_object(material_and_technique),
         "dimensions": prepare_json_object(dimensions),
-        "site_of_collection" : prepare_json_object(site_of_collection),
-        "site_of_production" : prepare_json_object(site_of_production),
-        "date_of_acquisition":  prepare_json_object(date_of_acquisition),
-        "method_of_acquisition": prepare_json_object(method_of_acquisition),
+        #"site_of_collection" : prepare_json_object(site_of_collection),
+        #"site_of_production" : prepare_json_object(site_of_production),
+        #"date_of_acquisition":  prepare_json_object(date_of_acquisition),
+        #"method_of_acquisition": prepare_json_object(method_of_acquisition),
         
         "creation_date":creation_date
     }
+    '''
     if year is not None:
          doc["year_of_acquisition"]= int(year)
          doc["year_of_acquisition_str"]= str(year)
+    '''
     return doc
    
 def add_const(doc, field_name, values):
     if len(values)>0:
         doc[field_name]= values
     return doc
-   
+ 
+def handle_collection_site(pnd_site_coll, obj_id):
+    filtered=pnd_site_coll[pnd_site_coll["ObjectID"]==obj_id]
+    returned= {}
+    tmp=[]
+    for i, row in filtered.iterrows():
+        if len(row["SitesOfCollectionFlat"].strip())>0:
+            tmp.append( row["SitesOfCollectionFlat"])
+    if len(tmp) >0:
+        returned={"site_of_collection": tmp}
+    return returned
+    
+    
+def handle_production_site(pnd_site_prod, obj_id):
+    filtered=pnd_site_prod[pnd_site_prod["ObjectID"]==obj_id]
+    returned={}
+    tmp=[]
+    for i, row in filtered.iterrows():
+        if len(row["SitesOfProductionFlat"].strip())>0:
+            tmp.append( row["SitesOfProductionFlat"])
+    if len(tmp) >0:
+        returned={"site_of_production": tmp}
+    return returned
+    
+def handle_acquisition_metadata(pnd_acq, obj_id):
+    filtered=pnd_acq[pnd_acq["ObjectID"]==obj_id]
+    returned={}
+    arr_date=[]
+    arr_method=[]
+    arr_year=[]
+    arr_year_str=[]
+    #print(obj_id)
+    #print("----------------")
+    for i, row in filtered.iterrows():
+        #print(row)
+        date_of_acquisition=row["AccessionISODate"] or ""
+        method_of_acquisition= row["AccessionMethod"] or ""
+        year=None
+        if date_of_acquisition is not None:
+            if len(str(date_of_acquisition).strip())>4:
+                year_tmp=date_of_acquisition[0:4]
+                if str(year_tmp).isnumeric():
+                    if len(year_tmp.strip())==4:
+                        year=int(year_tmp)
+                        arr_year.append(year)
+                        arr_year_str.append(str(year))
+        
+        if len(date_of_acquisition) >0:
+            arr_date.append(  prepare_json_object(date_of_acquisition) )
+        if len(method_of_acquisition) >0:
+            arr_method.append( prepare_json_object(method_of_acquisition) )
+    if len(arr_date) >0:
+        returned["date_of_acquisition"]=arr_date
+    if len(arr_method) >0:
+        returned["method_of_acquisition"]=arr_method
+    if len(arr_year) >0:
+        returned["year_of_acquisition"]=arr_year
+    if len(arr_year_str) >0:
+        returned["year_of_acquisition_str"]=arr_year_str
+    return returned   
+ 
 def handle_constituents(pnd_cons, obj_id, pnd_translations):
     #print("cons_obj= "+str(obj_id))
     dict_c={}
@@ -471,10 +543,14 @@ main_data=get_tombstone(cn)
 print("Got main data")
 print_time()
 print(len(main_data))
-pnd_sites=get_sites(cn)
-print("Got sites")
+pnd_sites_collection=get_sites_collection(cn)
+print("Got sites collection")
 print_time()
-print(len(pnd_sites))
+print(len(pnd_sites_collection))
+pnd_sites_production=get_sites_production(cn)
+print("Got sites production")
+print_time()
+print(len(pnd_sites_production))
 pnd_acq_metadata=get_acquisition_metadata(cn)
 print("Got Acquisition metadata")
 print_time()
@@ -498,24 +574,65 @@ pnd_translations["base_name"]=pnd_translations["base_name"].replace(chr(160), " 
 
 cn.dispose()
  
-p_all=main_data.merge(pnd_sites, on='ObjectID')
-p_all=p_all.merge(pnd_acq_metadata, on='ObjectID')
+print("LEN main data")
+print(len(main_data))
+'''
+print("LEN pnd_sites")
+print(len(pnd_sites))
 
 
+data_top = pnd_sites.columns
+print(data_top)
 
-for index, row in p_all.iterrows():
+
+p_all=main_data.merge(pnd_sites, on='ObjectID', how='left')
+print("LEN p_all 1")
+print(len(p_all))
+
+
+print("LEN pnd_acq_metadata")
+print(len(pnd_acq_metadata))
+p_all=p_all.merge(pnd_acq_metadata, on='ObjectID', how='left')
+print("LEN p_all 2")
+print(len(p_all))
+
+data_top = p_all.columns
+print(data_top)
+'''
+
+
+for index, row in main_data.iterrows():
     try:
         #print(index)
         #print(row)
-        doc=create_doc( row["ObjectID"], row["ObjectNumber"], row["SortNumber"], row["Title"], row["Medium"], row["Dimensions"] , row["SitesOfCollectionFlat"] , row["SitesOfProductionFlat"] , row["AccessionISODate"] , row["AccessionMethod"] , datetime.datetime.now().isoformat())
-        list_const=handle_constituents(pnd_constituents, row["ObjectID"], pnd_translations)
-        #print(list_const)
-        
-        #print(doc)
-        #print(i)
-        insert_solr(h, solr_url, doc, list_const)
-        if index%100==0:
-            print(index)
+        test=row["ObjectNumber"] or ""
+        if len(test)>0:
+            doc=create_doc( row["ObjectID"], row["ObjectNumber"], row["SortNumber"], row["Title"], row["Medium"], row["Dimensions"] , datetime.datetime.now().isoformat())
+            list_const=handle_constituents(pnd_constituents, row["ObjectID"], pnd_translations)
+            #print(list_const)
+            list_coll_loc=handle_collection_site(pnd_sites_collection, row["ObjectID"])
+            list_prod_loc=handle_production_site(pnd_sites_production, row["ObjectID"])
+            #print(list_coll_loc)
+            #print(list_prod_loc)
+            acq_metadata   =handle_acquisition_metadata(pnd_acq_metadata, row["ObjectID"])
+            #print(acq_metadata)
+
+            
+            list_multiple={}
+            if len(list_const)>0:
+                list_multiple = {**list_multiple, **list_const}
+            if len(list_coll_loc)>0:
+                list_multiple = {**list_multiple, **list_coll_loc}
+            if len(list_prod_loc)>0:
+                list_multiple = {**list_multiple, **list_prod_loc}
+            if len(acq_metadata)>0:
+                list_multiple = {**list_multiple, **acq_metadata}
+            #print(list_multiple)
+            #print(doc)
+            #print(i)
+            insert_solr(h, solr_url, doc, list_multiple)
+            if index%100==0:
+                print(index)
         #if index>100:
         #    break 
     except BaseException as ex:
@@ -531,4 +648,4 @@ for index, row in p_all.iterrows():
         print("Stack trace : %s" %stack_trace)
     except KeyboardInterrupt as ex:
         sys.exit()
-   
+ 
