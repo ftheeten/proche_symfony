@@ -63,7 +63,9 @@
 					{% elseif label_field=="date_of_acquisition" %}
 						{% set go_disclaimer=true %}
 						{% set text_disclaimer= 'disclaimer_acquisition_date'|trans %}
-						
+					{% elseif label_field=="culture" or label_field=="culture_of_production"   %}
+						{% set go_disclaimer=true %}
+						{% set text_disclaimer= 'disclaimer_culture'|trans %}	
 					{% elseif label_field  starts with "const_" %}
 						{% set go_disclaimer=true %}
 						{% set text_disclaimer= 'disclaimer_const'|trans %}
@@ -88,6 +90,11 @@
 		{% endif %}
 		{% set i=i+1 %}
 	{% endfor %}
+	{% if doc["iiif_endpoint"] is defined %}
+		{% if doc["iiif_endpoint"]|length>0 %}
+			{{ macros.handle_iiif_main(doc["iiif_endpoint"]|join(",")) }}
+		{% endif %}
+	{% endif %}
 	
 
 <!--DISCLAIMER-->

@@ -198,15 +198,16 @@ class ProcheController extends AbstractController
 		$this->set_lang_cookie( $request->getSession()->get('current_locale','fr'));
 		$client=$this->client;
 		$id=$request->get("q","");
-		if(is_numeric($id))
-		{
+		//if(is_numeric($id))
+		//{
 			$detail_main_title_field=$this->getParameter("detail_main_title_field", "id");
 			$detail_sub_title_field=$this->getParameter("detail_sub_title_field", "id");
 			$detail_fields=$this->getParameter("detail_fields",[]);
 			if(strlen(trim($id))>0)
 			{
+				
 				$query = $client->createSelect();
-				$query->setQuery("id:".$id);
+				$query->setQuery($this->getParameter('link_field',"id").":".$id);
 				$rs_tmp= $client->select($query);
 				foreach ($rs_tmp as $document) 
 				{
@@ -230,7 +231,7 @@ class ProcheController extends AbstractController
 						"cookie_accepted"=>$cookie_disclaimer]);
 				}
 			}
-		}
+		//}
 		
 		return $this->render('noresults.html.twig');
 	}

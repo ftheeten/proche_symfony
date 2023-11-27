@@ -5,20 +5,20 @@ parameters:
         label: free_text_search
         
     detailed_search_fields:
-        fields: ["object_number_str", "title", "material_and_technique", "site_of_collection", "site_of_production", "const_trans_maker_creator","method_of_acquisition", "const_trans_general","year_of_acquisition_str", "date_of_acquisition", "const_date_maker_creator" ,  "const_date_general"]
-        autocomplete_fields: ["object_number_str", "title_str", "material_and_technique_str", "site_of_collection_str", "site_of_production_str", "const_maker_creator_str", "method_of_acquisition_str", "const_trans_general_str", "year_of_acquisition","", "const_date_maker_creator_str", "const_date_general_str"]
-        labels: ["object_number", "title", "material_and_technique", "site_of_collection", "site_of_production","const_maker_creator", "method_of_acquisition", "const_general", "year_of_acquisition", "date_of_acquisition", "const_maker_creator", "const_general" ]
-        types:  ["string", "string", "string", "string", "string", "string", "string", "string", "hidden_string", "date", "hidden_string", "hidden_string"]
-        matching:  ["exact", "fuzzy", "fuzzy", "fuzzy", "fuzzy",  "fuzzy", "fuzzy", "fuzzy", "exact","date",  "fuzzy", "fuzzy"]
+        fields: ["object_number_str", "title", "material_and_technique", "site_of_collection", "site_of_production", "const_trans_maker_creator","method_of_acquisition", "const_trans_general","culture", "culture_of_production","year_of_acquisition_str", "date_of_acquisition", "const_date_maker_creator" ,  "const_date_general"]
+        autocomplete_fields: ["object_number_str", "title_str", "material_and_technique_str", "site_of_collection_str", "site_of_production_str", "const_maker_creator_str", "method_of_acquisition_str", "const_trans_general_str","culture_str", "culture_of_production_str", "year_of_acquisition","", "const_date_maker_creator_str", "const_date_general_str"]
+        labels: ["object_number", "title", "material_and_technique", "site_of_collection", "site_of_production","const_maker_creator", "method_of_acquisition", "const_general","culture", "culture_of_production", "year_of_acquisition", "date_of_acquisition", "const_maker_creator", "const_general" ]
+        types:  ["string", "string", "string", "string", "string", "string", "string", "string","string", "string", "hidden_string", "date", "hidden_string", "hidden_string"]
+        matching:  ["exact", "fuzzy", "fuzzy", "fuzzy", "fuzzy",  "fuzzy", "fuzzy", "fuzzy","fuzzy", "fuzzy", "exact","date",  "fuzzy", "fuzzy"]
         
     facet_fields:
-        fields: ["title_str", "material_and_technique_str", "method_of_acquisition_str", "site_of_collection_str", "site_of_production_str" , "const_date_maker_creator_str", "const_date_general_str", "year_of_acquisition_str"],
-        labels: ["title","material_and_technique", "method_of_acquisition", "site_of_collection", "site_of_production" , "const_maker_creator", "const_general", "year_of_acquisition"]
-        filter_callback: ["title", "material_and_technique", "method_of_acquisition", "site_of_collection", "site_of_production" ,"const_date_maker_creator",   "const_date_general", , "year_of_acquisition_str"]
+        fields: ["title_str", "material_and_technique_str", "method_of_acquisition_str", "site_of_collection_str", "site_of_production_str" , "const_date_maker_creator_str", "const_date_general_str","culture_str", "culture_of_production_str", "year_of_acquisition_str"],
+        labels: ["title","material_and_technique", "method_of_acquisition", "site_of_collection", "site_of_production" , "const_maker_creator", "const_general", "culture", "culture_of_production", "year_of_acquisition"]
+        filter_callback: ["title", "material_and_technique", "method_of_acquisition", "site_of_collection", "site_of_production" ,"const_date_maker_creator",   "const_date_general", "culture", "culture_of_production", "year_of_acquisition_str"]
         
     title_field: "object_number"
     
-    link_field: "id"
+    link_field: "object_number"
         
     result_fields:
         fields: ["title", "date_of_acquisition" ]
@@ -28,7 +28,7 @@ parameters:
     detail_sub_title_field: "title"
     
     detail_fields:
-        fields: ["material_and_technique","dimensions", "method_of_acquisition", "site_of_collection", "site_of_production" ,"const_date_maker_creator","const_date_collector","const_date_depositor","const_date_depot","const_date_donor","const_date_excavation_by","const_date_exchange","const_date_field_collector","const_date_first_owner","const_date_intermediary","const_date_legator","const_date_lender","const_date_mission","const_date_owner","const_date_previous_owner","const_date_transfer","const_date_unknown","const_date_vendor", "date_of_acquisition", "creation_date"]
-        labels: ["material_and_technique", "dimensions", "method_of_acquisition", "site_of_collection", "site_of_production" ,"const_maker_creator", "const_collector","const_depositor","const_depot","const_donor","const_excavation_by","const_exchange","const_field_collector","const_first_owner","const_intermediary","const_legator","const_lender","const_mission","const_owner","const_previous_owner","const_transfer","const_unknown","const_vendor", "date_of_acquisition", "creation_date"]
+        fields: ["material_and_technique","dimensions", "method_of_acquisition", "site_of_collection", "site_of_production" ,"const_date_maker_creator","const_date_collector","const_date_depositor","const_date_depot","const_date_donor","const_date_excavation_by","const_date_exchange","const_date_field_collector","const_date_first_owner","const_date_intermediary","const_date_legator","const_date_lender","const_date_mission","const_date_owner","const_date_previous_owner","const_date_transfer","const_date_unknown","const_date_vendor", "culture", "culture_of_production", "date_of_acquisition", "creation_date"]
+        labels: ["material_and_technique", "dimensions", "method_of_acquisition", "site_of_collection", "site_of_production" ,"const_maker_creator", "const_collector","const_depositor","const_depot","const_donor","const_excavation_by","const_exchange","const_field_collector","const_first_owner","const_intermediary","const_legator","const_lender","const_mission","const_owner","const_previous_owner","const_transfer","const_unknown","const_vendor", "culture", "culture_of_production", "date_of_acquisition", "creation_date"]
 
-    csv_fields: ["id", "sort_number", "object_number", "title", "material_and_technique", "dimensions", "site_of_collection", "site_of_production", "method_of_acquisition","year_of_acquisition", "date_of_acquisition", "const_maker_creator", "const_collector","const_depositor","const_depot","const_donor","const_excavation_by","const_exchange","const_field_collector","const_first_owner","const_intermediary","const_legator","const_lender","const_mission","const_owner","const_previous_owner","const_transfer","const_unknown","const_vendor", "date_of_acquisition", "creation_date" ]
+    csv_fields: ["id", "sort_number", "object_number", "title", "material_and_technique", "dimensions", "site_of_collection", "site_of_production", "method_of_acquisition","year_of_acquisition", "date_of_acquisition", "const_maker_creator", "const_collector","const_depositor","const_depot","const_donor","const_excavation_by","const_exchange","const_field_collector","const_first_owner","const_intermediary","const_legator","const_lender","const_mission","const_owner","const_previous_owner","const_transfer","const_unknown","const_vendor", "culture", "culture_of_production", "date_of_acquisition", "creation_date" ]

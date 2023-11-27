@@ -7,14 +7,14 @@
 <div style="text-align: center">
 	<div>
 		<div id="div_back_search" name="div_back_search" class="div_back_search" >
-			<input style="display:inline-block" class="search_button"  type="button" name="show_search" id="show_search" value="{{'show_search'|trans}}"></input>
+			<input style="display:inline-block" class="update_button"  type="button" name="show_search" id="show_search" value="{{'show_search'|trans}}"></input>
 		</div>
 		<input style="display:inline-block" type="button" id="get_csv" name="get_csv" value="{{'download_csv'|trans}}">
 	</div>
 </div>
 
 <div class="d-flex align-items-center justify-content-center">
-	{% include 'pagination.html.twig' with {'include_javascript':true} %}
+	{% include 'pagination.html.twig' with {'include_javascript':true, 'key':1} %}
 </div>
 
 <div class="row" >
@@ -68,7 +68,7 @@
 		{% set base_result= (page-1)* page_size %}
 		
 		{% for key, doc in results %}
-
+			
 			<div class="results_list">
 			
 				<div class="row" style="padding-left: 0; width: 100%">
@@ -83,7 +83,7 @@
 					
 						<div class="col-sm-12" style="margin-bottom: 12px; padding-left: 0; font-weight: 700; font-size: 16px">
 						
-							<a href="{{ path('detail')}}?q={{doc[link_field]}}" target="_blank"> {{'label_detail'|trans}}</a>
+							<a href="{{ path('detail')}}?q={{doc[link_field]|join(",")}}" target="_blank"> {{'label_detail'|trans}}</a>
 							
 						</div>
 						
@@ -114,9 +114,15 @@
 						
 					</div>
 					
+					
 					{% set i=i+1 %}
 					
 					{% endfor %}
+					{% if "iiif_endpoint" in doc|keys %}
+						{% if doc["iiif_endpoint"]|length>0 %}
+							{{ macros.handle_iiif_summary(doc["iiif_endpoint"]|join(","), doc["id"]) }}
+						{% endif %}
+					{% endif %}
 			
 				</div>
 			
@@ -131,6 +137,25 @@
 			{
 				//$("#main_search_div").hide();
 				search(1, $("#page_size").val());
+			}
+		);
+		
+		$(".chk_facets").on("change",
+			function()
+			{
+				if($(this).is(':checked'))
+				{
+					console.log("chek");
+					var field=$(this).attr("data-modal-key");	
+					var value=$(this).attr("data-modal-value");
+					state_facet[field]=value;
+				}
+				else
+				{
+					console.log("unchek");
+				}
+				localStorage.setItem("state_facet", state_facet);
+
 			}
 		);
 		
@@ -229,5 +254,5 @@
 </div>
 
 <div class="d-flex align-items-center justify-content-center">
-	{% include 'pagination.html.twig' with {'include_javascript':false} %}
+	{% include 'pagination.html.twig' with {'include_javascript':true, 'key':2} %}
 </div>

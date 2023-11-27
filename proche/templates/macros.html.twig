@@ -34,13 +34,15 @@
 	$(document).ready(
 					function()
 					{
-					    $("#{{id_control}}_from").datepicker( 
-							{
-								format: 'yyyy-mm-dd',
-								startView: "years",
-								defaultViewDate: '1900-01-01'
-							}
-						);
+						
+							$("#{{id_control}}_from").datepicker( 
+								{
+									format: 'yyyy-mm-dd',
+									startView: "years",
+									defaultViewDate: '1900-01-01'
+								}
+							);
+						
 						
 						 $("#{{id_control}}_to").datepicker( 
 							{
@@ -50,6 +52,7 @@
 								defaultViewDate: '1900-01-01'
 							}
 						);
+						
 					});
 </script>
 {% endmacro %}
@@ -139,4 +142,233 @@
 
 {% macro url_link(url)%}
 	<a target="_blank" href="{{url}}">{{url}}</a>
+{% endmacro %}
+
+
+{% macro handle_iiif_main(manifest)%}
+<style>
+      .map {
+        width: 100%;
+        height: 98%;
+      }
+    </style>
+<div class="modal fade bd-example-modal-lg" id="modal_iiif" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" style="height:90%">
+    <div class="modal-content" style="height:100%">
+	<div class="modal-header float-end">
+		
+				<button type="button" id="close_modal" class="btn-close float-end" aria-label="Close"></button>
+			
+	</div>
+	<div class="modal-body" >
+    
+	 <div id="map" class="map"></div>
+	</div>
+    </div>
+  </div>
+</div>
+<div class="row" id="proche_iiif"> 
+</div>
+<script language="Javascript">
+
+var thumb_size="300";
+	var list_thumbs=Array();
+	var list_iiif=Array();
+	var map;
+	var layer;
+	var refreshMap=function(imageInfoUrl) {
+			console.log(imageInfoUrl);
+		  fetch(imageInfoUrl)
+			.then(function (response) {
+			  response
+				.json()
+				.then(function (imageInfo) {
+				  const options = new ol.format.IIIFInfo(imageInfo).getTileSourceOptions();
+				  if (options === undefined || options.version === undefined) {
+					//notifyDiv.textContent =
+					 // 'Data seems to be no valid IIIF image information.';
+					 console.log('Data seems to be no valid IIIF image information.');
+					return;
+				  }
+				  options.zDirection = -1;
+				  const iiifTileSource = new ol.source.IIIF(options);
+				  layer.setSource(iiifTileSource);
+				  
+				 map.setView(
+					new ol.View({
+					  resolutions: iiifTileSource.getTileGrid().getResolutions(),
+					  extent: iiifTileSource.getTileGrid().getExtent(),
+					  constrainOnlyCenter: true,
+					})
+				  );
+				  map.getView().fit(iiifTileSource.getTileGrid().getExtent());
+				  //notifyDiv.textContent = '';
+				  //map.getView().setZoom(12);
+				  map.getView().setZoom(2);
+				})
+				.catch(function (body) {
+				  //notifyDiv.textContent = 'Could not read image info json. ' + body;
+				  console.log("Could not read image info json. " + body);
+				});
+			})
+			.catch(function () {
+			  //notifyDiv.textContent = 'Could not read data from URL.';
+			  console.log("Could not read data from URL");
+			});
+		}
+	
+	var init_ol=function()
+	{
+		/*const layer = new ol.Layer.Tile(),
+		  map = new ol.Map({
+			layers: [layer],
+			target: 'map',
+		  });
+		 */
+		layer = new ol.layer.Tile();
+		map = new ol.Map({target: 'map',layers: [layer]});		 
+	
+	}
+	
+	var loadIIIF=function(i)
+	{
+		console.log("load");
+		console.log(i);
+		refreshMap(list_iiif[i]);
+	}
+	
+	var loadIIIF_modal=function(i)
+	{
+		$('#modal_iiif').modal('show');
+		console.log("load");
+		console.log(i);
+		refreshMap(list_iiif[i]);
+	}
+	
+	var display_thumbs_main=function(p_list_thumbs)
+	{
+		var html_imgs=Array();
+		var i=0;
+		
+		while(i<p_list_thumbs.length)
+		{
+			 var active="";
+			 if(i==0)
+			 {
+				active=" active"
+			 }
+			 html_imgs.push('<div style="margin-bottom:10px" class="col-sm-4 d-flex align-items-center justify-content-center"><div class="box"><a onclick="loadIIIF_modal('+i.toString()+')"><img class="d-block mx-auto  img-fluid" style="margin-bottom:5px" src="'+p_list_thumbs[i]+'" /><div style="text-align:center;" ></a><button  type="button" style="vertical-align:bottom;" id="to_image"  class="btn btn-light" data-bs-toggle="modal" data-bs-target=".bd-example-modal-lg" onclick="loadIIIF('+i.toString()+')" >Détail</button ></div></div></div>');
+			 
+			i++;
+		}
+		$("#proche_iiif").append(html_imgs.join(''));
+	}
+	
+	var get_thumbnail=function(url, size)
+	{
+		 url=url.replace("/full/full/", '/full/!'+size+','+size+'/');
+		 return url;
+		 
+	}
+	var handle_iiif_main=function(url)
+	{
+		
+		console.log(url);
+		var jqxhr = $.getJSON( url).done(function( data ) 
+		{
+			
+			console.log(data);
+			if("sequences" in data)
+			{
+				console.log("seq");
+				console.log(data['sequences']);
+				for(const [key, value] of Object.entries(data['sequences']))				
+				{
+					if("canvases" in value)
+					{
+						console.log("canvases");
+					
+						for (const [key1, value1] of Object.entries(value["canvases"])) 
+						{
+							if("images" in value1)
+							{						
+									
+										for (const [key2, value2] of Object.entries(value1["images"])) 
+										{
+											if("resource" in value2)
+											{
+												img=value2["resource"]["@id"];
+												console.log(img);
+												list_thumbs.push(get_thumbnail(img, thumb_size));
+												if("service" in value2["resource"])
+												{
+													list_iiif.push( value2["resource"]["service"]["@id"]+'/info.json');
+												}
+											}
+										}
+									
+							}
+						}
+					}
+					
+				}
+			}
+			
+			display_thumbs_main(list_thumbs);
+			console.log(list_iiif);
+			init_ol();
+		});
+		
+		$("#close_modal").click(
+			function()
+			{
+				$('#modal_iiif').modal('hide');
+			}
+		)
+	}
+	
+handle_iiif_main("{{manifest}}" );
+</script>
+{% endmacro %}
+
+{% macro handle_iiif_summary(manifest, id, link)%}
+<div class="row">
+<div class="carousel_proche">
+<div class="col-xs-2 col-sm-8">
+	
+	<div id="carouselExampleIndicators{{id}}" class="carousel slide " data-bs-ride="carousel">
+		<ol class="carousel-indicators">
+		</ol>
+	<a class="carousel-control-prev"  role="button" onclick="previous_{{id}}()"  >
+		<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+		 <span class="visually-hidden">Previous</span>
+	</a>
+	<div class="carousel-inner" id="carousel-inner_{{id}}" style="max-width:320px;max-height:320px" >
+	
+	</div>
+	<a class="carousel-control-next"  role="button"  onclick="next_{{id}}()">
+		<span class="carousel-control-next-icon" aria-hidden="true"></span>
+		 <span class="visually-hidden">Next</span>
+		
+	</a>
+	</div>
+</div>
+</div>
+</div>
+	<script language="Javascript">
+		var ci_{{id}}=0;
+		
+		next_{{id}}=function()
+		{
+			next_carousel({{id}}, "frame_proche_img_{{id}}_");
+		}
+		
+		previous_{{id}}=function()
+		{
+			previous_carousel({{id}}, "frame_proche_img_{{id}}_");
+		}
+		
+		handle_iiif("{{manifest}}", "{{id}}", "carousel-inner_{{id}}" );
+		
+	</script>
 {% endmacro %}

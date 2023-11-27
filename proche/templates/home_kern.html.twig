@@ -60,6 +60,125 @@
 {% include 'disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}
 
 <script language="Javascript">
+	var thumb_size="300";
+	
+	var next_carousel=function(id, ctrl)
+	{
+		var max_ci=carousel_size[id];
+		var current=carousel_current[id];
+		console.log(current);
+		console.log(max_ci);
+		if(current<max_ci-1)
+		{
+			$("#"+ctrl+current.toString()).removeClass("active");
+			current++;
+			$("#"+ctrl+current.toString()).addClass("active");
+			
+		}
+		else
+		{
+			$("#"+ctrl+current.toString()).removeClass("active");
+			current=0;
+			$("#"+ctrl+current.toString()).addClass("active");
+		}
+		
+		carousel_current[id]=current;
+	}
+	
+	var previous_carousel=function(id, ctrl)
+	{
+		var max_ci=carousel_size[id];
+		var current=carousel_current[id];
+		if(current>0)
+		{
+			$("#"+ctrl+current.toString()).removeClass("active");
+			current--;
+			$("#"+ctrl+current.toString()).addClass("active");
+			
+		}
+		else
+		{
+			$("#"+ctrl+current.toString()).removeClass("active");
+			current=max_ci-1;
+			$("#"+ctrl+current.toString()).addClass("active");
+		}
+		carousel_current[id]=current;
+	}
+	
+	var display_thumbs=function(list, id, ctrl)
+	{
+		var html_imgs=Array();
+		var i=0;
+		
+		while(i<list.length)
+		{
+			 var active="";
+			 if(i==0)
+			 {
+				active=" active"
+			 }
+			 html_imgs.push('<div class="carousel-item'+active+'" id="frame_proche_img_'+id.toString()+'_'+i.toString()+'"><img class="d-block img-fluid" src="'+list[i]+'" ></div>');
+			 
+			i++;
+		}
+		$("#"+ctrl).append(html_imgs.join(''));
+		
+		carousel_size[id]=list.length;
+		carousel_current[id]=0;
+	}
+	
+	
+	
+	var get_thumbnail=function(url, size)
+	{
+		 url=url.replace("/full/full/", '/full/!'+size+','+size+'/');
+		 return url;
+		 
+	}
+	
+	var handle_iiif=function(url,id, ctrl)
+	{
+		
+		console.log(url);
+		var jqxhr = $.getJSON( url).done(function( data ) 
+		{
+			var list_thumbs=Array();
+			console.log(data);
+			if("sequences" in data)
+			{
+				console.log("seq");
+				console.log(data['sequences']);
+				for(const [key, value] of Object.entries(data['sequences']))				
+				{
+					if("canvases" in value)
+					{
+						console.log("canvases");
+					
+						for (const [key1, value1] of Object.entries(value["canvases"])) 
+						{
+							if("images" in value1)
+							{						
+									
+										for (const [key2, value2] of Object.entries(value1["images"])) 
+										{
+											if("resource" in value2)
+											{
+												img=value2["resource"]["@id"];
+												console.log(img);
+												list_thumbs.push(get_thumbnail(img, thumb_size));
+											}
+										}
+									
+							}
+						}
+					}
+					
+				}
+			}
+			
+			display_thumbs(list_thumbs, id, ctrl);
+		});
+	}
 
 	 var search_all_docs=function(current_page, page_size)
 	{
@@ -226,7 +345,7 @@ $(document).ready(
 					$(".div_back_search").show();
 				});
 				
-	
+		
 		
 				
 		
