@@ -632,6 +632,19 @@ input.search_button {
 	width: 100%;
 }
 
+input.update_button {
+	background-color: #fff;
+	border: 1px solid #0023f9;
+	color: #0023f9;
+	margin-top: 10px;
+	margin-right: 10px;
+	padding: 8px 20px;
+	cursor: pointer;
+	text-transform: uppercase;
+	border-radius: 4px;
+	width: 100%;
+}
+
 input#get_csv {
 	background-color: #fff;
 	border: 1px solid #0023f9;
@@ -1208,6 +1221,10 @@ a.ol-popup-closer:hover, a.ol-popup-closer:focus {
 		width: 400px;
 	}
 	
+	input.update_button {
+		width: 400px;
+	}
+	
 	input#get_csv {
 		width: 400px;
 	}
@@ -1641,3 +1658,38 @@ a.ol-popup-closer:hover, a.ol-popup-closer:focus {
 		margin-top:35px;
 	}
 }}
+
+/* franck iiif*/
+/* The dots/bullets/indicators */
+.dot {
+  cursor: pointer;
+  height: 15px;
+  width: 15px;
+  margin: 0 2px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.6s ease;
+}
+
+.active, .dot:hover {
+  background-color: #717171;
+}
+
+/* Fading animation */
+.fade {
+  animation-name: fade;
+  animation-duration: 1.5s;
+}
+
+@keyframes fade {
+  from {opacity: .4}
+  to {opacity: 1}
+}
+
+.carousel_proche {
+    width: 300px;
+	/*height: 300px;*/
+	max-width: 300px;
+	max-height: 300px;
+}

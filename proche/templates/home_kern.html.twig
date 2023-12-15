@@ -39,7 +39,11 @@
 			{% endif %}
 			{% set i=i + 1 %}
 			{% endfor %}
-		</div>
+</div>
+<div  style="padding-top:10px">
+<div class="label" style="float:left;" >{{ 'with_images'|trans}}</div><div style="float:left;padding-left:20px"><input type="checkbox" id="with_images" name="with_images"/></div>
+</div>
+<br/>
 <div class="search_buttons">
 	 <div class="search_buttons"><input type="button" value="{{ 'button_search'|trans }}" id="go_search_alldocs" class="button_search"/><input type="button" value="{{ 'button_reset'|trans }}" id="flush" class="button_reset"/></div>
 </div>
@@ -60,6 +64,9 @@
 {% include 'disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}
 
 <script language="Javascript">
+	
+	
+	
 
 	 var search_all_docs=function(current_page, page_size)
 	{
@@ -99,7 +106,7 @@
 							collapsed_visible_state["#"+$(obj).attr("id")]="none";							
 						});
 					}
-					console.log("SEARCH_CALLED");
+					//console.log("SEARCH_CALLED");
 					criterias={}
 					criterias["current_page"]=current_page;
                     criterias["page_size"]=page_size;
@@ -115,7 +122,7 @@
 						{% else %}
 							{% set solr_search_field="search_"~ dyna_field_details.fields[i] %}
 							criterias["{{ solr_search_field }}"]=$("#{{ solr_search_field }}").val();
-							console.log('criterias["{{ solr_search_field }}"]');
+							//console.log('criterias["{{ solr_search_field }}"]');
 							criterias=check_and_or("chkand_{{ solr_search_field }}", criterias);
 						{% endif %}
 						{% set i=i+1 %}
@@ -130,13 +137,13 @@
 								var field=$(this).attr("data-modal-key");	
 								var value=$(this).attr("data-modal-value");
 								
-								console.log("facet");
-								console.log(field);
-								console.log(value);
+								//console.log("facet");
+								//console.log(field);
+								//console.log(value);
 								var chk_and_or=$(".chkand_facet[data-modal-key='" + field + "']");
-								console.log(".chkand_facet[data-modal-key='" + field + "']");
-								console.log(chk_and_or);
-								console.log(chk_and_or.is(':checked') );
+								//console.log(".chkand_facet[data-modal-key='" + field + "']");
+								//console.log(chk_and_or);
+								//console.log(chk_and_or.is(':checked') );
 								var and_mode=chk_and_or.is(':checked');
 								if(!(field in facet_array))
 								{
@@ -160,15 +167,25 @@
 							
 						}
 					);
-					console.log("FACETS=");
-					console.log(facet_array);
+					//console.log("FACETS=");
+					//console.log(facet_array);
 					criterias["facet_filters"]=facet_array;
 					criterias["display_facets"]=collapsed_visible_state;
 					criterias["expand_facets"]=expand_facets;
+					
+					//iiif 
+					if($("#with_images").is(':checked'))
+					{
+						criterias["with_images"]="true";
+					}
+					else
+					{
+						criterias["with_images"]="false";
+					}
 					criterias["csv"]=false;
 					if(csv)
 					{
-						console.log("handle csv");
+						//console.log("handle csv");
 						criterias["csv"]=true;
 						//criterias["md5_csv"]=md5_csv;
 						$.post("{{ path('main_search')}}", criterias,
@@ -188,14 +205,14 @@
 						$.post("{{ path('main_search')}}", criterias,
 						function(data)
 						{
-							console.log("done");
-							console.log("page");
+							//console.log("done");
+							//console.log("page");
 							$("#spinner_search").hide();
 							$("#div_results_searchall").html(data);
 						});
 					}
 					
-					//console.log(criterias);
+					////console.log(criterias);
 					
 					
 		}
@@ -226,7 +243,7 @@ $(document).ready(
 					$(".div_back_search").show();
 				});
 				
-	
+		
 		
 				
 		

@@ -19,8 +19,8 @@
 					
 						{% if pagination.page>1 %}
 						
-							<button type="button" class="pager" value="1"><<</button>
-							<button type="button"  class="pager" {{pagination.page - 1}} ><</button>
+							<button type="button" class="pager_{{key}}" value="1"><<</button>
+							<button type="button"  class="pager_{{key}}" {{pagination.page - 1}} ><</button>
 						
 						{% endif %}
 						
@@ -28,13 +28,13 @@
 						
 						{% for p in range(max(pagination.page-4, 1), 
 						min(pagination.page+4, pagination.pages_count)) %}
-						<button type="button" {% if p == pagination.page %} class="current-page pager" {% else %} class="pager" {% endif %} value="{{ p }}">{{ p }}</button>
+						<button type="button" {% if p == pagination.page %} class="current-page pager" {% else %} class="pager_{{key}}" {% endif %} value="{{ p }}">{{ p }}</button>
 						{% endfor %}
 						
 						{% if pagination.page<pagination.pages_count %}
 						
-							<button type="button" value="{{ pagination.page + 1 }}" class="pager">></button>
-							<button type="button" value="{{ pagination.pages_count }}" class="pager">>></button>
+							<button type="button" value="{{ pagination.page + 1 }}" class="pager_{{key}}">></button>
+							<button type="button" value="{{ pagination.pages_count }}" class="pager_{{key}}">>></button>
 			
 
 		
@@ -44,13 +44,13 @@
 					
 					<div class="gotopage">
 						{{'go_to_page'|trans}}
-						<input type="text" id="direct_page" value="{{ pagination.page }}" />
-						<input type="button" id="go_page" value="OK"/>
+						<input type="text" id="direct_page_{{key}}" value="{{ pagination.page }}" />
+						<input type="button" id="go_page_{{key}}" value="OK"/>
 					</div>
 	
 					<div class="resultsperpage">
 						{{'number_results_per_page'|trans}}
-						<select id="page_size" name="page_size">
+						<select id="page_size_{{key}}" name="page_size">
 							<option value="5" {{ page_size=="5" ? 'selected="selected"' : '' }} >5</option>
 							<option value="10" {{ page_size=="10" ? 'selected="selected"' : '' }} >10</option>
 							<option value="20" {{ page_size=="20" ? 'selected="selected"' : '' }} >20</option>
@@ -83,32 +83,33 @@
 		{	
            
 
-			$('.pager').click(
+			$('.pager_{{key}}').click(
 				function()
 				{
 					console.log("page=");
                     console.log($(this).val());
-					search($(this).val(),$("#page_size").val());
+					search($(this).val(),$("#page_size_{{key}}").val());
 					
 				});	
-            $('#go_page').click(
+            $('#go_page_{{key}}').click(
 				function()
 				{
-					console.log($('#direct_page').val());
-					var p=parseInt($('#direct_page').val())
+					console.log("!!!!!!!!!!!!!");
+					console.log($('#direct_page_{{key}}').val());
+					var p=parseInt($('#direct_page_{{key}}').val())
 					
 						if(p>=1 && p <= {{ pagination.pages_count }})
 						{
-							search(p,$("#page_size").val());
+							search(p,$("#page_size_{{key}}").val());
 						}
 					
 					
 				});
 
-           $('#page_size').change(
+           $('#page_size_{{key}}').change(
                 function()
                 {
-                    search(1,$("#page_size").val());
+                    search(1,$("#page_size_{{key}}").val());
                 }
            );                
 		}	

@@ -198,15 +198,16 @@ class ProcheController extends AbstractController
 		$this->set_lang_cookie( $request->getSession()->get('current_locale','fr'));
 		$client=$this->client;
 		$id=$request->get("q","");
-		if(is_numeric($id))
-		{
+		//if(is_numeric($id))
+		//{
 			$detail_main_title_field=$this->getParameter("detail_main_title_field", "id");
 			$detail_sub_title_field=$this->getParameter("detail_sub_title_field", "id");
 			$detail_fields=$this->getParameter("detail_fields",[]);
 			if(strlen(trim($id))>0)
 			{
+				
 				$query = $client->createSelect();
-				$query->setQuery("id:".$id);
+				$query->setQuery($this->getParameter('link_field',"id").":".$id);
 				$rs_tmp= $client->select($query);
 				foreach ($rs_tmp as $document) 
 				{
@@ -230,7 +231,7 @@ class ProcheController extends AbstractController
 						"cookie_accepted"=>$cookie_disclaimer]);
 				}
 			}
-		}
+		//}
 		
 		return $this->render('noresults.html.twig');
 	}
@@ -524,6 +525,8 @@ class ProcheController extends AbstractController
 		$display_facets=$request->get("display_facets",[]);
 		$expand_facets=$request->get("expand_facets",[]);
 		
+		$with_images=$request->get('with_images',"false");
+		
 		
 		$sort_field=$this->getParameter('sort_field',"id");
 		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
@@ -549,7 +552,8 @@ class ProcheController extends AbstractController
 		}
 		$title_field=$this->getParameter('title_field',"id");
 		$link_field=$this->getParameter('link_field',"id");
-		$result_fields=$this->getParameter('result_fields',[]);		
+		$result_fields=$this->getParameter('result_fields',[]);	
+			
 		
 		$csv=false;
 		if(strtolower($request->get("csv","false"))=="true")
@@ -658,7 +662,10 @@ class ProcheController extends AbstractController
 			}
 		}
 		
-	
+		if(strtolower($with_images)=="true")
+		{
+			$params_and[]="(iiif_endpoint: [* TO *])";
+		}
 		
 		if(count($params_and)>0)
 		{

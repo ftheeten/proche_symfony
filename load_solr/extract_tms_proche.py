@@ -15,7 +15,7 @@ print("init")
  
  
 h = httplib2.Http(".cache")
-h.add_credentials('', '')
+h.add_credentials('USER', 'PASSWORD')
 
 
 global_terms={}
@@ -167,9 +167,9 @@ SELECT * FROM e  "
  
 def get_tombstone(conn):
     sql="With c as \
-  ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
+  ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ " )\
 SELECT DISTINCT  t.[ObjectID], t.[ObjectNumber] , t.[SortNumber], t.Medium, t.Dimensions , t.Title FROM \
-dbo.[vgsrpObjTombstoneD_RO] t  INNER JOIN c ON c.[ID]=t.[ObjectID]  "
+dbo.[vgsrpObjTombstoneD_RO] t  INNER JOIN c ON c.[ID]=t.[ObjectID] ORDER BY [SortNumber] "
     data=pnd.read_sql(sql=sql, con=conn)
     return data
    
@@ -197,6 +197,28 @@ dbo.[vRmcaLvObjectsAcquisitionConstituents] t  INNER JOIN c ON c.[ID]=t.[ID]"
     data=pnd.read_sql(sql=sql, con=conn)
     return data
  
+def get_cultures(conn):
+    sql="With c as ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
+    SELECT DISTINCT  t.[ID], t.[ObjectNumber] , t.CulturesFlat, t.CulturesOfProductionFlat, t.Culture , t.CultureList,CultureStatus\
+    FROM [TMS].[dbo].[vRmcaLvObjectsCultures] t  INNER JOIN c ON c.[ID]=t.[ID] WHERE CultureStatus='OK'" 
+    data=pnd.read_sql(sql=sql, con=conn)
+    dict_cult_flat={}
+    dict_cult_prod_flat={}
+    dict_cult_list={}
+    for  i, row in data.iterrows():
+        tmp_cult_flat=row["CulturesFlat"] or ""
+        tmp_cult_prod_flat=row["CulturesOfProductionFlat"] or ""
+        tmp_cult =row["Culture"] or ""
+        tmp_cult_list =row["CultureList"] or ""
+        if tmp_cult_flat !="(not defined)"  and  tmp_cult_flat !="Not entered" and len(tmp_cult_flat.strip())>0:
+            dict_cult_flat[row["ObjectNumber"]]=tmp_cult_flat
+        if tmp_cult_prod_flat !="(not defined)"  and  tmp_cult_prod_flat !="Not entered" and len(tmp_cult_prod_flat.strip())>0 :
+            dict_cult_prod_flat[row["ObjectNumber"]]=tmp_cult_prod_flat
+        if tmp_cult_list !="(not defined)" and  tmp_cult_list !="Not entered" and len(tmp_cult_list.strip())>0:
+            dict_cult_list[row["ObjectNumber"]]=tmp_cult_list
+    return dict_cult_flat, dict_cult_prod_flat, dict_cult_list 
+    
+    
 def print_time():
     now = datetime.datetime.now()
     print ("Current date and time : ")
@@ -221,7 +243,9 @@ def sort_for_proche(obj_number):
     returned='.'.join(tmp3)    
     return returned
     
-def create_doc(id, objnumber, sort_number,  title, material_and_technique, dimensions,  creation_date):
+
+    
+def create_doc(id, objnumber, sort_number,  title, material_and_technique, dimensions, culture_text, culture, culture_of_production, creation_date):
     '''
     year=None
     if date_of_acquisition is not None:
@@ -242,7 +266,9 @@ def create_doc(id, objnumber, sort_number,  title, material_and_technique, dimen
         #"site_of_production" : prepare_json_object(site_of_production),
         #"date_of_acquisition":  prepare_json_object(date_of_acquisition),
         #"method_of_acquisition": prepare_json_object(method_of_acquisition),
-        
+        "culture_text": culture_text,
+        "culture": culture,
+        "culture_of_production": culture_of_production,
         "creation_date":creation_date
     }
     '''
@@ -533,6 +559,8 @@ def handle_constituents(pnd_cons, obj_id, pnd_translations):
         dict_c=add_const(dict_c, "const_trans_general",trans_list)
     return dict_c
  
+#----------------------------main  
+ 
 cn = sa.create_engine('mssql+pyodbc://db/TMS?driver=ODBC Driver 17 for SQL Server')
 #cn_thesaurus = sa.create_engine('mssql+pyodbc://db/TMSThesaurus?driver=ODBC Driver 17 for SQL Server')
  
@@ -561,6 +589,13 @@ print_time()
 pnd_translations=get_translations(cn)
 print("Got translations")
 print_time()
+
+dict_cult_flat, tmp_cult_prod_flat, dict_cult_list =get_cultures(cn)
+print("Got cultures")
+
+
+print_time()
+
 
 pnd_constituents["DisplayName"]=pnd_constituents["DisplayName"].str.strip()
 pnd_constituents["DisplayName"]=pnd_constituents["DisplayName"].replace(chr(160), " ")
@@ -601,13 +636,23 @@ print(data_top)
 '''
 
 
+main_data.sort_values(by=['SortNumber'], inplace=True)
 for index, row in main_data.iterrows():
     try:
         #print(index)
         #print(row)
         test=row["ObjectNumber"] or ""
         if len(test)>0:
-            doc=create_doc( row["ObjectID"], row["ObjectNumber"], row["SortNumber"], row["Title"], row["Medium"], row["Dimensions"] , datetime.datetime.now().isoformat())
+            culture_text=""
+            culture=""
+            culture_of_production=""
+            if row["ObjectNumber"] in dict_cult_flat:
+                culture_text=dict_cult_flat[row["ObjectNumber"]]
+            if row["ObjectNumber"] in dict_cult_list:
+                culture=dict_cult_list[row["ObjectNumber"]]
+            if row["ObjectNumber"] in tmp_cult_prod_flat:
+                culture_of_production=tmp_cult_prod_flat[row["ObjectNumber"]]
+            doc=create_doc( row["ObjectID"], row["ObjectNumber"], row["SortNumber"], row["Title"], row["Medium"], row["Dimensions"] ,culture_text, culture,culture_of_production,  datetime.datetime.now().isoformat())
             list_const=handle_constituents(pnd_constituents, row["ObjectID"], pnd_translations)
             #print(list_const)
             list_coll_loc=handle_collection_site(pnd_sites_collection, row["ObjectID"])
@@ -617,6 +662,7 @@ for index, row in main_data.iterrows():
             acq_metadata   =handle_acquisition_metadata(pnd_acq_metadata, row["ObjectID"])
             #print(acq_metadata)
 
+            
             
             list_multiple={}
             if len(list_const)>0:
@@ -648,4 +694,3 @@ for index, row in main_data.iterrows():
         print("Stack trace : %s" %stack_trace)
     except KeyboardInterrupt as ex:
         sys.exit()
- 

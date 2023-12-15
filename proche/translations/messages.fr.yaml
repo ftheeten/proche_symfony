@@ -14,6 +14,8 @@ free_text_search: Recherche texte libre
 title: Titre original 
 object_number: Numéro d’inventaire 
 culture: Culture
+culture_of_production: Culture de production
+culture_text: Culture (champ descriptif)
 method_of_acquisition: Méthode d'acquisition
 date_of_acquisition: Date d’acquisition 
 year_of_acquisition: Année d’acquisition 
@@ -75,16 +77,18 @@ close: "Fermer les"
 less: dernière(s) valeur(s)
 entries: "Mot(s)-clé(s)"
 filter: - FILTRER
+with_images: Objets avec images
 disclaimer_title: "Il s’agit du titre ou nom avec lequel l’objet a été inscrit au registre de classement des fiches d’inventaire papier.<br/> 
 Certains termes peuvent dès lors être connotés par le contexte colonial, préjudiciables ou offensants."
-disclaimer_collection_site: "Donnée indicative issue des archives/sources historiques du musée dont la précision et/ou la pertinence sont relatives.<br/>  
+disclaimer_collection_site: "Donnée indicative issue des archives et sources historiques du musée dont la précision et la pertinence sont relatives.<br/>  
 Le cas échéant, les toponymes historiques (coloniaux) ont été conservés uniquement pour garantir la cohérence des données pour la recherche."
-disclaimer_production_site: "Donnée indicative issue des archives/sources historiques du musée dont la précision et/ou la pertinence sont relatives. <br/> 
+disclaimer_production_site: "Donnée indicative issue des archives et sources historiques du musée dont la précision et la pertinence sont relatives. <br/> 
 Le cas échéant, les toponymes historiques (coloniaux) ont été conservés uniquement pour garantir la cohérence des données pour la recherche."
 disclaimer_acquisition_date: "Il s’agit ici uniquement de la date d’entrée de l’objet à l’Africamuseum et non de la date de son déplacement du Congo. "
 disclaimer_acquisition_method: "Il s’agit ici uniquement de la méthode d’acquisition de l’objet par l’Africamuseum et non de la méthode d'acquisition au Congo.<br/> 
 Le projet PROCHE a pour objectif d’approfondir les connaissances sur les méthodes d’acquisition des collections de l’Africamuseum. Pour toute remarque ou ajout merci de contacter : <b><a href=\"mailto:proche@africamuseum.be\">proche@africamuseum.be</a></b>"
-disclaimer_const: "Certains noms d’institution ou d’association sont connotés par le contexte colonial et peuvent être jugés dénigrants ou offensants. Ces terminologies, issues des sources d'origine, sont néanmoins conservées afin de permettre une recherche scientifique et critique située historiquement.  "
+disclaimer_const: "Certains noms d’institution ou d’association sont connotés par le contexte colonial et peuvent être jugés dénigrants ou offensants. Ces terminologies, issues des sources d'origine, sont néanmoins conservées afin de permettre une recherche scientifique et critique située historiquement. "
+disclaimer_culture: "Donnée indicative issue des archives et sources historiques du musée dont la précision et la pertinence sont relatives. En outre, certains termes peuvent être connotés, préjudiciables ou offensants."
 main_disclaimer: "<p><strong>Le projet PROCHE</strong> (<em>Recherche de <strong>PRO</strong>venance sur la <strong>C</strong>ollection Ethnographique – <strong>H</strong>erkomstonderzoek op de <strong>E</strong>thnografische Collectie</em>) répond à une demande à la fois politique et sociétale. Ce projet vise à mieux connaître et faire connaître à tous les publics les manières dont les collections ethnographiques et musicologiques ont été acquises pendant la période coloniale en RDC. À cette fin, cette base de données reprend l’inventaire des objets du Congo et d’Afrique centrale conservés au <em>Musée royal de l’Afrique centrale</em> (MRAC) de Tervuren qui a été remis en février 2022 au Premier ministre congolais Jean-Michel Sama Lukonde. Cette mise en ligne est une mise en partage indispensable des données, un point de départ destiné à être progressivement complété par la publication de nouveaux champs. Cette base de données sera ainsi régulièrement mise à jour en fonction de l’avancée du projet et des recherches plus approfondies qui seront effectuées sur les collections. </p>
 <p>Il s’avère que certains termes appliqués à ces objets ethnographiques et musicologiques, ainsi que certaines informations qui leur sont associées, posent problème quant à leur signification et leur exactitude. Les informations documentant ces objets sont de nature intrinsèquement coloniale et contiennent des terminologies stigmatisantes pour leurs communautés d’origine ou les diasporas concernées. Nous tenons cependant à préciser que ces informations ne sont pas représentatives de l’opinion du MRAC et du projet PROCHE. En effet, le projet défend une position anticoloniale et antidiscriminatoire et il affirme son soutien aux communautés historiquement marginalisées et privées de leurs droits. Nous sommes donc conscients que notre catalogue peut provoquer des tensions psychologiques et physiques. C’est pourquoi, nous invitons les lectrices et lecteurs à prendre en compte le contexte dans lequel le catalogue est présenté.</p>
 <p>Cet inventaire est, en soi, une source historique et une construction d’un passé plus ou moins récent. En effet, il contient des informations relevant de diverses strates historiques jusqu’à aujourd’hui et pourrait être compris,  perçu et lu comme un palimpseste. Cela rend son étude conflictuelle et laborieuse, car elle conduit aussi inévitablement à reproduire des classifications, des désignations qui sont biaisées et parfois préjudiciables. </p>
