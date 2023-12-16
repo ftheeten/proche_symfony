@@ -1713,3 +1713,10 @@ a.ol-popup-closer:hover, a.ol-popup-closer:focus {
 		
 	}
 }
+
+.thumbnail_attribution
+{
+	font-size:9px;
+	text-align:center;
+	font-style:italic;
+}

@@ -149,7 +149,7 @@
 <style>
       .map {
         width: 100%;
-        height: 98%;
+        height: 100%;
       }
     </style>
 <div class="modal fade bd-example-modal-lg" id="modal_iiif" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
@@ -164,6 +164,8 @@
     
 	 <div id="map" class="map"></div>
 	</div>
+	<div class="modal-footer" id="modal-footer">
+	</div>
     </div>
   </div>
 </div>
@@ -174,6 +176,7 @@
 	var thumb_size="300";
 	var list_thumbs=Array();
 	var list_iiif=Array();
+	var list_attributions=Array();
 	var map;
 	var layer;
 	
@@ -247,7 +250,7 @@
 		refreshMap(list_iiif[i]);
 	}
 	
-	var display_thumbs_main=function(p_list_thumbs)
+	var display_thumbs_main=function(p_list_thumbs, p_list_attributions)
 	{
 		var html_imgs=Array();
 		var i=0;
@@ -256,16 +259,21 @@
 		{
 			size_col="col-sm-12";
 		}
-		
-		
+		attribution="";
 		while(i<p_list_thumbs.length)
 		{
 			 var active="";
+			 var attribution="";
+			 if(i<p_list_attributions.length)
+			 {
+				attribution=p_list_attributions[i];
+			 }
 			 if(i==0)
 			 {
 				active=" active"
 			 }
-			 html_imgs.push('<div style="margin-bottom:10px" class="'+size_col+' d-flex align-items-center justify-content-center"><div class="box"><a onclick="loadIIIF_modal('+i.toString()+')"><img class="d-block mx-auto  img-fluid" style="margin-bottom:5px" src="'+p_list_thumbs[i]+'" /><div style="text-align:center;" ></a><button  type="button" style="vertical-align:bottom;" id="to_image"  class="btn btn-light" data-bs-toggle="modal" data-bs-target=".bd-example-modal-lg" onclick="loadIIIF('+i.toString()+')" >Détail</button ></div></div></div>');
+			 html_imgs.push('<div style="margin-bottom:10px" class="'+size_col+' d-flex align-items-center justify-content-center"><div class="box"><a onclick="loadIIIF_modal('+i.toString()+')"><img class="d-block mx-auto  img-fluid" style="margin-bottom:5px" src="'+p_list_thumbs[i]+'" /><div style="text-align:center;" ></a><button  type="button" style="vertical-align:bottom;" id="to_image"  class="btn btn-light" data-bs-toggle="modal" data-bs-target=".bd-example-modal-lg" onclick="loadIIIF('+i.toString()+')" >Détail</button ></div></div></div><div id="image_attribution_{{id}}" class="thumbnail_attribution">'+attribution+'</div>');
+			 $("#modal-footer").html(attribution);
 			 
 			i++;
 		}
@@ -278,7 +286,7 @@
 	
 	
 	
-handle_iiif_main("{{manifest}}", list_iiif, list_thumbs );
+handle_iiif_main("{{manifest}}", list_iiif, list_thumbs , list_attributions);
 </script>
 {% endmacro %}
 
@@ -304,6 +312,7 @@ handle_iiif_main("{{manifest}}", list_iiif, list_thumbs );
 		
 	</a>
 	</div>
+	<div id="image_attribution_{{id}}" class="thumbnail_attribution"></div>
 </div>
 </div>
 </div>
@@ -311,10 +320,10 @@ handle_iiif_main("{{manifest}}", list_iiif, list_thumbs );
 		var thumb_size_{{id}}="300";
 		var ci_{{id}}=0;
 		var list_thumbs_{{id}}=Array();
+		var list_attributions_{{id}}=Array();
 		
-		handle_iiif_thumbs("{{manifest}}", "{{id}}", "carousel-inner_{{id}}" , thumb_size_{{id}},  list_thumbs_{{id}});
-		console.log("carousel=");
-		console.log(list_thumbs_{{id}});
+		handle_iiif_thumbs("{{manifest}}", "{{id}}", "carousel-inner_{{id}}" , thumb_size_{{id}},  list_thumbs_{{id}}, list_attributions_{{id}});
+		
 
 		
 			next_{{id}}=function()

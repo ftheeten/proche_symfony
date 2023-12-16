@@ -225,7 +225,7 @@ var select2_generic_full=function(url, key, val, minlen, include_pattern)
 		 
 	}
 	
-	var handle_iiif_main=function(url, p_list_iiif, p_list_thumbs)
+	var handle_iiif_main=function(url, p_list_iiif, p_list_thumbs, p_list_attributions)
 	{
 		
 		//console.log(url);
@@ -259,6 +259,7 @@ var select2_generic_full=function(url, key, val, minlen, include_pattern)
 												{
 													p_list_iiif.push( value2["resource"]["service"]["@id"]+'/info.json');
 												}
+												p_list_attributions.push("");
 											}
 										}
 									
@@ -276,16 +277,35 @@ var select2_generic_full=function(url, key, val, minlen, include_pattern)
 				//console.log(collect_all_keys);
 				if("/items/items/items/body/service/id" in collect_all_keys)
 				{
+					var flag_attribution=false;
+					if("/items/requiredStatement/value/en" in collect_all_keys)
+					{
+						flag_attribution=true;
+					}
 					//console.log("proceed service");
 					for(var i=0; i<collect_all_keys["/items/items/items/body/service/id"].length; i++)
 					{
 						p_list_thumbs.push(add_thumbnail(collect_all_keys["/items/items/items/body/service/id"][i], thumb_size));
 						p_list_iiif.push( collect_all_keys["/items/items/items/body/service/id"][i]+'/info.json');
+						var attribution="";
+						if(flag_attribution)
+						{
+								if(i<collect_all_keys["/items/requiredStatement/value/en"].length)
+								{
+									attribution=collect_all_keys["/items/requiredStatement/value/en"][i];
+								}
+						
+						}
+						p_list_attributions.push(attribution);
 					}
 				}
+				
+					
+					
+				
 			}
 			
-			display_thumbs_main(p_list_thumbs);
+			display_thumbs_main(p_list_thumbs, p_list_attributions);
 			//console.log(list_iiif);
 			init_ol();
 		});
@@ -375,7 +395,7 @@ var select2_generic_full=function(url, key, val, minlen, include_pattern)
 	
 	
 	
-	var handle_iiif_thumbs=function(url,id, ctrl, thumb_size, p_list_thumbs)
+	var handle_iiif_thumbs=function(url,id, ctrl, thumb_size, p_list_thumbs, p_list_attributions)
 	{
 		
 		////console.log(url);
@@ -426,11 +446,37 @@ var select2_generic_full=function(url, key, val, minlen, include_pattern)
 					for(var i=0; i<collect_all_keys["/items/items/items/body/service/id"].length; i++)
 					{
 						p_list_thumbs.push(add_thumbnail(collect_all_keys["/items/items/items/body/service/id"][i], thumb_size));
-						
 					}
 				}
+				
+				if("/items/requiredStatement/label/en" in collect_all_keys)
+				{
+					//console.log("proceed service");
+					for(var i=0; i<collect_all_keys["/items/requiredStatement/value/en"].length; i++)
+					{
+						p_list_attributions.push(collect_all_keys["/items/requiredStatement/value/en"][i]);
+					}
+				}
+				if(p_list_attributions.length>0)
+				{
+					
+					$("#image_attribution_"+id.toString()).html(p_list_attributions.join(","));
+				}
+				if("/items/requiredStatement/value/en" in collect_all_keys)
+				{
+					//console.log("proceed service");
+					for(var i=0; i<collect_all_keys["/items/requiredStatement/value/en"].length; i++)
+					{
+						p_list_attributions.push(collect_all_keys["/items/requiredStatement/value/en"][i]);
+					}
+				}
+				if(p_list_attributions.length>0)
+				{
+					
+					$("#image_attribution_"+id.toString()).html(p_list_attributions[0]);
+				}
 			}
-			console.log(p_list_thumbs);
+			
 			display_iiif_thumbs_carousel(p_list_thumbs, id, ctrl);
 		});
 	}
