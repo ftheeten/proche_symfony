@@ -14,16 +14,20 @@ import re
  
 print("init")
  
-SRC_FILE_IIIF="D:\\DEV\\PROCHE\\IIIF\\first_serie_dieter.txt"
-IIIF_ONLY=True
+##############################################PHOTOS###########################################
+SRC_FILE_IIIF="D:\\DEV\\PROCHE\\IIIF\\second_serie_dieter.txt"
+#IF TRUE, ONLY UPDATE THE SOLR RECORDS THAT ARE IN SRC_FILE_IIIF
+#OTHERWISE PROCEED ALL DATA, INCLUDING photos
+IIIF_ONLY=False
  
 h = httplib2.Http(".cache")
-h.add_credentials('USER', 'PASSWORD')
+h.add_credentials('', '')
+
 
 
 global_terms={}
-solr_url='https://proche.africamuseum.be/solradmin/solr/proche-prod/'
-main_filter=" PackageID =130507 or  PackageID =130506 or PackageID =130508  or  PackageID =130509 "
+solr_url='xxx'
+main_filter=" PackageID =xxx or  PackageID =xxx or PackageID =xxx  or  PackageID =xxx "
  
  
  
@@ -204,8 +208,13 @@ dbo.[vRmcaLvObjectsAcquisitionConstituents] t  INNER JOIN c ON c.[ID]=t.[ID]"
  
 def get_cultures(conn):
     sql="With c as ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
-    SELECT DISTINCT  t.[ID], t.[ObjectNumber] , t.CulturesFlat, t.CulturesOfProductionFlat, t.Culture , t.CultureList,CultureStatus\
-    FROM [TMS].[dbo].[vRmcaLvObjectsCultures] t  INNER JOIN c ON c.[ID]=t.[ID] WHERE CultureStatus='OK'" 
+    SELECT DISTINCT  t.[ID], t.[ObjectNumber] ,\
+    CASE when CultureStatus='OK'  \
+    THEN REPLACE(t.CulturesFlat,'()','') \
+    ELSE REPLACE(t.CulturesFlat+' ('+ CultureStatus+')','()','') \
+    END CulturesFlat, \
+    t.CulturesOfProductionFlat, t.Culture , t.CultureList, CultureStatus\
+    FROM [TMS].[dbo].[vRmcaLvObjectsCultures] t  INNER JOIN c ON c.[ID]=t.[ID] " 
     data=pnd.read_sql(sql=sql, con=conn)
     dict_cult_flat={}
     dict_cult_prod_flat={}
@@ -651,7 +660,7 @@ for index, row in main_data.iterrows():
             iiif_endpoint=None    
             if  not pnd.isnull(row["iiif_manifest"]) and  row["iiif_manifest"] is not None:
                 iiif_endpoint=row["iiif_manifest"]
-                print("IIF FOR "+row["ObjectNumber"])
+                #print("IIF FOR "+row["ObjectNumber"])
             doc=create_doc( row["ObjectID"], row["ObjectNumber"], row["SortNumber"], row["Title"], row["Medium"], row["Dimensions"] ,culture_text, culture,culture_of_production,  datetime.datetime.now().isoformat(), iiif_endpoint)
             list_const=handle_constituents(pnd_constituents, row["ObjectID"], pnd_translations)
             #print(list_const)

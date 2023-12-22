@@ -1702,15 +1702,20 @@ a.ol-popup-closer:hover, a.ol-popup-closer:focus {
 		width: 300px;
 		/*height: 300px;*/
 		max-width: 300px;
-		max-height: 300px;
+		max-height: 400px;
 	}
 }
 
-@media only screen and (min-width: 720px) 
+@media only screen and (max-width: 720px) 
 {
 	.carousel_proche {
 		width: 400px;
 		
+	}
+	
+	.carousel-item.active
+	{
+		background-color: white; !important
 	}
 }
 
@@ -1720,3 +1725,4 @@ a.ol-popup-closer:hover, a.ol-popup-closer:focus {
 	text-align:center;
 	font-style:italic;
 }
+

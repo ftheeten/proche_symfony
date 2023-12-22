@@ -64,7 +64,7 @@
 					{% elseif label_field=="date_of_acquisition" %}
 						{% set go_disclaimer=true %}
 						{% set text_disclaimer= 'disclaimer_acquisition_date'|trans %}
-					{% elseif label_field=="culture" or label_field=="culture_of_production"   %}
+					{% elseif label_field=="culture" or label_field=="culture_of_production" or label_field=="culture_text"   %}
 						{% set go_disclaimer=true %}
 						{% set text_disclaimer= 'disclaimer_culture'|trans %}	
 					{% elseif label_field  starts with "const_" %}
