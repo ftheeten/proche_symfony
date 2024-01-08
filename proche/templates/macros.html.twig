@@ -153,18 +153,25 @@
       }
     </style>
 <div class="modal fade bd-example-modal-lg" id="modal_iiif" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" style="height:90%">
+  <div class="modal-dialog modal-lg" style="height:95%">
     <div class="modal-content" style="height:100%">
-	<div class="modal-header float-end header-proche-viewer">
-				<div class="float-start"><h5>{{ object_name }}</h5></div>
-				<div class="float-end"><button type="button" id="close_modal" class="btn-close aria-label="Close"></button></div>
+	
+	
+	<div class="modal-body" style="padding-top:2px" >
+   
+	 <div id="map" class="map" style=""> <button  type="button" id="close_modal" class="btn-close aria-label='Close'" style="position:absolute; top:10px; right: 10px; z-index:5000"></button></div>
+	
+	</div>
+	<div class="modal-footer" id="modal-footer"  style="padding:0px 1px 0px 1px;">
+		
+		<div class="container" style="width:100%">
+			<div class="row align-items-center" style="border-bottom:0px; padding:0px 2px 0px 0px;">
+				<div class="col-sm-4"> </div>
+				<div class="col-sm-4 text-center"><h5>{{ object_name }}</h5></div>
+				<div class="col-sm-4 text-center text-sm-end" id="footer-attribution" style="font-size:11px; font-style:italic; line-height:1.0;"></div>
 			
-	</div>
-	<div class="modal-body" >
-    
-	 <div id="map" class="map"></div>
-	</div>
-	<div class="modal-footer" id="modal-footer">
+			</div>
+		</div>
 	</div>
     </div>
   </div>
@@ -273,7 +280,7 @@
 				active=" active"
 			 }
 			 html_imgs.push('<div style="margin-bottom:10px" class="'+size_col+' d-flex align-items-center justify-content-center"><div class="box"><a onclick="loadIIIF_modal('+i.toString()+')"><img class="d-block mx-auto  img-fluid" style="margin-bottom:5px" src="'+p_list_thumbs[i]+'" /><div style="text-align:center;" ></a><button  type="button" style="vertical-align:bottom;" id="to_image"  class="btn btn-light" data-bs-toggle="modal" data-bs-target=".bd-example-modal-lg" onclick="loadIIIF('+i.toString()+')" >Détail</button ></div></div></div><div id="image_attribution_{{id}}" class="thumbnail_attribution">'+attribution+'</div>');
-			 $("#modal-footer").html(attribution);
+			 $("#footer-attribution").html(attribution);
 			 
 			i++;
 		}
@@ -304,7 +311,9 @@ handle_iiif_main("{{manifest}}", list_iiif, list_thumbs , list_attributions);
 		 <span class="visually-hidden">Previous</span>
 	</a>
 	<div class="carousel-inner" id="carousel-inner_{{id}}" style="max-width:320px;max-height:320px" >
-	
+		<div id="spinner_thumbs_{{id}}" class="spinner-border spinner-thumbs bg-white" role="status" style="display:none">
+			<span class="sr-only" style="text-align: center;" ></span>
+		</div>
 	</div>
 	<a class="carousel-control-next" id="carousel-control-next{{id}}" role="button"  onclick="next_{{id}}()">
 		<span class="carousel-control-next-icon" aria-hidden="true"></span>
@@ -321,6 +330,8 @@ handle_iiif_main("{{manifest}}", list_iiif, list_thumbs , list_attributions);
 		var ci_{{id}}=0;
 		var list_thumbs_{{id}}=Array();
 		var list_attributions_{{id}}=Array();
+		$("#spinner_thumbs_{{id}}").show();
+		$("#spinner_thumbs_{{id}}").css("margin-left:50%");
 		
 		handle_iiif_thumbs("{{manifest}}", "{{id}}", "carousel-inner_{{id}}" , thumb_size_{{id}},  list_thumbs_{{id}}, list_attributions_{{id}});
 		
