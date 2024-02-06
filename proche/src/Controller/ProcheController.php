@@ -236,7 +236,217 @@ class ProcheController extends AbstractController
 		return $this->render('noresults.html.twig');
 	}
 	
+	protected function strip_accent($str) 
+	{
+		$test= strtr(utf8_decode($str), utf8_decode('àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ'), 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
+		
+		return $test;
+	}
+	
 	protected function logic_autocomplete($field, $value)
+	{
+		$returned=[];
+		$client=$this->client;
+		$str="";
+		  
+		  
+		   //$field=urldecode( $field);
+		   $fs=explode("|", $field);
+		   if(count( $fs)==1)
+		   {
+			   if(strlen(trim($field))>0&&strlen(trim($value))>0)
+			   {
+				   
+				   
+				   
+					
+						// create a facet field instance and set options
+						$resp=[];
+						 $list=preg_split("/\s+/", $value);
+						 
+						 foreach($list as $keyword)
+						 {
+							if(strlen($keyword)>1)
+							{
+								$query = $client->createSelect();
+								$query->setStart(0)->setRows(0);
+								$facetSet = $query->getFacetSet();
+								$facetSet->createFacetField('sfitems')->setField($field)->setContains($keyword)->setContainsIgnoreCase(true)->setSort('asc');
+								$query->setQuery('*:*');
+								$returned_tmp = $client->select($query);
+								$facets =$returned_tmp->getFacetSet()->getFacet('sfitems');
+								foreach($facets as $vf => $count) 
+								{
+									$tmp["original"]=$vf;
+									$tmp["non_accent"]=$this->strip_accent($vf);
+									$resp[$vf]=$tmp;
+								}
+							
+							}
+							
+						  
+						}
+						$list=  array_map(array($this, 'strip_accent'), $list);
+						
+						//$resp=array_unique($resp);
+						
+						//$resp_accent=  array_map(array($this, 'strip_accent'), $resp);
+						
+						//sort($resp);
+						
+						$sort=Array();
+						
+						if($list>0)
+						{
+							$i_resp=0;
+							foreach($resp as $key=>$tmp_cluster)
+							{
+								
+								$tmp_v= $tmp_cluster["non_accent"];
+								$tmp_v_original= $tmp_cluster["original"];
+								$cpt=0;
+								foreach($list as $keyword)
+								{
+									//print("/(.*|^)".$keyword."(.*|$)/i");
+									//print("\n");
+									$test=preg_match("/(^|\s)".$keyword."(\s|$)/i", $tmp_v);
+									//$test=preg_match("/(.*|^)".$keyword."(.*|$)/i", $tmp_v);
+									if($test!==false)
+									{
+										if($test>0)
+										{
+											$cpt=$cpt+2;
+										}
+										else
+										{
+											$test=preg_match("/(.*|\s)".$keyword."(.*|$)/i", $tmp_v);
+											if($test!==false)
+											{
+												if($test>0)
+												{
+													$cpt=$cpt+1;
+												}
+											}
+										}
+									}
+									
+								}
+								//$sort[$tmp_v]=$cpt;
+								$sort[$tmp_v_original]["cpt"]=$cpt;
+								$sort[$tmp_v_original]["text"]=$tmp_v_original;
+							}	
+							$i_resp++;	
+						}
+						
+						//arsort($sort);
+						
+						 usort($sort,
+								 function ($a, $b)
+								 {
+									 /*if (strlen($a['text']) == strlen($b['text'])) 
+									 {
+										return 0;
+									}
+									else
+									{
+										if($a['cpt']==$b['cpt'])
+										{
+											return (strlen($a['text']) < strlen($b['text'])) ? -1 : 1;
+										}
+										elseif($a['cpt']<$b['cpt'])
+										{
+											return 1;
+										}
+										elseif($a['cpt']>$b['cpt'])
+										{
+											return -1;
+										}
+									}*/
+									
+									if($a['cpt']==$b['cpt'])
+									{
+											if (strlen($a['text']) == strlen($b['text'])) 
+											{
+												return 0;
+											}
+											elseif(strlen($a['text']) < strlen($b['text']))
+   											{
+												return -1;
+											}
+											else
+											{
+												return 1;
+											}
+									}
+									elseif($a['cpt']<$b['cpt'])
+									{
+											return 10;
+									}
+									elseif($a['cpt']>$b['cpt'])
+									{
+											return -10;
+									}
+									//return (strlen($a['text']) < strlen($b['text'])) ? -1 : 1;
+								 }
+							 );
+						
+						foreach($sort as $tmp_v=>$word)
+						{
+							$resp2[]=["id"=>$word["text"], "text"=>$word["text"]];
+						}
+						//array_unshift($resp2, ["id"=>$value, "text"=>$value]);
+						$returned=$resp2;
+						//$returned=[
+						//			"results"=>$resp2
+						//		];
+					
+			   }
+		   }
+		   elseif(count( $fs)>1)
+		   {
+			  $query = $client->createSelect();
+			  $query->setStart(0)->setRows(0);
+			  $facetSet = $query->getFacetSet();
+			  $i=1;
+			  foreach($fs as $tmp_field)
+			  {
+				 $newfield='sfitems'.$i;
+				
+				 $facetSet->createFacetField($newfield)->setField($tmp_field)->setContains($value)->setContainsIgnoreCase(true)->setSort('asc');
+				 $query->setQuery('*:*');
+				 $i++; 
+			  }
+			   
+			  $returned_tmp = $client->select($query);
+			  $resp=[];
+			  for($j=1;$j<$i;$j++)
+			  {
+				   $newfield='sfitems'.$j;
+				 
+				   $facets =$returned_tmp->getFacetSet()->getFacet($newfield);
+				   foreach($facets as $vf => $count) 
+				   {
+						$resp[]=$vf;
+				   }
+			  }
+			  array_unique($resp);
+			  sort($resp);
+			  $resp2=[];
+			  foreach($resp as $tmp_v)
+			  {
+				    $resp2[]=["id"=>$tmp_v, "text"=>$tmp_v];
+			  }
+			 
+			/*$returned=[
+						"results"=>$resp2
+					];*/
+			   $returned=$resp2;
+			 
+		   }
+		   return $returned;
+	}
+	
+	protected function logic_autocomplete_old($field, $value)
 	{
 		$returned=[];
 		$client=$this->client;
@@ -255,7 +465,8 @@ class ProcheController extends AbstractController
 				   $facetSet = $query->getFacetSet();
 					
 						// create a facet field instance and set options
-						
+						print($value);
+						print(")))");
 						$facetSet->createFacetField('sfitems')->setField($field)->setContains($value)->setContainsIgnoreCase(true)->setSort('asc');
 						$query->setQuery('*:*');
 						$returned_tmp = $client->select($query);
@@ -332,7 +543,19 @@ class ProcheController extends AbstractController
 		$value=$request->get("q","");
 		
 		 $response=$this->logic_autocomplete($field, $value);
-		 $mode_append_term=true;
+		 $list=preg_split("/\s+/", $value);
+		 if(count($list)>1)
+		 {
+			
+			$mode_append_term=false;
+		 }
+		 else
+		 {
+			
+			$mode_append_term=true;
+		 }
+		
+		 //$list=[];
 		  if(count($response)==0)
 		 {
 			 
@@ -343,10 +566,47 @@ class ProcheController extends AbstractController
 			{
 			  $value = strtolower($value);
 			});
-			 $list=preg_split("/\s+/", $value);
-			 
-			 if(count($list)>0)
+			 //$list=preg_split("/\s+/", $value);
+			// $mode_append_term=false;
+			$tmp_array=[];
+			
+					 
+				if(!in_array(strtolower($value),  $list_excluded_terms))
+				{
+					
+				 $tmp_response=$this->logic_autocomplete($field, $value);
+				
+				 if(count($tmp_response)>0)
+				 {
+					 if(!array_key_exists(count($tmp_response),$tmp_array))
+					 {
+						 $tmp_array[count($tmp_response)]=Array();
+					 }
+					 $tmp_array[count($tmp_response)][]=$tmp_response;
+				  }
+						 
+				}
+					 
+			
+			if(count( $tmp_array)>0)
+			{
+				ksort( $tmp_array);
+				
+				$response=Array();
+				foreach ($tmp_array as $arrval) 
+				{
+				 foreach($arrval as $arrval2)
+				 {
+					foreach($arrval2 as $arrval3)
+					{
+						$response[] = $arrval3;
+					}
+				 }
+			    }
+			}
+			 /*if(count($list)>0)
 			 {
+				 
 				 $mode_append_term=false;
 				 $tmp_array=[];
 				 foreach($list as $sub_term)
@@ -385,16 +645,41 @@ class ProcheController extends AbstractController
 						 }
 					}
 				 }
-			 }
+			 }*/
 
 		 }
 		 
-		 if($mode_append_term)
+		 if($mode_append_term )
 		 {
 		   array_unshift($response, ["id"=>$value, "text"=>$value]);
 		 }
 		 
-		 usort($response,
+		 $resp_a=[];
+		 /*if(count($list)>0)
+		 { 
+			
+			$i=0;
+			foreach($response as $resp)
+			{
+				
+				$flag=true;
+				foreach($list as $l_v)
+				{
+					if(mb_strpos(mb_strtolower($resp["text"]),mb_strtolower($l_v) )===false)
+					{
+						$flag=false;
+						break;
+					}
+				}
+				if($flag)
+				{
+					$resp_a=[$resp];
+					unset($response[$i]);
+				}
+				$i++;
+			}
+		 }*/
+		 /*usort($response,
 			 function ($a, $b)
 			 {
 				 if (strlen($a['text']) == strlen($b['text'])) 
@@ -403,7 +688,11 @@ class ProcheController extends AbstractController
 				}
 				return (strlen($a['text']) < strlen($b['text'])) ? -1 : 1;
 			 }
-		 );
+		 );*/
+		 if(count($resp_a)>0)
+		 {
+			$response = array_merge($resp_a, $response);
+		 }
 		 
 		 $returned=[
 								"results"=>$response
@@ -636,6 +925,7 @@ class ProcheController extends AbstractController
 		
 		if(array_key_exists("field",$dyna_field_free )&&array_key_exists("label", $dyna_field_free))
 		{
+			
 			if(count($free_search)>0)
 			{		
 				$params_and[]="(". $this->getParameter('free_text_search_field')["field"].": (".implode(" OR ", $free_search)."))";

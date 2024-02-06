@@ -33,7 +33,7 @@ var select2_generic_full=function(url, key, val, minlen, include_pattern)
 		{
 			var global_pattern="";
 			return {
-						tags:true,
+						tags:false,
                         minimumInputLength: minlen,
                         ajax:
                         {
