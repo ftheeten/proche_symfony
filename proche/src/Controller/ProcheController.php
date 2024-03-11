@@ -243,6 +243,48 @@ class ProcheController extends AbstractController
 		return $test;
 	}
 	
+	protected function refine_autocomplete($results, $term)
+	{
+		$control1=Array();
+		$control2=Array();
+		foreach($results as $tmp0)
+		{
+			$control1[]=$tmp0["text"];
+		}
+
+		$tmp_result=Array();
+		//$term=strtolower($term);
+		
+		foreach($control1 as $r)
+		{
+			
+			$tmp2=explode(" ", $r);
+			
+			
+
+			foreach($tmp2 as $term2)
+			{
+				
+				if(mb_stripos( $term2, $term)!==false)
+				{
+					
+					if(! in_array($term2,$control2 ) && ! in_array($term2,$control1 ))
+					{
+						
+						$tmp_result[]=["cpt"=>1, "text"=>$term2];
+						$control2[]=$term2;
+					}
+				}
+			}
+		}
+
+		if(count($tmp_result)>0)
+		{
+			$results=array_merge($tmp_result, $results);
+		}
+		return $results;
+	}
+	
 	protected function logic_autocomplete($field, $value)
 	{
 		$returned=[];
@@ -389,7 +431,8 @@ class ProcheController extends AbstractController
 									//return (strlen($a['text']) < strlen($b['text'])) ? -1 : 1;
 								 }
 							 );
-						
+						$sort=$this->refine_autocomplete($sort, $value);
+						$resp2=Array();
 						foreach($sort as $tmp_v=>$word)
 						{
 							$resp2[]=["id"=>$word["text"], "text"=>$word["text"]];

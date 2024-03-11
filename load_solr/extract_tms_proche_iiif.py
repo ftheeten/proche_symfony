@@ -15,7 +15,7 @@ import re
 print("init")
  
 ##############################################PHOTOS###########################################
-SRC_FILE_IIIF="D:\\DEV\\PROCHE\\IIIF\\second_serie_dieter.txt"
+SRC_FILE_IIIF="SRC_IIIF_links.txt"
 #IF TRUE, ONLY UPDATE THE SOLR RECORDS THAT ARE IN SRC_FILE_IIIF
 #OTHERWISE PROCEED ALL DATA, INCLUDING photos
 IIIF_ONLY=False
@@ -576,7 +576,7 @@ def handle_constituents(pnd_cons, obj_id, pnd_translations):
  
 #----------------------------main 
  
-cn = sa.create_engine('mssql+pyodbc://db/TMS?driver=ODBC Driver 17 for SQL Server')
+cn = sa.create_engine('mssql+pyodbc://XXX/XXX?driver=ODBC Driver 17 for SQL Server')
 #cn_thesaurus = sa.create_engine('mssql+pyodbc://db/TMSThesaurus?driver=ODBC Driver 17 for SQL Server')
 df_iiif=pnd.read_csv(SRC_FILE_IIIF, sep="\t", header=0)
 

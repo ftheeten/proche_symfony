@@ -9,18 +9,16 @@
 		{% block stylesheets %}
 			<link rel="stylesheet" href="{{ app.request.baseUrl }}/js/bootstrap_5_2_3/dist/css/bootstrap.css" type="text/css"/>
 			<link rel="stylesheet" href="{{ app.request.baseUrl }}/js/select2/dist/css/select2.css" type="text/css"/>
-			<link rel="stylesheet" href="{{ app.request.baseUrl }}/css/main.css?v=20231231" type="text/css"/>
-			<link rel="stylesheet" href="{{ app.request.baseUrl }}/css/proche.css?v=20231231b" type="text/css"/>
+			<link rel="stylesheet" href="{{ app.request.baseUrl }}/css/main.css?v=20231004" type="text/css"/>
+			<link rel="stylesheet" href="{{ app.request.baseUrl }}/css/proche.css?v=20231131" type="text/css"/>
 			<link rel="stylesheet" href="{{ app.request.baseUrl }}/js/bootstrap-datepicker-1.9.0-dist/css/bootstrap-datepicker.css" type="text/css"/>
-			<link rel="stylesheet" href="{{ app.request.baseUrl }}/js/openlayers_8_2/ol.css" type="text/css"/>
 		{% endblock %}
 		{% block javascripts %}
 			<script src="{{ app.request.baseUrl }}/js/jquery/jquery-3.6.2.min.js"></script>
 			<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 			<script src="{{ app.request.baseUrl }}/js/bootstrap_5_2_3/dist/js/bootstrap.bundle.js"></script>
             <script src="{{ app.request.baseUrl }}/js/select2/dist/js/select2.full.min.js"></script>
-			<script src="{{ app.request.baseUrl }}/js/core.js?v=20240206"></script>
-			<script src="{{ app.request.baseUrl }}/js/openlayers_8_2/ol.js"></script>
+			<script src="{{ app.request.baseUrl }}/js/core.js?v=20231131"></script>
 			<script src="{{ app.request.baseUrl }}js/bootstrap-datepicker-1.9.0-dist/js/bootstrap-datepicker.min.js"></script>
 		{% endblock %}
 	</head>
