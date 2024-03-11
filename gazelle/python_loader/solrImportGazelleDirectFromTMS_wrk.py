@@ -763,6 +763,7 @@ def generate_solr_json(row_main, pnd_terms, merge_hierarch, pnd_relationships, p
     doc["exhibition_facet"]=doc["exhibition"]
     
     alt_nums=unique_clean(pnd_alt_nums, "object_id",object_id, "alt_num_str")
+    doc["last_update_date"]=datetime.datetime.now().isoformat()
     doc["alt_num_full"]=alt_nums
     if len(images_for_solr)>0:
         doc= {**doc, **images_for_solr}
