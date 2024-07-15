@@ -8,7 +8,7 @@
 
 		<div class="label">{{ 'free_text_search'|trans }}</div>		
 		
-		<div>{{ macros.select2_multiple("free_search","free_search", path("terms"),"all_str", "", "width:100%") }}</div>
+		<div>{{ macros.select2_multiple("free_search","free_search", path("terms"),"all_str", "", "width:100%","FALSE","true" ) }}</div>
 
 <div style="{{ details=="true"?"":"display:none;" }}">
 {% set i=0 %}
@@ -183,6 +183,7 @@
 						criterias["with_images"]="false";
 					}
 					criterias["csv"]=false;
+					console.log(criterias);
 					if(csv)
 					{
 						//console.log("handle csv");

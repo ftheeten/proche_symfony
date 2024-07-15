@@ -290,7 +290,7 @@ class ProcheController extends AbstractController
 		$returned=[];
 		$client=$this->client;
 		$str="";
-		  
+		  				 
 		  
 		   //$field=urldecode( $field);
 		   $fs=explode("|", $field);
@@ -300,7 +300,7 @@ class ProcheController extends AbstractController
 			   {
 				   
 				   
-				   
+
 					
 						// create a facet field instance and set options
 						$resp=[];
@@ -474,6 +474,7 @@ class ProcheController extends AbstractController
 			  }
 			  array_unique($resp);
 			  sort($resp);
+			  
 			  $resp2=[];
 			  foreach($resp as $tmp_v)
 			  {
@@ -489,113 +490,33 @@ class ProcheController extends AbstractController
 		   return $returned;
 	}
 	
-	protected function logic_autocomplete_old($field, $value)
-	{
-		$returned=[];
-		$client=$this->client;
-		$str="";
-		  
-		  
-		   //$field=urldecode( $field);
-		   $fs=explode("|", $field);
-		   if(count( $fs)==1)
-		   {
-			   if(strlen(trim($field))>0&&strlen(trim($value))>0)
-			   {
-				   $query = $client->createSelect();
-				   $query->setStart(0)->setRows(0);
-				   
-				   $facetSet = $query->getFacetSet();
-					
-						// create a facet field instance and set options
-						print($value);
-						print(")))");
-						$facetSet->createFacetField('sfitems')->setField($field)->setContains($value)->setContainsIgnoreCase(true)->setSort('asc');
-						$query->setQuery('*:*');
-						$returned_tmp = $client->select($query);
-						$facets =$returned_tmp->getFacetSet()->getFacet('sfitems');
-						$resp=[];
-						
-						foreach($facets as $vf => $count) 
-						{
-							$resp[]=$vf;
-						}
-						$resp=array_unique($resp);
-						sort($resp);
-						$resp2=[];
-						foreach($resp as $tmp_v)
-						{
-							$resp2[]=["id"=>$tmp_v, "text"=>$tmp_v];
-						}
-						//array_unshift($resp2, ["id"=>$value, "text"=>$value]);
-						$returned=$resp2;
-						//$returned=[
-						//			"results"=>$resp2
-						//		];
-					
-			   }
-		   }
-		   elseif(count( $fs)>1)
-		   {
-			  $query = $client->createSelect();
-			  $query->setStart(0)->setRows(0);
-			  $facetSet = $query->getFacetSet();
-			  $i=1;
-			  foreach($fs as $tmp_field)
-			  {
-				 $newfield='sfitems'.$i;
-				
-				 $facetSet->createFacetField($newfield)->setField($tmp_field)->setContains($value)->setContainsIgnoreCase(true)->setSort('asc');
-				 $query->setQuery('*:*');
-				 $i++; 
-			  }
-			   
-			  $returned_tmp = $client->select($query);
-			  $resp=[];
-			  for($j=1;$j<$i;$j++)
-			  {
-				   $newfield='sfitems'.$j;
-				 
-				   $facets =$returned_tmp->getFacetSet()->getFacet($newfield);
-				   foreach($facets as $vf => $count) 
-				   {
-						$resp[]=$vf;
-				   }
-			  }
-			  array_unique($resp);
-			  sort($resp);
-			  $resp2=[];
-			  foreach($resp as $tmp_v)
-			  {
-				    $resp2[]=["id"=>$tmp_v, "text"=>$tmp_v];
-			  }
-			 
-			/*$returned=[
-						"results"=>$resp2
-					];*/
-			   $returned=$resp2;
-			 
-		   }
-		   return $returned;
-	}
+	
 	
 	#[Route('/terms', name: 'terms')]
 	public function terms(Request $request): JsonResponse
     {
 		$field=$request->get("f","");
 		$value=$request->get("q","");
-		
+		$append_term=$request->get("append_term","false");
 		 $response=$this->logic_autocomplete($field, $value);
 		 $list=preg_split("/\s+/", $value);
-		 if(count($list)>1)
+		 /*if(count($list)>1 && strtolower($append_term)!=="true")
 		 {
 			
 			$mode_append_term=false;
 		 }
-		 else
+		 elseif
 		 {
 			
 			$mode_append_term=true;
+		 }*/
+		 if(strtolower($append_term)==="true"||count($list)==1)
+		 {
+			 $mode_append_term=true;
+		 }
+		 else
+		 {
+			 $mode_append_term=false;
 		 }
 		
 		 //$list=[];
@@ -647,91 +568,24 @@ class ProcheController extends AbstractController
 				 }
 			    }
 			}
-			 /*if(count($list)>0)
-			 {
-				 
-				 $mode_append_term=false;
-				 $tmp_array=[];
-				 foreach($list as $sub_term)
-				 {
-					 
-					 if(!in_array(strtolower($sub_term),  $list_excluded_terms))
-					 {
-						
-						 $tmp_response=$this->logic_autocomplete($field, $sub_term);
-						
-						 if(count($tmp_response)>0)
-						 {
-							 if(!array_key_exists(count($tmp_response),$tmp_array))
-							 {
-								 $tmp_array[count($tmp_response)]=Array();
-							 }
-							 $tmp_array[count($tmp_response)][]=$tmp_response;
-						 }
-						 
-					 }
-					 
-				 }
-				 if(count( $tmp_array)>0)
-				 {
-					 ksort( $tmp_array);
-					
-					 $response=Array();
-					 foreach ($tmp_array as $arrval) 
-					 {
-						 foreach($arrval as $arrval2)
-						 {
-							foreach($arrval2 as $arrval3)
-							{
-								$response[] = $arrval3;
-							}
-						 }
-					}
-				 }
-			 }*/
+
 
 		 }
-		 
-		 if($mode_append_term )
+		 $tmp_array=array_map(
+			function($x)
+			{
+				return strtolower($x["text"]);
+			}
+			,$response
+		 );
+		//print_r(array_map('strtolower', array_keys($response)));
+		 if($mode_append_term && !in_array(strtolower($value), $tmp_array))
 		 {
 		   array_unshift($response, ["id"=>$value, "text"=>$value]);
 		 }
 		 
 		 $resp_a=[];
-		 /*if(count($list)>0)
-		 { 
-			
-			$i=0;
-			foreach($response as $resp)
-			{
-				
-				$flag=true;
-				foreach($list as $l_v)
-				{
-					if(mb_strpos(mb_strtolower($resp["text"]),mb_strtolower($l_v) )===false)
-					{
-						$flag=false;
-						break;
-					}
-				}
-				if($flag)
-				{
-					$resp_a=[$resp];
-					unset($response[$i]);
-				}
-				$i++;
-			}
-		 }*/
-		 /*usort($response,
-			 function ($a, $b)
-			 {
-				 if (strlen($a['text']) == strlen($b['text'])) 
-				 {
-					return 0;
-				}
-				return (strlen($a['text']) < strlen($b['text'])) ? -1 : 1;
-			 }
-		 );*/
+		 
 		 if(count($resp_a)>0)
 		 {
 			$response = array_merge($resp_a, $response);
@@ -932,6 +786,16 @@ class ProcheController extends AbstractController
 							$params_and[]=$field.":[".$date_end." TO ".$date_begin."]";
 						}
 					}
+					elseif(strlen(trim($date_begin))>0)
+					{
+							$date_end=date('Y-m-d');
+							$params_and[]=$field.":[".$date_begin." TO ".$date_end."]";
+					}
+					elseif(strlen(trim($date_end))>0)
+					{
+							$date_begin=date('0001-01-01');
+							$params_and[]=$field.":[".$date_begin." TO ".$date_end."]";
+					}
 				}
 				elseif($dyna_fields_matching[$i]=="exact")
 				{
@@ -971,8 +835,20 @@ class ProcheController extends AbstractController
 			
 			if(count($free_search)>0)
 			{		
-				$params_and[]="(". $this->getParameter('free_text_search_field')["field"].": (".implode(" OR ", $free_search)."))";
 				
+				foreach($free_search as $val)
+				{
+				//$params_and[]="(". $this->getParameter('free_text_search_field')["field"].": (".implode(" OR ", $free_search)."))";
+					$elems=preg_split("/\s+/",$val);
+					$elems=array_map(
+						function($x)
+						{
+							return $this->getParameter('free_text_search_field')["field"].':'.str_replace(array('"',"(",")",":"),'',$x);
+						}
+						,$elems
+					);
+					$params_and[]="(". implode(" AND ", $elems).")";
+				}
 			}
 		}
 		

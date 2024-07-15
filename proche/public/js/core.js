@@ -24,14 +24,15 @@ var increase_facet_size=function(field, value)
 	
 }
 
-var select2_generic=function(url, key, val, minlen)
+var select2_generic=function(url, key, val, minlen, include_pattern)
 {
-	return select2_generic_full(url, key, val, minlen, true);
+	return select2_generic_full(url, key, val, minlen, include_pattern);
 }
 
 var select2_generic_full=function(url, key, val, minlen, include_pattern)
 		{
 			var global_pattern="";
+			
 			return {
 						tags:false,
                         minimumInputLength: minlen,
@@ -45,7 +46,8 @@ var select2_generic_full=function(url, key, val, minlen, include_pattern)
                                 return {
 									
                                     q: param.term,
-                                    f: key
+                                    f: key,
+									append_term:include_pattern
                                 };
                             }
                             

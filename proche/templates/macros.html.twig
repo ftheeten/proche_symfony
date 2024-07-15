@@ -1,5 +1,6 @@
-{% macro select2_multiple( id_control, name_control, ajax_url, field_select2, class_control, style_control, and_mode) %}
+{% macro select2_multiple( id_control, name_control, ajax_url, field_select2, class_control, style_control, and_mode, append_mode) %}
 {% set and_mode=and_mode??"FALSE" %}
+{% set append_mode=append_mode??"FALSE" %}
 <select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }} select2_proche" style="{{ style_control }}" multiple="multiple"></select> 
 {% if and_mode=="TRUE" %}
 <div><input type="checkbox" id="chkand_{{ id_control }}" name="chkand_{{ name_control }}" class="chkand">
@@ -9,7 +10,7 @@
 				$(document).ready(
 					function()
 					{
-						$("{{'#'}}{{ id_control }}").select2(select2_generic("{{ ajax_url }}","{{ field_select2 }}","{{ field_select2 }}",1, true ));
+						$("{{'#'}}{{ id_control }}").select2(select2_generic("{{ ajax_url }}","{{ field_select2 }}","{{ field_select2 }}",1, "{{append_mode}}" ));
 					});
 			</script>
 {% endmacro %}
@@ -20,7 +21,7 @@
 				$(document).ready(
 					function()
 					{
-						$("{{'#'}}{{ id_control }}").select2(select2_generic("{{ ajax_url }}","{{ field_select2 }}","{{ field_select2 }}",1, true ));
+						$("{{'#'}}{{ id_control }}").select2(select2_generic("{{ ajax_url }}","{{ field_select2 }}","{{ field_select2 }}",1 ));
 						
 						
 					});
@@ -279,7 +280,7 @@
 			 {
 				active=" active"
 			 }
-			 html_imgs.push('<div style="margin-bottom:10px" class="'+size_col+' d-flex align-items-center justify-content-center"><div class="box"><a onclick="loadIIIF_modal('+i.toString()+')"><img class="d-block mx-auto  img-fluid" style="margin-bottom:5px" src="'+p_list_thumbs[i]+'" /><div style="text-align:center;" ></a><button  type="button" style="vertical-align:bottom;" id="to_image"  class="btn btn-light" data-bs-toggle="modal" data-bs-target=".bd-example-modal-lg" onclick="loadIIIF('+i.toString()+')" >Détail</button ></div></div></div><div id="image_attribution_{{id}}" class="thumbnail_attribution">'+attribution+'</div>');
+			 html_imgs.push('<div style="margin-bottom:10px" class="'+size_col+' d-flex align-items-center justify-content-center"><div class="box"><a onclick="loadIIIF_modal('+i.toString()+')"><img class="d-block mx-auto  img-fluid" style="margin-bottom:5px" src="'+p_list_thumbs[i]+'" /><div style="text-align:center;" ></a><button  type="button" style="vertical-align:bottom;" id="to_image"  class="btn btn-light" data-bs-toggle="modal" data-bs-target=".bd-example-modal-lg" onclick="loadIIIF('+i.toString()+')" >Détail</button ></div></div></div><div id="image_attribution_'+i.toString()+'" class="thumbnail_attribution">'+attribution+'</div>');
 			 $("#footer-attribution").html(attribution);
 			 
 			i++;
