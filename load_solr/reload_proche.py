@@ -1,28 +1,54 @@
-import pyodbc
-import httplib2
-import datetime
-import traceback
-import sys
-import pandas as pnd
-import json
-from collections import OrderedDict
+﻿import httplib2
 import sqlalchemy as sa
+import pandas as pnd
+import traceback
+import urllib
+import json
+import datetime
+
+
+import os
+import sys
+from collections import OrderedDict
 from xml.sax.saxutils import escape
 import xml.etree.ElementTree as ET
 import re
- 
-print("init")
- 
- 
-h = httplib2.Http(".cache")
-h.add_credentials('USER', 'PASSWORD')
 
+MAIN_FILTER="  "
+QUERY_PROCHE="https://proche.africamuseum.be/solradmin/solr/proche-prod/select?_=1717579280150&fl=id,object_number&indent=true&q=*:*&q.op=OR&useParams=&sort=id%20asc"
+QUERY_DELETE_PROCHE="https://proche.africamuseum.be/solradmin/solr/proche-prod/update"
+FOLDER_LOG="/opt/v2024/log_proche/"
+SRC_FILE_IIIF="/opt/v2024/iiif_proche/all_dieter.txt"
+#IF TRUE, ONLY UPDATE THE SOLR RECORDS THAT ARE IN SRC_FILE_IIIF
+#OTHERWISE PROCEED ALL DATA, INCLUDING photos
+IIIF_ONLY=False
+ 
+h = httplib2.Http()
+h.add_credentials('', '') 
+SOLR_URL='' 
 
-global_terms={}
-solr_url='https://proche.africamuseum.be/solradmin/solr/proche-prod/'
-main_filter=" PackageID =130507 or  PackageID =130506 or PackageID =130508  or  PackageID =130509 "
+def print_time():
+    now = datetime.now()
+    print ("Current date and time : ")
+    print (now.strftime("%Y-%m-%d %H:%M:%S"))
+
+def getDBConnection():
+    print("connect TMS")
+    params = urllib.parse.quote_plus(r'Driver={ODBC Driver 18 for SQL Server};Server=,1433;Database=TMS;Uid=;Pwd=$;TrustServerCertificate=yes;')
+    conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+    cn = sa.create_engine(conn_str)
+    return cn
+
+    
+    
+def check_tms(cn):
+    global global_db
+    sql="SELECT c1.ID , ObjectNumber FROM   [TMS].[dbo].[PackageList] c1 INNER JOIN [TMS].[dbo].[Objects] ON c1.ID=[Objects].ObjectID  WHERE   "+MAIN_FILTER+";"
+    data=pnd.read_sql(sql=sql, con=cn)
+    return data
+    
  
- 
+#--------------------
 def insert_solr(p_h, p_solr_url,  p_fields, list_multi_fields=None ):
     list_fields=[]
     insert_url=p_solr_url+"update"
@@ -40,6 +66,8 @@ def insert_solr(p_h, p_solr_url,  p_fields, list_multi_fields=None ):
     xml="<add><doc>"+"".join(list_fields)+"</doc></add>"
     #print(xml)
     resp, content = p_h.request(insert_url, "GET", body=xml.encode('utf-8'), headers={'content-type':'application/xml', 'charset':'utf-8'} )
+    #print(resp)
+    #print(content)
     check_xml = ET.fromstring(content)
     stat=check_xml.findall(".//int[@name='status']")
     if(len(stat)>0):
@@ -69,7 +97,7 @@ def get_translations(conn):
     sql="with a as \
 (  \
  SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1  \
-WHERE   "+main_filter+"), \
+WHERE   "+MAIN_FILTER+"), \
 c_mor  \
 AS  \
  (SELECT * FROM  [TMS].[dbo].[Constituents] WHERE  ConstituentTypeID = 2 OR ConstituentTypeID=4), \
@@ -98,7 +126,7 @@ def get_constituents(conn):
     sql="with a as \
 (  \
  SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1  \
- WHERE   "+main_filter+"),  \
+ WHERE   "+MAIN_FILTER+"),  \
   c_phys  \
  AS  \
  (SELECT * FROM [TMS].[dbo].[Constituents] WHERE  ConstituentTypeID = 1 OR ConstituentTypeID=3), \
@@ -167,7 +195,7 @@ SELECT * FROM e  "
  
 def get_tombstone(conn):
     sql="With c as \
-  ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ " )\
+  ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ MAIN_FILTER+ " )\
 SELECT DISTINCT  t.[ObjectID], t.[ObjectNumber] , t.[SortNumber], t.Medium, t.Dimensions , t.Title FROM \
 dbo.[vgsrpObjTombstoneD_RO] t  INNER JOIN c ON c.[ID]=t.[ObjectID] ORDER BY [SortNumber] "
     data=pnd.read_sql(sql=sql, con=conn)
@@ -175,7 +203,7 @@ dbo.[vgsrpObjTombstoneD_RO] t  INNER JOIN c ON c.[ID]=t.[ObjectID] ORDER BY [Sor
    
 def get_sites_collection(conn):
     sql="With c as \
-  ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
+  ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ MAIN_FILTER+ ")\
 SELECT DISTINCT  t.[ID] as [ObjectID], t.[SitesOfCollectionFlat]  FROM \
 dbo.[vRmcaLvObjectsGeography ] t  INNER JOIN c ON c.[ID]=t.[ID]"
     data=pnd.read_sql(sql=sql, con=conn)
@@ -183,7 +211,7 @@ dbo.[vRmcaLvObjectsGeography ] t  INNER JOIN c ON c.[ID]=t.[ID]"
     
 def get_sites_production(conn):
     sql="With c as \
-  ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
+  ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ MAIN_FILTER+ ")\
 SELECT DISTINCT t.[ID] as [ObjectID], t.[SitesOfProductionFlat]  FROM \
 dbo.[vRmcaLvObjectsGeography ] t  INNER JOIN c ON c.[ID]=t.[ID]"
     data=pnd.read_sql(sql=sql, con=conn)
@@ -191,16 +219,21 @@ dbo.[vRmcaLvObjectsGeography ] t  INNER JOIN c ON c.[ID]=t.[ID]"
    
 def get_acquisition_metadata(conn):
     sql="With c as \
-  ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
+  ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ MAIN_FILTER+ ")\
 SELECT DISTINCT t.[ID] as [ObjectID], t.[AccessionISODate] , t.[AccessionMethod]  FROM \
 dbo.[vRmcaLvObjectsAcquisitionConstituents] t  INNER JOIN c ON c.[ID]=t.[ID]"
     data=pnd.read_sql(sql=sql, con=conn)
     return data
  
 def get_cultures(conn):
-    sql="With c as ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ main_filter+ ")\
-    SELECT DISTINCT  t.[ID], t.[ObjectNumber] , t.CulturesFlat, t.CulturesOfProductionFlat, t.Culture , t.CultureList,CultureStatus\
-    FROM [TMS].[dbo].[vRmcaLvObjectsCultures] t  INNER JOIN c ON c.[ID]=t.[ID] WHERE CultureStatus='OK'" 
+    sql="With c as ( SELECT c1.* FROM   [TMS].[dbo].[PackageList] c1 WHERE "+ MAIN_FILTER+ ")\
+    SELECT DISTINCT  t.[ID], t.[ObjectNumber] ,\
+    CASE when CultureStatus='OK'  \
+    THEN REPLACE(t.CulturesFlat,'()','') \
+    ELSE REPLACE(t.CulturesFlat+' ('+ CultureStatus+')','()','') \
+    END CulturesFlat, \
+    t.CulturesOfProductionFlat, t.Culture , t.CultureList, CultureStatus\
+    FROM [TMS].[dbo].[vRmcaLvObjectsCultures] t  INNER JOIN c ON c.[ID]=t.[ID] " 
     data=pnd.read_sql(sql=sql, con=conn)
     dict_cult_flat={}
     dict_cult_prod_flat={}
@@ -245,7 +278,7 @@ def sort_for_proche(obj_number):
     
 
     
-def create_doc(id, objnumber, sort_number,  title, material_and_technique, dimensions, culture_text, culture, culture_of_production, creation_date):
+def create_doc(id, objnumber, sort_number,  title, material_and_technique, dimensions, culture_text, culture, culture_of_production, creation_date, iiif_endpoint):
     '''
     year=None
     if date_of_acquisition is not None:
@@ -269,7 +302,8 @@ def create_doc(id, objnumber, sort_number,  title, material_and_technique, dimen
         "culture_text": culture_text,
         "culture": culture,
         "culture_of_production": culture_of_production,
-        "creation_date":creation_date
+        "creation_date":creation_date,
+        "iiif_endpoint": iiif_endpoint
     }
     '''
     if year is not None:
@@ -559,138 +593,227 @@ def handle_constituents(pnd_cons, obj_id, pnd_translations):
         dict_c=add_const(dict_c, "const_trans_general",trans_list)
     return dict_c
  
-#----------------------------main  
- 
-cn = sa.create_engine('mssql+pyodbc://db/TMS?driver=ODBC Driver 17 for SQL Server')
-#cn_thesaurus = sa.create_engine('mssql+pyodbc://db/TMSThesaurus?driver=ODBC Driver 17 for SQL Server')
- 
- 
-print("run")
-print_time()
-main_data=get_tombstone(cn)
-print("Got main data")
-print_time()
-print(len(main_data))
-pnd_sites_collection=get_sites_collection(cn)
-print("Got sites collection")
-print_time()
-print(len(pnd_sites_collection))
-pnd_sites_production=get_sites_production(cn)
-print("Got sites production")
-print_time()
-print(len(pnd_sites_production))
-pnd_acq_metadata=get_acquisition_metadata(cn)
-print("Got Acquisition metadata")
-print_time()
-print(len(pnd_acq_metadata))
-pnd_constituents=get_constituents(cn)
-print("Got constituents")
-print_time()
-pnd_translations=get_translations(cn)
-print("Got translations")
-print_time()
+#----------------------------main 
+    
+try:  
+    today = datetime.date.today()
+    
+    page_size=10000
+    cn=getDBConnection()
+    data_tms_proche= check_tms(cn)
+    #for i , row in data_tms_proche.iterrows():
+    #    print(row)
+    
+    #detect new data
+    ids_tms=data_tms_proche["ID"].unique()
+    dict_tms={}
+    for key in ids_tms:
+        dict_tms[str(key)]=data_tms_proche.loc[data_tms_proche["ID"]==key, "ObjectNumber"].iloc[0]
+    ids_tms=map(str, ids_tms)  
+    page=1
+    ids={}
+    go=True
+    while go:
+        offset=(page-1)*page_size
+        solr_url_clean=QUERY_PROCHE+"&rows="+str(page_size)+"&start="+str(offset)
+        #print(solr_url)
+        resp, content = h.request(solr_url_clean, "GET",  headers={'content-type':'application/JSON', 'charset':'utf-8'} )
+        #print(resp)
+        #print(content)
+        json_p=json.loads(content)
+        #print(json_p)
+        amount=json_p["response"]["numFound"]
+        for doc in json_p["response"]["docs"]:
+            num=None
+            if isinstance(doc["object_number"], list):
+                if len(doc["object_number"])>0:
+                    num=doc["object_number"][0]
+            else:
+                num=doc["object_number"]
+            ids[str(doc["id"])]=num
+        if (offset + page_size) < amount:
+            page=page+1
+        else:
+            go=False
 
-dict_cult_flat, tmp_cult_prod_flat, dict_cult_list =get_cultures(cn)
-print("Got cultures")
+    new_in_tms=list(set(dict_tms.keys()) - set(ids.keys()))
+
+    removed_from_tms=list(set(ids.keys()) - set(dict_tms.keys()))
+
+    log_file=FOLDER_LOG+"log_proche_"+ today.strftime("%Y_%m_%d")+".txt"
+    print(log_file)
+    f = open(log_file,'w')
+    f.write('date import\t' + today.strftime("%Y/%m/%d %H:%M:%S") + os.linesep)
+    f.write("added from TMS" + os.linesep)
+    f.write("id_tms\tobjet_number" + os.linesep)
+    for key in new_in_tms:
+        #print(key)
+        f.write(str(key)+'\t'+ str(dict_tms[key]) + os.linesep)
+    f.write("removed from PROCHE" + os.linesep)
+    f.write("id_tms\tobjet_number" + os.linesep)
+    for key in removed_from_tms:
+        f.write(str(key)+'\t'+ str(ids[key]) + os.linesep)
+    f.close()
+    
+    #delete
+    for id in removed_from_tms:
+        try:
+            xml_delete="<delete><query>id:"+str(id)+"</query></delete>"
+            resp, content =h.request(QUERY_DELETE_PROCHE, "GET", body=xml_delete.encode('utf-8'), headers={'content-type':'application/xml', 'charset':'utf-8'} )
+            print("deleted "+str(id))
+        except BaseException as ex:
+            # Get current system exception
+            print("Exception line %s", str(index))
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            trace_back = traceback.extract_tb(ex_traceback)
+            stack_trace = list()
+            for trace in trace_back:
+                stack_trace.append("File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
+            print("Exception type : %s " % ex_type.__name__)
+            print("Exception message : %s" %ex_value)
+            print("Stack trace : %s" %stack_trace)
+    '''
+    xml_delete="<delete><query>*:*</query></delete>"
+    resp, content =h.request(QUERY_DELETE_PROCHE, "GET", body=xml_delete.encode('utf-8'), headers={'content-type':'application/xml', 'charset':'utf-8'} )
+    print(resp)
+    print(content)
+    resp, content = h.request(QUERY_DELETE_PROCHE+"?commit=true", "GET", body=xml_delete.encode('utf-8'), headers={'content-type':'application/xml', 'charset':'utf-8'} )
+    print(resp)
+    print(content)
+    '''
+    #REFILL
+    
+    
+    df_iiif=pnd.read_csv(SRC_FILE_IIIF, sep="\t", header=0)
+
+   
+
+    print("run")
+    print_time()
+    main_data=get_tombstone(cn)
+    print("Got main data")
+    print_time()
+    print(len(main_data))
+    pnd_sites_collection=get_sites_collection(cn)
+    print("Got sites collection")
+    print_time()
+    print(len(pnd_sites_collection))
+    pnd_sites_production=get_sites_production(cn)
+    print("Got sites production")
+    print_time()
+    print(len(pnd_sites_production))
+    pnd_acq_metadata=get_acquisition_metadata(cn)
+    print("Got Acquisition metadata")
+    print_time()
+    print(len(pnd_acq_metadata))
+    pnd_constituents=get_constituents(cn)
+    print("Got constituents")
+    print_time()
+    pnd_translations=get_translations(cn)
+    print("Got translations")
+    print_time()
+
+    dict_cult_flat, tmp_cult_prod_flat, dict_cult_list =get_cultures(cn)
+    print("Got cultures")
 
 
-print_time()
+    print_time()
 
 
-pnd_constituents["DisplayName"]=pnd_constituents["DisplayName"].str.strip()
-pnd_constituents["DisplayName"]=pnd_constituents["DisplayName"].replace(chr(160), " ")
+    pnd_constituents["DisplayName"]=pnd_constituents["DisplayName"].str.strip()
+    pnd_constituents["DisplayName"]=pnd_constituents["DisplayName"].replace(chr(160), " ")
 
 
-pnd_translations["base_name"]=pnd_translations["base_name"].str.strip()
-pnd_translations["base_name"]=pnd_translations["base_name"].replace(chr(160), " ")
+    pnd_translations["base_name"]=pnd_translations["base_name"].str.strip()
+    pnd_translations["base_name"]=pnd_translations["base_name"].replace(chr(160), " ")
 
-#for index, row in pnd_translations.iterrows():
-#    print(row)
+    #for index, row in pnd_translations.iterrows():
+    #    print(row)
 
-cn.dispose()
- 
-print("LEN main data")
-print(len(main_data))
-'''
-print("LEN pnd_sites")
-print(len(pnd_sites))
+    cn.dispose()
+     
+    print("LEN main data")
+    print(len(main_data))
 
 
-data_top = pnd_sites.columns
-print(data_top)
 
+    if IIIF_ONLY:
+        main_data=main_data.merge(df_iiif, left_on="ObjectID", right_on="tms_id", how="inner" )
+    else:
+        main_data=main_data.merge(df_iiif, left_on="ObjectID", right_on="tms_id", how="left" )
+    #main_data = main_data.replace(np.nan, None)
+    #for index, row in main_data.iterrows():
+    #    print(row)
 
-p_all=main_data.merge(pnd_sites, on='ObjectID', how='left')
-print("LEN p_all 1")
-print(len(p_all))
+     
+     
+    main_data.sort_values(by=['SortNumber'], inplace=True)
+    for index, row in main_data.iterrows():
+        try:
+            #print(index)
+            #print(row)
+            test=row["ObjectNumber"] or ""
+            if len(test)>0:
+                culture_text=""
+                culture=""
+                culture_of_production=""
+                if row["ObjectNumber"] in dict_cult_flat:
+                    culture_text=dict_cult_flat[row["ObjectNumber"]]
+                if row["ObjectNumber"] in dict_cult_list:
+                    culture=dict_cult_list[row["ObjectNumber"]]
+                if row["ObjectNumber"] in tmp_cult_prod_flat:
+                    culture_of_production=tmp_cult_prod_flat[row["ObjectNumber"]]
+                iiif_endpoint=None    
+                if  not pnd.isnull(row["iiif_manifest"]) and  row["iiif_manifest"] is not None:
+                    iiif_endpoint=row["iiif_manifest"]
+                    #print("IIF FOR "+row["ObjectNumber"])
+                doc=create_doc( row["ObjectID"], row["ObjectNumber"], row["SortNumber"], row["Title"], row["Medium"], row["Dimensions"] ,culture_text, culture,culture_of_production,  datetime.datetime.now().isoformat(), iiif_endpoint)
+                list_const=handle_constituents(pnd_constituents, row["ObjectID"], pnd_translations)
+                #print(list_const)
+                list_coll_loc=handle_collection_site(pnd_sites_collection, row["ObjectID"])
+                list_prod_loc=handle_production_site(pnd_sites_production, row["ObjectID"])
+                #print(list_coll_loc)
+                #print(list_prod_loc)
+                acq_metadata   =handle_acquisition_metadata(pnd_acq_metadata, row["ObjectID"])
+                #print(acq_metadata)
 
-
-print("LEN pnd_acq_metadata")
-print(len(pnd_acq_metadata))
-p_all=p_all.merge(pnd_acq_metadata, on='ObjectID', how='left')
-print("LEN p_all 2")
-print(len(p_all))
-
-data_top = p_all.columns
-print(data_top)
-'''
-
-
-main_data.sort_values(by=['SortNumber'], inplace=True)
-for index, row in main_data.iterrows():
-    try:
-        #print(index)
-        #print(row)
-        test=row["ObjectNumber"] or ""
-        if len(test)>0:
-            culture_text=""
-            culture=""
-            culture_of_production=""
-            if row["ObjectNumber"] in dict_cult_flat:
-                culture_text=dict_cult_flat[row["ObjectNumber"]]
-            if row["ObjectNumber"] in dict_cult_list:
-                culture=dict_cult_list[row["ObjectNumber"]]
-            if row["ObjectNumber"] in tmp_cult_prod_flat:
-                culture_of_production=tmp_cult_prod_flat[row["ObjectNumber"]]
-            doc=create_doc( row["ObjectID"], row["ObjectNumber"], row["SortNumber"], row["Title"], row["Medium"], row["Dimensions"] ,culture_text, culture,culture_of_production,  datetime.datetime.now().isoformat())
-            list_const=handle_constituents(pnd_constituents, row["ObjectID"], pnd_translations)
-            #print(list_const)
-            list_coll_loc=handle_collection_site(pnd_sites_collection, row["ObjectID"])
-            list_prod_loc=handle_production_site(pnd_sites_production, row["ObjectID"])
-            #print(list_coll_loc)
-            #print(list_prod_loc)
-            acq_metadata   =handle_acquisition_metadata(pnd_acq_metadata, row["ObjectID"])
-            #print(acq_metadata)
-
-            
-            
-            list_multiple={}
-            if len(list_const)>0:
-                list_multiple = {**list_multiple, **list_const}
-            if len(list_coll_loc)>0:
-                list_multiple = {**list_multiple, **list_coll_loc}
-            if len(list_prod_loc)>0:
-                list_multiple = {**list_multiple, **list_prod_loc}
-            if len(acq_metadata)>0:
-                list_multiple = {**list_multiple, **acq_metadata}
-            #print(list_multiple)
-            #print(doc)
-            #print(i)
-            insert_solr(h, solr_url, doc, list_multiple)
-            if index%100==0:
-                print(index)
-        #if index>100:
-        #    break 
-    except BaseException as ex:
-        # Get current system exception
-        print("Exception line %s", str(index))
-        ex_type, ex_value, ex_traceback = sys.exc_info()
-        trace_back = traceback.extract_tb(ex_traceback)
-        stack_trace = list()
-        for trace in trace_back:
-            stack_trace.append("File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
-        print("Exception type : %s " % ex_type.__name__)
-        print("Exception message : %s" %ex_value)
-        print("Stack trace : %s" %stack_trace)
-    except KeyboardInterrupt as ex:
-        sys.exit()
+                
+                
+                list_multiple={}
+                if len(list_const)>0:
+                    list_multiple = {**list_multiple, **list_const}
+                if len(list_coll_loc)>0:
+                    list_multiple = {**list_multiple, **list_coll_loc}
+                if len(list_prod_loc)>0:
+                    list_multiple = {**list_multiple, **list_prod_loc}
+                if len(acq_metadata)>0:
+                    list_multiple = {**list_multiple, **acq_metadata}
+                #print(list_multiple)
+                #print(doc)
+                #print(i)
+                
+                insert_solr(h, SOLR_URL, doc, list_multiple)
+                if index%100==0:
+                    print(index)
+                    #sys.exit()
+            #if index>100:
+            #    break 
+        except BaseException as ex:
+            # Get current system exception
+            print("Exception line %s", str(index))
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            trace_back = traceback.extract_tb(ex_traceback)
+            stack_trace = list()
+            for trace in trace_back:
+                stack_trace.append("File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
+            print("Exception type : %s " % ex_type.__name__)
+            print("Exception message : %s" %ex_value)
+            print("Stack trace : %s" %stack_trace)
+            #sys.exit()
+        except KeyboardInterrupt as ex:
+            sys.exit()
+    
+except Exception as e:
+  print ("Error: unable to fetch data")
+  print(e)
+  traceback.print_exc()

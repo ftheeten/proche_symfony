@@ -1,6 +1,8 @@
-{% macro select2_multiple( id_control, name_control, ajax_url, field_select2, class_control, style_control, and_mode, append_mode) %}
+{% macro select2_multiple( id_control, name_control, ajax_url, field_select2, class_control, style_control, and_mode, append_mode, endpoint) %}
 {% set and_mode=and_mode??"FALSE" %}
 {% set append_mode=append_mode??"FALSE" %}
+{% set endpoint=endpoint??"default" %}
+
 <select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }} select2_proche" style="{{ style_control }}" multiple="multiple"></select> 
 {% if and_mode=="TRUE" %}
 <div><input type="checkbox" id="chkand_{{ id_control }}" name="chkand_{{ name_control }}" class="chkand">
@@ -10,18 +12,20 @@
 				$(document).ready(
 					function()
 					{
-						$("{{'#'}}{{ id_control }}").select2(select2_generic("{{ ajax_url }}","{{ field_select2 }}","{{ field_select2 }}",1, "{{append_mode}}" ));
+						$("{{'#'}}{{ id_control }}").select2(select2_generic("{{ ajax_url }}","{{ field_select2 }}","{{ field_select2 }}",1, "{{append_mode}}", "{{endpoint}}"));
 					});
 			</script>
 {% endmacro %}
 
-{% macro select2( id_control, name_control, ajax_url, field_select2, class_control, style_control) %}
+{% macro select2( id_control, name_control, ajax_url, field_select2, class_control, style_control, endpoint) %}
+{% set append_mode="FALSE" %}
+{% set endpoint=endpoint??"default" %}
 <select name="{{ name_control }}" id="{{ id_control }}" class="{{ class_control }}  select2_multiple_proche" style="{{ style_control }}" ></select>
 		<script type="text/javascript">
 				$(document).ready(
 					function()
 					{
-						$("{{'#'}}{{ id_control }}").select2(select2_generic("{{ ajax_url }}","{{ field_select2 }}","{{ field_select2 }}",1 ));
+						$("{{'#'}}{{ id_control }}").select2(select2_generic("{{ ajax_url }}","{{ field_select2 }}","{{ field_select2 }}",1 , "{{append_mode}}", "{{endpoint}}"));
 						
 						
 					});

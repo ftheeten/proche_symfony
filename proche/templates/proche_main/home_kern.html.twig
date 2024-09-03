@@ -1,0 +1,255 @@
+﻿{% import "macros/macros.html.twig" as macros  %}
+{% set details=details??"false" %}
+{% set endpoint=endpoint??"default" %}
+<div id="spinner_search" class="spinner-border spinner bg-white" role="status" style="display:none">
+  <span class="sr-only"></span>
+</div>
+<!--begin SEARCH DIV-->
+<div class="container" id="main_search_div" name="main_search_div">
+
+		<div class="label">{{ 'free_text_search'|trans }}</div>		
+		
+		<div>{{ macros.select2_multiple("free_search","free_search", path("terms"),"all_str", "", "width:100%","FALSE","true", endpoint ) }}</div>
+
+<div style="{{ details=="true"?"":"display:none;" }}">
+{% set i=0 %}
+
+{% for detail_field in dyna_field_details.fields %}
+	
+	{% if i%2 ==0 %}
+		<div class="row row-2columns">	
+			{% endif %}
+				{% set solr_field=dyna_field_details.fields[i] %}
+				{% set solr_autocomplete_field=dyna_field_details.autocomplete_fields[i] %}
+				{% set and_mode="FALSE" %}
+					{% if solr_field=="const_general_str" or solr_field=="const_general" or solr_field=="const_trans_general" %}
+						{% set and_mode="TRUE" %}
+				{% endif %}
+					{% if dyna_field_details.types[i] =="hidden_string" %}
+						
+						
+						<div style="display:none">{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode, "FALSE", endpoint) }}</div>
+					{% elseif  dyna_field_details.types[i] =="date" %}
+						{{ macros.date_field("search_" ~solr_field, "search_" ~solr_field, dyna_field_details.labels[i]|trans ) }}
+					{% else %}
+						<div class="col-sm-4"><div class="label">{{ dyna_field_details.labels[i]|trans}}</div>{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode, "FALSE", endpoint) }}</div>
+					{% endif %}
+				{% if (i%2 !=0) or (i==(dyna_field_details.fields|length)-1) %}
+					<!-- Attention do not remove even if it makes the number of closing div not matching openin ones !!!-->
+				</div>
+			{% endif %}
+			{% set i=i + 1 %}
+			{% endfor %}
+</div>
+<div  style="padding-top:10px">
+<div class="label" style="float:left;" >{{ 'with_images'|trans}}</div><div style="float:left;padding-left:20px"><input type="checkbox" id="with_images" name="with_images"/></div>
+</div>
+<br/>
+<div class="search_buttons">
+	 <div class="search_buttons"><input type="button" value="{{ 'button_search'|trans }}" id="go_search_alldocs" class="button_search"/><input type="button" value="{{ 'button_reset'|trans }}" id="flush" class="button_reset"/></div>
+</div>
+
+<!--END SEARCH DIV-->
+
+</div>
+
+<!--RESULTS-->
+
+<div class="container">
+<div id="div_results_searchall"></div>
+</div>
+
+<!--END RESULTS-->
+
+<!--DISCLAIMER-->
+{% include 'proche_main/disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}
+
+<script language="Javascript">
+	
+	
+	
+
+	 var search_all_docs=function(current_page, page_size)
+	{
+		search_logic_all_docs(current_page, page_size,false, "")
+						
+	}
+	
+	 var search_all_docs_csv=function(current_page, page_size)
+	{
+		search_logic_all_docs(current_page, page_size,true)
+						
+	}
+		
+	var update_select_from_facet=function(id_select, value)
+	{
+		$(id_select).append("<option value='"+value+"' selected>"+value+"</option>");
+		$(id_select).trigger('change'); 
+
+	}
+	
+	var check_and_or= function(id_ctrl, criteria)
+	{
+		if($("#"+id_ctrl).is(":checked"))
+		{
+			criterias[id_ctrl]="TRUE";
+		}
+		return criteria;
+	}
+	
+	var search_logic_all_docs=function(current_page, page_size, csv)
+		{
+					$("#spinner_search").show();
+					//init all twig collapsed
+					if(Object.keys(collapsed_visible_state).length==0)
+					{
+						$('.proche_collapsible').each(function(i, obj) {							
+							collapsed_visible_state["#"+$(obj).attr("id")]="none";							
+						});
+					}
+					//console.log("SEARCH_CALLED");
+					criterias={}
+					criterias["endpoint"]="{{ endpoint }}"
+					criterias["current_page"]=current_page;
+                    criterias["page_size"]=page_size;
+					criterias["free_search"]=$("#free_search").val();
+					
+					{% set i=0 %}
+					{% for detail_field in dyna_field_details.fields %}
+						{% if  dyna_field_details.types[i] =="date" %}
+							{% set solr_search_field_begin="search_"~ dyna_field_details.fields[i]~"_from" %}
+							{% set solr_search_field_to="search_"~ dyna_field_details.fields[i]~"_to" %}
+							criterias["{{ solr_search_field_begin }}"]=$("#{{ solr_search_field_begin }}").val();
+							criterias["{{ solr_search_field_to }}"]=$("#{{ solr_search_field_to }}").val();
+						{% else %}
+							{% set solr_search_field="search_"~ dyna_field_details.fields[i] %}
+							criterias["{{ solr_search_field }}"]=$("#{{ solr_search_field }}").val();
+							//console.log('criterias["{{ solr_search_field }}"]');
+							criterias=check_and_or("chkand_{{ solr_search_field }}", criterias);
+						{% endif %}
+						{% set i=i+1 %}
+					{% endfor %}
+					
+					var facet_array={};
+					$(".chk_facets").each(
+						function()
+						{
+							if($(this).is(':checked'))
+							{
+								var field=$(this).attr("data-modal-key");	
+								var value=$(this).attr("data-modal-value");
+								
+								//console.log("facet");
+								//console.log(field);
+								//console.log(value);
+								var chk_and_or=$(".chkand_facet[data-modal-key='" + field + "']");
+								//console.log(".chkand_facet[data-modal-key='" + field + "']");
+								//console.log(chk_and_or);
+								//console.log(chk_and_or.is(':checked') );
+								var and_mode=chk_and_or.is(':checked');
+								if(!(field in facet_array))
+								{
+									//facet_array[field]=Array();
+									facet_array[field]={};
+									facet_array[field]["values"]=Array()
+									
+								}
+								value=value.replace(":","");
+								value=value.replace('"',"");
+								var tmp_array=facet_array[field]["values"];								
+								tmp_array.push(value);
+								facet_array[field]["values"]=tmp_array;
+								criterias["chk_facet_and_search_"+field]="FALSE";
+								if(and_mode)
+								{
+									criterias["chk_facet_and_search_"+field]="TRUE";
+								}
+								
+							}
+							
+						}
+					);
+					//console.log("FACETS=");
+					//console.log(facet_array);
+					criterias["facet_filters"]=facet_array;
+					criterias["display_facets"]=collapsed_visible_state;
+					criterias["expand_facets"]=expand_facets;
+					
+					//iiif 
+					if($("#with_images").is(':checked'))
+					{
+						criterias["with_images"]="true";
+					}
+					else
+					{
+						criterias["with_images"]="false";
+					}
+					criterias["csv"]=false;
+					console.log(criterias);
+					if(csv)
+					{
+						//console.log("handle csv");
+						criterias["csv"]=true;
+						//criterias["md5_csv"]=md5_csv;
+						$.post("{{ path('main_search')}}", criterias,
+						function(data)
+						{
+							$("#spinner_search").hide();
+							var encodedUri = encodeURI("data:text/csv;charset=utf-8," +data);
+							var link = document.createElement("a");
+							link.setAttribute("href", encodedUri);
+							link.setAttribute("download", "my_data.csv");
+							document.body.appendChild(link); // Required for FF
+							link.click(); // This will download the data file named "my_data.csv".
+						});
+					}
+					else
+					{
+						$.post("{{ path('main_search')}}", criterias,
+						function(data)
+						{
+							//console.log("done");
+							//console.log("page");
+							$("#spinner_search").hide();
+							$("#div_results_searchall").html(data);
+						});
+					}
+					
+					////console.log(criterias);
+					
+					
+		}
+		
+
+$(document).ready(
+	function()
+	{
+		
+		$("#flush").click(
+			function()
+			{
+				
+				$(".select2_proche").val(null).trigger('change');
+				$(".select2_multiple_proche").val(null).trigger('change');
+				$(".chk_facets").prop("checked", false);
+				$("#go_search_alldocs").click();
+				$(".chkand").prop("checked", false);
+			}
+		);
+		$("#go_search_alldocs").click(
+				function()
+				{
+					search=search_all_docs;
+					search_csv=search_all_docs_csv;
+					search_all_docs(1, $("#page_size").val());
+					$("#main_search_div").hide();
+					$(".div_back_search").show();
+				});
+				
+		
+		
+				
+		
+	}
+);
+</script>

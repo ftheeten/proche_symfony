@@ -1,0 +1,15 @@
+{% set text_disclaimer=text_disclaimer??"" %}
+<div class="info_disclaimer_detail">
+
+	<div class="info_disclaimer_buttons" id="trigger_disc{{i}}" data-bs-toggle="collapse" data-bs-target="#div_disc{{i}}" aria-expanded="false" aria-controls="collapseExample">
+		<img  src="{{ app.request.baseUrl }}/images/info_icon.svg"></img>
+		<i>&nbsp;{{'disclaimer_info_button'|trans}}</i>
+	</div>
+
+	<div class="collapse" id="div_disc{{i}}" style="margin-top: 10px">
+		<p>
+		{{ text_disclaimer | raw }}
+		</p>
+	</div>
+	
+</div>

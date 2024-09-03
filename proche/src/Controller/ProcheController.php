@@ -27,6 +27,7 @@ class ProcheController extends AbstractController
 
 	protected $default_lang="fr";
     private $client;
+	private $clients=Array();
 	private $page_size=10;
 
 	
@@ -46,6 +47,7 @@ class ProcheController extends AbstractController
    public function __construct(\Solarium\Client $client,  LocaleSwitcher $localeSwitcher, HttpClientInterface $http_client ) {
 	   
        $this->client = $client;
+	   //$this->client->setDefaultEndPoint('constituents');
 	   $this->localeSwitcher=$localeSwitcher;
 	   //$this->bus=$bus;
 	   $this->http_client=$http_client;
@@ -136,7 +138,8 @@ class ProcheController extends AbstractController
 		$lang=$this->get_lang_cookie($request);
 		$this->localeSwitcher->setLocale($this->default_lang);
 		$this->set_lang_cookie($this->default_lang);
-		return $this->render('extra_pages/pageabout.html.twig',[]);
+		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+		return $this->render('extra_pages/pageabout.html.twig',[ "cookie_accepted"=>$cookie_disclaimer]);
 	}
 	
 	#[Route('/{locale}', name:"homelang", requirements: ['locale' => '(en|fr|nl)'])]
@@ -154,60 +157,64 @@ class ProcheController extends AbstractController
     public function simplesearch(Request $request): Response
     {		
 		$lang=$this->get_lang_cookie($request);
+		$endpoint=strtolower($request->get("endpoint","default"));
 		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale',$lang));
-		$dyna_field_free=$this->getParameter('free_text_search_field',[]);		
-		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
+		$dyna_field_free=$this->getParameter($endpoint)['free_text_search_field'];
+		$dyna_field_details=$this->getParameter($endpoint)['detailed_search_fields'];
 		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
-        return $this->render('home.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer]);
+        return $this->render($endpoint.'/home.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer, "endpoint"=>$endpoint]);
     }
 	
 	#[Route('/simplesearch/{locale}', name: 'simplesearchlang', requirements: ['locale' => '(en|fr|nl)'])]	
     public function simplesearchlang(Request $request, $locale="fr"): Response
     {
 		$cookie_locale=$request->cookies->get('proche_locale',"");
-		
+		$endpoint=strtolower($request->get("endpoint","default"));
+		$this->client->setDefaultEndPoint($endpoint);
 		$session=$request->getSession();
 		$this->localeSwitcher->setLocale($locale);
 		$session->set('current_locale', $locale);
 		$this->set_lang_cookie($locale);
-		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
-		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
+		$dyna_field_free=$this->getParameter($endpoint)['free_text_search_field'];
+		$dyna_field_details=$this->getParameter($endpoint)['detailed_search_fields'];
 		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
-        return $this->render('home.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer]);
+		$this->client->setDefaultEndPoint("default");
+        return $this->render($endpoint.'/home.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer, "endpoint"=>$endpoint]);
     }
 	
 	#[Route('/detailed_searches', name: 'detailed_search')]	
     public function home_detail(Request $request): Response
     {
-		
-		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
-		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
+		$endpoint=$request->get("endpoint", "default");
+		$dyna_field_details=$this->getParameter($endpoint)["detailed_search_fields"];
+		$dyna_field_free=$this->getParameter($endpoint)["free_text_search_field"];
 		
 		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','fr'));
 		$response = new Response();
 		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
-        return $this->render('home_details.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer]);
+        return $this->render($endpoint.'/home_details.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer, "endpoint"=> $endpoint]);
     }
 	
 	
 	#[Route('/detail', name: 'detail')]
 	public function detail(Request $request): Response
     {
-		
+		$endpoint=strtolower($request->get("endpoint","default"));
+		$this->client->setDefaultEndPoint($endpoint);
 		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','fr'));		
 		$this->set_lang_cookie( $request->getSession()->get('current_locale','fr'));
 		$client=$this->client;
 		$id=$request->get("q","");
 		//if(is_numeric($id))
 		//{
-			$detail_main_title_field=$this->getParameter("detail_main_title_field", "id");
-			$detail_sub_title_field=$this->getParameter("detail_sub_title_field", "id");
-			$detail_fields=$this->getParameter("detail_fields",[]);
+			$detail_main_title_field=$this->getParameter($endpoint)["detail_main_title_field"];
+			$detail_sub_title_field=$this->getParameter($endpoint)["detail_sub_title_field"];
+			$detail_fields=$this->getParameter($endpoint)["detail_fields"];
 			if(strlen(trim($id))>0)
 			{
 				
 				$query = $client->createSelect();
-				$query->setQuery($this->getParameter('link_field',"id").":".$id);
+				$query->setQuery($this->getParameter($endpoint)['link_field'].":".$id);
 				$rs_tmp= $client->select($query);
 				foreach ($rs_tmp as $document) 
 				{
@@ -223,7 +230,7 @@ class ProcheController extends AbstractController
 				{
 					$detail=$rs[0];
 					$cookie_disclaimer=$this->get_disclaimer_cookie($request);
-					return $this->render('detail.html.twig',[
+					return $this->render($endpoint.'/detail.html.twig',[
 						"doc"=>$detail, 
 						"detail_main_title_field"=> $detail_main_title_field, 
 						"detail_sub_title_field"=> $detail_sub_title_field, 
@@ -232,8 +239,8 @@ class ProcheController extends AbstractController
 				}
 			}
 		//}
-		
-		return $this->render('noresults.html.twig');
+		$this->client->setDefaultEndPoint('default');
+		return $this->render($endpoint.'/noresults.html.twig');
 	}
 	
 	protected function strip_accent($str) 
@@ -330,11 +337,7 @@ class ProcheController extends AbstractController
 						}
 						$list=  array_map(array($this, 'strip_accent'), $list);
 						
-						//$resp=array_unique($resp);
 						
-						//$resp_accent=  array_map(array($this, 'strip_accent'), $resp);
-						
-						//sort($resp);
 						
 						$sort=Array();
 						
@@ -385,25 +388,7 @@ class ProcheController extends AbstractController
 						 usort($sort,
 								 function ($a, $b)
 								 {
-									 /*if (strlen($a['text']) == strlen($b['text'])) 
-									 {
-										return 0;
-									}
-									else
-									{
-										if($a['cpt']==$b['cpt'])
-										{
-											return (strlen($a['text']) < strlen($b['text'])) ? -1 : 1;
-										}
-										elseif($a['cpt']<$b['cpt'])
-										{
-											return 1;
-										}
-										elseif($a['cpt']>$b['cpt'])
-										{
-											return -1;
-										}
-									}*/
+									 
 									
 									if($a['cpt']==$b['cpt'])
 									{
@@ -439,9 +424,7 @@ class ProcheController extends AbstractController
 						}
 						//array_unshift($resp2, ["id"=>$value, "text"=>$value]);
 						$returned=$resp2;
-						//$returned=[
-						//			"results"=>$resp2
-						//		];
+						
 					
 			   }
 		   }
@@ -481,9 +464,7 @@ class ProcheController extends AbstractController
 				    $resp2[]=["id"=>$tmp_v, "text"=>$tmp_v];
 			  }
 			 
-			/*$returned=[
-						"results"=>$resp2
-					];*/
+			
 			   $returned=$resp2;
 			 
 		   }
@@ -497,19 +478,19 @@ class ProcheController extends AbstractController
     {
 		$field=$request->get("f","");
 		$value=$request->get("q","");
+		$endpoint=strtolower($request->get("endpoint", "default"));
+		if($endpoint!=="default")
+		{
+			$this->client->setDefaultEndPoint($endpoint);
+		}
+		else
+		{
+			$this->client->setDefaultEndPoint("default");
+		}
 		$append_term=$request->get("append_term","false");
 		 $response=$this->logic_autocomplete($field, $value);
 		 $list=preg_split("/\s+/", $value);
-		 /*if(count($list)>1 && strtolower($append_term)!=="true")
-		 {
-			
-			$mode_append_term=false;
-		 }
-		 elseif
-		 {
-			
-			$mode_append_term=true;
-		 }*/
+		 
 		 if(strtolower($append_term)==="true"||count($list)==1)
 		 {
 			 $mode_append_term=true;
@@ -530,8 +511,7 @@ class ProcheController extends AbstractController
 			{
 			  $value = strtolower($value);
 			});
-			 //$list=preg_split("/\s+/", $value);
-			// $mode_append_term=false;
+			 
 			$tmp_array=[];
 			
 					 
@@ -594,7 +574,7 @@ class ProcheController extends AbstractController
 		 $returned=[
 								"results"=>$response
 							];
-		
+		 $this->client->setDefaultEndPoint("default");
 		 return $this->json($returned); 	
 	}
 	
@@ -692,6 +672,10 @@ class ProcheController extends AbstractController
 	#[Route('/main_search', name: 'main_search')]
 	public function main_search(Request $request): Response
     {
+		$endpoint=strtolower($request->get("endpoint","default"));
+		$this->client->setDefaultEndPoint($endpoint);
+		
+		
 		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','fr'));
 		$this->set_lang_cookie( $request->getSession()->get('current_locale','fr'));
 		$client=$this->client;
@@ -714,13 +698,17 @@ class ProcheController extends AbstractController
 		$with_images=$request->get('with_images',"false");
 		
 		
-		$sort_field=$this->getParameter('sort_field',"id");
+		/*$sort_field=$this->getParameter('sort_field',"id");
 		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
 		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
 		$dyna_field_facets=$this->getParameter('facet_fields',[]);
+		*/
+		$sort_field=$this->getParameter($endpoint)['sort_field'];
+		$dyna_field_free=$this->getParameter($endpoint)['free_text_search_field'];
+		$dyna_field_details=$this->getParameter($endpoint)['detailed_search_fields'];
+		$dyna_field_facets=$this->getParameter($endpoint)['facet_fields'];
 		
-		
-		$list_included_fields_csv=$this->getParameter('csv_fields',[]);
+		$list_included_fields_csv=$this->getParameter($endpoint)['csv_fields'];
 		
 		
 		
@@ -736,9 +724,9 @@ class ProcheController extends AbstractController
 			$facet_callbacks[$tech_field]=$call_back_facets[$i];
 			$i++;
 		}
-		$title_field=$this->getParameter('title_field',"id");
-		$link_field=$this->getParameter('link_field',"id");
-		$result_fields=$this->getParameter('result_fields',[]);	
+		$title_field=$this->getParameter($endpoint)['title_field'];
+		$link_field=$this->getParameter($endpoint)['link_field'];
+		$result_fields=$this->getParameter($endpoint)['result_fields'];	
 			
 		
 		$csv=false;
@@ -841,9 +829,9 @@ class ProcheController extends AbstractController
 				//$params_and[]="(". $this->getParameter('free_text_search_field')["field"].": (".implode(" OR ", $free_search)."))";
 					$elems=preg_split("/\s+/",$val);
 					$elems=array_map(
-						function($x)
+						function($x) use($endpoint)
 						{
-							return $this->getParameter('free_text_search_field')["field"].':'.str_replace(array('"',"(",")",":"),'',$x);
+							return $this->getParameter($endpoint)['free_text_search_field']["field"].':'.str_replace(array('"',"(",")",":"),'',$x);
 						}
 						,$elems
 					);
@@ -999,24 +987,26 @@ class ProcheController extends AbstractController
 				
 				if($nb_result>0)
 				{
-					return $this->render('results.html.twig',["results"=>$rs, "nb_result"=>$nb_result, "page_size"=>$page_size, "pagination"=>$pagination,
+					return $this->render($endpoint.'/results.html.twig',["results"=>$rs, "nb_result"=>$nb_result, "page_size"=>$page_size, "pagination"=>$pagination,
 					'page' => $current_page,
 					'dyna_field_facets'=>$facets_twig,
 					"display_facets"=>$display_facets,
 					"title_field"=>$title_field,
 					"link_field"=>$link_field,
-					"result_fields"=>$result_fields ]);
+					"result_fields"=>$result_fields,
+					"endpoint"=> $endpoint]);
 				
 				}
 				else
 				{
-					return $this->render('noresults.html.twig');
+					$this->client->setDefaultEndPoint("default");
+					return $this->render($endpoint.'/noresults.html.twig');
 				}
 			}
 		}
 	
-		
-		return $this->render('noresults.html.twig');
+		$this->client->setDefaultEndPoint("default");
+		return $this->render($endpoint.'/noresults.html.twig');
 	}
 	
 	#[Route('/extrapage/{id}', name: 'extrapage')]	

@@ -1,0 +1,104 @@
+{% extends "proche_main/base.html.twig" %}
+{% import "macros/macros.html.twig" as macros  %}
+{% block title %}
+	{{ parent() }} - All
+
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+{% endblock %}
+
+{% block javascript %}
+{{ parent() }}
+{% endblock %}
+{% block body %}
+{{ parent() }}
+
+<div class="container">
+	<h1 class="title-page">
+		{{'proche_object_detail'|trans}}
+	</h1>
+</div>
+
+<div id="module" class="container object_detail">
+<h3>{% if doc[detail_main_title_field] is iterable %} 
+		{% set displayed_title=doc[detail_main_title_field]|join(",") %}
+	{% else %}
+		{% set displayed_title=[detail_main_title_field]??"" %}
+	{% endif %}
+		{{displayed_title}}
+	</h3>
+	<div class="row">
+	<div class="col-xs-4 col-sm-8  text-sm-start text-center" style="font-size: 1.2em; font-style:italic; text-decoration: underline;text-underline-offset:3px;font-weight: 700; margin-bottom: 8px">
+		{% if doc[detail_sub_title_field]|length==0 %}
+			{{'TITLE UNKNOWN'}}
+		{% elseif doc[detail_sub_title_field] is iterable %}
+			{{doc[detail_sub_title_field]|join(",")}}
+		{% else %}
+			{{doc[detail_sub_title_field]??""}}
+		{% endif %}
+	   </div>
+	   <div class="col-sm-4">
+			{% include 'proche_main/disclaimer_text2.html.twig' with {"i":0, "text_disclaimer": 'disclaimer_title'|trans } %}
+	   </div>
+	</div>
+	
+	{% set i=0 %}
+	{% for field in detail_fields.fields %}
+		{% if doc[detail_fields.fields[i]] is defined  %}
+			{% if doc[detail_fields.fields[i]]|length>0 %}
+				<div class="row">
+					{% set label_field=detail_fields.labels[i]%}
+					{% set go_disclaimer=false %}
+					{% set text_disclaimer="" %}
+					{% if label_field=="method_of_acquisition" %}
+						{% set go_disclaimer=true %}
+						{% set text_disclaimer= 'disclaimer_acquisition_method'|trans %}
+					{% elseif label_field=="site_of_collection" %}
+						{% set go_disclaimer=true %}
+						{% set text_disclaimer= 'disclaimer_collection_site'|trans %}
+					{% elseif label_field=="site_of_production" %}
+						{% set go_disclaimer=true %}
+						{% set text_disclaimer= 'disclaimer_production_site'|trans %}
+					{% elseif label_field=="date_of_acquisition" %}
+						{% set go_disclaimer=true %}
+						{% set text_disclaimer= 'disclaimer_acquisition_date'|trans %}
+					{% elseif label_field=="culture" or label_field=="culture_of_production" or label_field=="culture_text"   %}
+						{% set go_disclaimer=true %}
+						{% set text_disclaimer= 'disclaimer_culture'|trans %}	
+					{% elseif label_field  starts with "const_" %}
+						{% set go_disclaimer=true %}
+						{% set text_disclaimer= 'disclaimer_const'|trans %}
+					{% endif  %}
+					<div class="col-sm-2" style="font-weight: 600">{{label_field|trans}}:</div>
+					{% if doc[detail_fields.fields[i]] is iterable %}
+						{% if 'NOT_DISPLAYED' in doc[detail_fields.fields[i]]|join(", ") %}
+							{{ 'not_displayed'|trans|raw }}
+						{% else %}
+							<div class="col-sm-3">{{ doc[detail_fields.fields[i]]|join(", ")}}</div>
+						{% endif %}
+					{% else %}
+						<div class="col-sm-3">{{ doc[detail_fields.fields[i]]}}</div>
+					{% endif %}
+					<div class="col-sm-7">
+						{% if go_disclaimer %}
+							{% include 'proche_main/disclaimer_text2.html.twig' with {"i":i+1, "text_disclaimer":text_disclaimer} %}
+						{% endif %}
+					</div>
+				</div>
+			{% endif %}
+		{% endif %}
+		{% set i=i+1 %}
+	{% endfor %}
+	{% if doc["iiif_endpoint"] is defined %}
+			{% if doc["iiif_endpoint"]|length>0 %}
+			{{ macros.handle_iiif_main(doc["iiif_endpoint"]|join(","), displayed_title ) }}
+		{% endif %}
+	{% endif %}
+	
+
+<!--DISCLAIMER-->
+{% include 'proche_main/disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}	
+</div>
+{% endblock %}

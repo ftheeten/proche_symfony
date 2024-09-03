@@ -1,0 +1,22 @@
+<div id="noresults_div">
+
+	<div style="text-align: center; margin-bottom: 6px; font-size: 20px; font-weight: 800">
+		0  résultat
+	</div>
+
+	<div style="text-align: center">
+		<div id="div_back_search" name="div_back_search" class="div_back_search" >
+			<input style="display:inline-block" type="button" name="show_search" id="show_search" value="+ {{'show_search'|trans}}"></input>
+		</div>
+	</div>
+	
+</div>
+
+<script language="Javascript">
+$("#show_search").click(function()
+		{
+			$("#main_search_div").show();
+			$("#noresults_div").hide();
+			
+		});
+</script>

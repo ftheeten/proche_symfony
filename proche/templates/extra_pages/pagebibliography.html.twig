@@ -1,5 +1,5 @@
-{% extends "base.html.twig" %}
-{% import "macros.html.twig" as macros  %}
+{% extends "default/base.html.twig" %}
+{% import "macros/macros.html.twig" as macros  %}
 
 {% block title %}
 	{{ parent() }} - All
@@ -74,5 +74,5 @@ li{
 </div>
 
 <!--DISCLAIMER-->
-{% include 'disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??false } %}
+{% include 'default/disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??false } %}
 {% endblock %}

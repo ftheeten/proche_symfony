@@ -1,5 +1,6 @@
-﻿{% import "macros.html.twig" as macros  %}
+﻿{% import "macros/macros.html.twig" as macros  %}
 {% set details=details??"false" %}
+{% set endpoint=endpoint??"default" %}
 <div id="spinner_search" class="spinner-border spinner bg-white" role="status" style="display:none">
   <span class="sr-only"></span>
 </div>
@@ -8,7 +9,7 @@
 
 		<div class="label">{{ 'free_text_search'|trans }}</div>		
 		
-		<div>{{ macros.select2_multiple("free_search","free_search", path("terms"),"all_str", "", "width:100%","FALSE","true" ) }}</div>
+		<div>{{ macros.select2_multiple("free_search","free_search", path("terms"),"all_str", "", "width:100%","FALSE","true", endpoint ) }}</div>
 
 <div style="{{ details=="true"?"":"display:none;" }}">
 {% set i=0 %}
@@ -27,11 +28,11 @@
 					{% if dyna_field_details.types[i] =="hidden_string" %}
 						
 						
-						<div style="display:none">{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode) }}</div>
+						<div style="display:none">{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode, "FALSE", endpoint) }}</div>
 					{% elseif  dyna_field_details.types[i] =="date" %}
 						{{ macros.date_field("search_" ~solr_field, "search_" ~solr_field, dyna_field_details.labels[i]|trans ) }}
 					{% else %}
-						<div class="col-sm-4"><div class="label">{{ dyna_field_details.labels[i]|trans}}</div>{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode) }}</div>
+						<div class="col-sm-4"><div class="label">{{ dyna_field_details.labels[i]|trans}}</div>{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode, "FALSE", endpoint) }}</div>
 					{% endif %}
 				{% if (i%2 !=0) or (i==(dyna_field_details.fields|length)-1) %}
 					<!-- Attention do not remove even if it makes the number of closing div not matching openin ones !!!-->
@@ -61,7 +62,7 @@
 <!--END RESULTS-->
 
 <!--DISCLAIMER-->
-{% include 'disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}
+{% include 'default/disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}
 
 <script language="Javascript">
 	
@@ -108,6 +109,7 @@
 					}
 					//console.log("SEARCH_CALLED");
 					criterias={}
+					criterias["endpoint"]="{{ endpoint }}"
 					criterias["current_page"]=current_page;
                     criterias["page_size"]=page_size;
 					criterias["free_search"]=$("#free_search").val();

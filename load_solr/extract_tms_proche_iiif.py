@@ -10,12 +10,13 @@ import sqlalchemy as sa
 from xml.sax.saxutils import escape
 import xml.etree.ElementTree as ET
 import re
+import urllib
 
  
 print("init")
  
 ##############################################PHOTOS###########################################
-SRC_FILE_IIIF="SRC_IIIF_links.txt"
+SRC_FILE_IIIF="/opt/v2024/iiif_proche/all_dieter.txt"
 #IF TRUE, ONLY UPDATE THE SOLR RECORDS THAT ARE IN SRC_FILE_IIIF
 #OTHERWISE PROCEED ALL DATA, INCLUDING photos
 IIIF_ONLY=False
@@ -26,8 +27,8 @@ h.add_credentials('', '')
 
 
 global_terms={}
-solr_url='xxx'
-main_filter=" PackageID =xxx or  PackageID =xxx or PackageID =xxx  or  PackageID =xxx "
+solr_url=''
+main_filter=" "
  
  
  
@@ -576,8 +577,11 @@ def handle_constituents(pnd_cons, obj_id, pnd_translations):
  
 #----------------------------main 
  
-cn = sa.create_engine('mssql+pyodbc://XXX/XXX?driver=ODBC Driver 17 for SQL Server')
-#cn_thesaurus = sa.create_engine('mssql+pyodbc://db/TMSThesaurus?driver=ODBC Driver 17 for SQL Server')
+ 
+
+params = urllib.parse.quote_plus(r'Driver={ODBC Driver 18 for SQL Server};Server=,1433;Database=TMS;Uid=;Pwd=$;TrustServerCertificate=yes;')
+conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+cn = sa.create_engine(conn_str)
 df_iiif=pnd.read_csv(SRC_FILE_IIIF, sep="\t", header=0)
 
    
