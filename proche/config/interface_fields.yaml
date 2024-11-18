@@ -1,31 +1,5 @@
 parameters:
     default:
-        sort_field: "display_name_sort"
-        free_text_search_field: 
-            field: all
-            label: free_text_search        
-        detailed_search_fields:
-            fields: ["display_name", "biography","nationality", "birth_year", "death_year", "display_name_str", "nationality_str"]
-            autocomplete_fields: ["display_name_str", "biography","nationality_str", "", "", "", ""]
-            labels: ["display_name", "biography","nationality", "birth_year", "death_year", "display_name_str", "nationality_str"]
-            types:  ["string", "string",  "string", "hidden_string","hidden_string","hidden_string","hidden_string"]
-            matching: ["fuzzy", "fuzzy", "exact", "exact", "exact", "exact", "exact"]
-        facet_fields:
-            fields: ["display_name_str", "nationality_str", "birth_year", "death_year"],
-            labels: ["display_name", "nationality", "birth_year", "death_year"]
-            filter_callback: ["display_name_str", "nationality_str", "birth_year_str", "birth_year_str"]        
-        title_field: "display_name"    
-        link_field: "id"        
-        result_fields:
-            fields: ["display_name", "birth_year" , "death_year"]
-            labels: ["display_name", "birth_year" , "death_year"]    
-        detail_main_title_field: "display_name_str"
-        detail_sub_title_field: "display_name_str"    
-        detail_fields:
-            fields: ["display_name", "birth_date", "death_date", "nationality", "biography", "birth_year" , "death_year"]
-            labels: ["display_name", "birth_date", "death_date", "nationality", "biography", "birth_year" , "death_year"]
-        csv_fields: ["display_name", "birth_date", "death_date", "nationality", "biography", "birth_year" , "death_year" ]
-    proche_main:
         sort_field: "sort_number"
         free_text_search_field: 
             field: all
@@ -59,3 +33,29 @@ parameters:
             labels: ["material_and_technique", "dimensions", "method_of_acquisition", "site_of_collection", "site_of_production" ,"const_maker_creator", "const_collector","const_depositor","const_depot","const_donor","const_excavation_by","const_exchange","const_field_collector","const_first_owner","const_intermediary","const_legator","const_lender","const_mission","const_owner","const_previous_owner","const_transfer","const_unknown","const_vendor", "culture", "culture_of_production",  "culture_text", "date_of_acquisition", "creation_date"]
 
         csv_fields: ["id", "sort_number", "object_number", "title", "iiif_endpoint", "material_and_technique", "dimensions", "site_of_collection", "site_of_production", "method_of_acquisition","year_of_acquisition", "date_of_acquisition", "const_maker_creator", "const_collector","const_depositor","const_depot","const_donor","const_excavation_by","const_exchange","const_field_collector","const_first_owner","const_intermediary","const_legator","const_lender","const_mission","const_owner","const_previous_owner","const_transfer","const_unknown","const_vendor", "culture", "culture_of_production", "date_of_acquisition", "creation_date","const_date_maker_creator","const_date_collector","const_date_depositor","const_date_depot","const_date_donor","const_date_excavation_by","const_date_exchange","const_date_field_collector","const_date_first_owner","const_date_intermediary","const_date_legator","const_date_lender","const_date_mission","const_date_owner","const_date_previous_owner","const_date_transfer","const_date_unknown","const_date_vendor", "culture", "culture_of_production", "culture_text" ]
+    proche_constituents:
+        sort_field: "display_name_sort"
+        free_text_search_field: 
+            field: all
+            label: free_text_search        
+        detailed_search_fields:
+            fields: ["display_name", "biography","nationality", "birth_year", "death_year", "display_name_str", "nationality_str"]
+            autocomplete_fields: ["display_name_str", "biography","nationality_str", "", "", "", ""]
+            labels: ["display_name", "biography","nationality", "birth_year", "death_year", "display_name_str", "nationality_str"]
+            types:  ["string", "string",  "string", "hidden_string","hidden_string","hidden_string","hidden_string"]
+            matching: ["fuzzy", "fuzzy", "exact", "exact", "exact", "exact", "exact"]
+        facet_fields:
+            fields: ["display_name_str", "nationality_str", "birth_year", "death_year"],
+            labels: ["display_name", "nationality", "birth_year", "death_year"]
+            filter_callback: ["display_name_str", "nationality_str", "birth_year_str", "birth_year_str"]        
+        title_field: "display_name"    
+        link_field: "id"        
+        result_fields:
+            fields: ["display_name", "birth_year" , "death_year"]
+            labels: ["display_name", "birth_year" , "death_year"]    
+        detail_main_title_field: "display_name_str"
+        detail_sub_title_field: "display_name_str"    
+        detail_fields:
+            fields: ["display_name", "birth_date", "death_date", "nationality", "biography", "birth_year" , "death_year"]
+            labels: ["display_name", "birth_date", "death_date", "nationality", "biography", "birth_year" , "death_year"]
+        csv_fields: ["display_name", "birth_date", "death_date", "nationality", "biography", "birth_year" , "death_year" ]

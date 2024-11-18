@@ -1,4 +1,4 @@
-{% extends "proche_main/base.html.twig" %}
+{% extends "default/base.html.twig" %}
 
 {% block title %}
 	{{ parent() }} - All
@@ -16,13 +16,10 @@
 
 <div class="container">
 	<h1 class="title-page">
-		{{ 'simple_search'|trans }}
+		{{ 'detailed_search'|trans }}
 	</h1>
 </div>
 
-{% include 'proche_main/home_kern.html.twig' with {'details':"false", 'endpoint':endpoint} %}
-
+{% include 'default/home_kern.html.twig' with {'details':'true', 'dyna_field_free': dyna_field_free, 'dyna_field_details': dyna_field_details} %}
 {% endblock %}
-
-
 

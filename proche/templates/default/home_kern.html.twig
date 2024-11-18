@@ -28,11 +28,11 @@
 					{% if dyna_field_details.types[i] =="hidden_string" %}
 						
 						
-						<div style="display:none">{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode, "FALSE", endpoint) }}</div>
+						<div style="display:none">{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode, endpoint) }}</div>
 					{% elseif  dyna_field_details.types[i] =="date" %}
 						{{ macros.date_field("search_" ~solr_field, "search_" ~solr_field, dyna_field_details.labels[i]|trans ) }}
 					{% else %}
-						<div class="col-sm-4"><div class="label">{{ dyna_field_details.labels[i]|trans}}</div>{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode, "FALSE", endpoint) }}</div>
+						<div class="col-sm-4"><div class="label">{{ dyna_field_details.labels[i]|trans}}</div>{{ macros.select2_multiple( "search_" ~ solr_field  ,"search_" ~solr_field, path("terms"),  solr_autocomplete_field , "", "width:86%", and_mode, endpoint) }}</div>
 					{% endif %}
 				{% if (i%2 !=0) or (i==(dyna_field_details.fields|length)-1) %}
 					<!-- Attention do not remove even if it makes the number of closing div not matching openin ones !!!-->
@@ -59,6 +59,10 @@
 <div id="div_results_searchall"></div>
 </div>
 
+
+<form id="form_callback" action="{{ app.request.pathinfo }}">
+
+</form>
 <!--END RESULTS-->
 
 <!--DISCLAIMER-->
@@ -109,7 +113,7 @@
 					}
 					//console.log("SEARCH_CALLED");
 					criterias={}
-					criterias["endpoint"]="{{ endpoint }}"
+					criterias["endpoint"]="{{ endpoint }}";
 					criterias["current_page"]=current_page;
                     criterias["page_size"]=page_size;
 					criterias["free_search"]=$("#free_search").val();
@@ -139,9 +143,9 @@
 								var field=$(this).attr("data-modal-key");	
 								var value=$(this).attr("data-modal-value");
 								
-								//console.log("facet");
-								//console.log(field);
-								//console.log(value);
+								console.log("facet");
+								console.log(field);
+								console.log(value);
 								var chk_and_or=$(".chkand_facet[data-modal-key='" + field + "']");
 								//console.log(".chkand_facet[data-modal-key='" + field + "']");
 								//console.log(chk_and_or);
@@ -185,7 +189,27 @@
 						criterias["with_images"]="false";
 					}
 					criterias["csv"]=false;
+					console.log("DUMP-----");
 					console.log(criterias);
+					var criterias_tmp=criterias;
+					criterias={}
+					for (const [key, value] of Object.entries(criterias_tmp)) 
+					{		
+						 if(value !== undefined)
+						{
+							if(value.constructor==Object)
+							{
+								criterias[key]=value;
+							}
+							else if(value.length>0)
+							{								
+								criterias[key]=value;
+							}
+						}
+						
+					}
+					criterias_tmp={};
+						
 					if(csv)
 					{
 						//console.log("handle csv");
@@ -205,7 +229,8 @@
 					}
 					else
 					{
-						$.post("{{ path('main_search')}}", criterias,
+						
+						$.get("{{ path('main_search')}}", criterias,
 						function(data)
 						{
 							//console.log("done");
@@ -213,17 +238,68 @@
 							$("#spinner_search").hide();
 							$("#div_results_searchall").html(data);
 						});
+						
+						
+						/*for (const [key, value] of Object.entries(criterias)) 
+						{						
+							if(value !== undefined)
+							{
+								if(value.length>0)
+								{								
+									$('#form_callback').append('<input type="hidden" name="'+key+'" id="'+key+'"  value="'+value+'"  />');
+								}
+								
+							}
+							
+						}
+						$('#form_callback').trigger("submit");
+						*/
 					}
 					
 					////console.log(criterias);
 					
 					
 		}
-		
+
+var  test_params_and_redirect=function()
+{
+	search=search_all_docs;
+	search_csv=search_all_docs_csv;
+	var criterias=get_all_params(window.location.href);
+	
+	console.log(criterias);
+	var criterias_tmp=criterias;
+	
+	for (const [key, value] of Object.entries(criterias)) 
+					{
+						var tmp_value=decodeURI(value);
+						if(tmp_value.length>0)
+						{
+							criterias_tmp[decodeURI(key)]=tmp_value;
+						}
+					}
+	criterias=criterias_tmp;
+    //criterias = dict(map(lambda item: (decodeURI(item[0]), item[1] ), criterias.items()))
+	if(Object.keys(criterias).length>0)
+	{
+	
+		console.log("search");
+		$.get("{{ path('main_search')}}", criterias,
+						function(data)
+						{
+							//console.log("done");
+							//console.log("page");
+							$("#spinner_search").hide();
+							$("#div_results_searchall").html(data);
+						});
+	}
+}		
 
 $(document).ready(
 	function()
 	{
+		
+		
 		
 		$("#flush").click(
 			function()
@@ -247,7 +323,7 @@ $(document).ready(
 				});
 				
 		
-		
+		test_params_and_redirect();
 				
 		
 	}

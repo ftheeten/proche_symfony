@@ -2,6 +2,7 @@
 // src/Controller/ProcheController.php
 namespace App\Controller;
 
+use \Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +19,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+
 //use Symfony\Component\Messenger\MessageBusInterface;
 //use App\Message\ProcheCsv;
 
@@ -27,7 +30,6 @@ class ProcheController extends AbstractController
 
 	protected $default_lang="fr";
     private $client;
-	private $clients=Array();
 	private $page_size=10;
 
 	
@@ -39,19 +41,22 @@ class ProcheController extends AbstractController
 	//private $list_included_fields_csv=["id","object_number", "sort_number",	"title"	, "dimensions",	"date_of_acquisition","acquisition_method",	"creation_date","culture","objtitle_legacy","_version_",	"score"];
 	
 	private $http_client;
+	private $session;
+	private $salt;
+	private $name_cookie_disclaimer;
 
 	
 	
 	
 	/** @var \Solarium\Client */
-   public function __construct(\Solarium\Client $client,  LocaleSwitcher $localeSwitcher, HttpClientInterface $http_client ) {
+   public function __construct(\Solarium\Client $client,  LocaleSwitcher $localeSwitcher, HttpClientInterface $http_client, \Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface $containerBag  ) {
 	   
        $this->client = $client;
-	   //$this->client->setDefaultEndPoint('constituents');
 	   $this->localeSwitcher=$localeSwitcher;
 	   //$this->bus=$bus;
 	   $this->http_client=$http_client;
-	  
+	  $this->salt=sha1($containerBag->get('salt'));
+	   $this->name_cookie_disclaimer='disclaimer_cookie_'.$this->salt;
     }
 	
 	
@@ -132,13 +137,14 @@ class ProcheController extends AbstractController
 	}
 	
 	#[Route('/', name:"home")]
-	public function home(Request $request): Response
+	public function home(Request $request, SessionInterface $session): Response
     {
 		//print_r($this->getParameter('endpoints',"solr"));
 		$lang=$this->get_lang_cookie($request);
 		$this->localeSwitcher->setLocale($this->default_lang);
 		$this->set_lang_cookie($this->default_lang);
-		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+		//$cookie_disclaimer=$this->get_disclaimer_cookie_session($session);
+		$cookie_disclaimer=$this->get_disclaimer_cookie_session($session);
 		return $this->render('extra_pages/pageabout.html.twig',[ "cookie_accepted"=>$cookie_disclaimer]);
 	}
 	
@@ -154,14 +160,14 @@ class ProcheController extends AbstractController
 	
 	
 	#[Route('/simplesearch', name: 'simplesearch')]	
-    public function simplesearch(Request $request): Response
+    public function simplesearch(Request $request, SessionInterface $session): Response
     {		
 		$lang=$this->get_lang_cookie($request);
 		$endpoint=strtolower($request->get("endpoint","default"));
 		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale',$lang));
 		$dyna_field_free=$this->getParameter($endpoint)['free_text_search_field'];
 		$dyna_field_details=$this->getParameter($endpoint)['detailed_search_fields'];
-		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+		$cookie_disclaimer=$this->get_disclaimer_cookie_session($session);
         return $this->render($endpoint.'/home.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer, "endpoint"=>$endpoint]);
     }
 	
@@ -169,21 +175,20 @@ class ProcheController extends AbstractController
     public function simplesearchlang(Request $request, $locale="fr"): Response
     {
 		$cookie_locale=$request->cookies->get('proche_locale',"");
-		$endpoint=strtolower($request->get("endpoint","default"));
-		$this->client->setDefaultEndPoint($endpoint);
+		
 		$session=$request->getSession();
 		$this->localeSwitcher->setLocale($locale);
 		$session->set('current_locale', $locale);
 		$this->set_lang_cookie($locale);
-		$dyna_field_free=$this->getParameter($endpoint)['free_text_search_field'];
-		$dyna_field_details=$this->getParameter($endpoint)['detailed_search_fields'];
-		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
-		$this->client->setDefaultEndPoint("default");
-        return $this->render($endpoint.'/home.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer, "endpoint"=>$endpoint]);
+		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
+		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
+		//$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+        $cookie_disclaimer=$this->get_disclaimer_cookie_session($session);
+		return $this->render('home.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer]);
     }
 	
 	#[Route('/detailed_searches', name: 'detailed_search')]	
-    public function home_detail(Request $request): Response
+    public function home_detail(Request $request, SessionInterface $session): Response
     {
 		$endpoint=$request->get("endpoint", "default");
 		$dyna_field_details=$this->getParameter($endpoint)["detailed_search_fields"];
@@ -191,13 +196,14 @@ class ProcheController extends AbstractController
 		
 		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','fr'));
 		$response = new Response();
-		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
-        return $this->render($endpoint.'/home_details.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer, "endpoint"=> $endpoint]);
+		//$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+        $cookie_disclaimer=$this->get_disclaimer_cookie_session($session);
+		return $this->render($endpoint.'/home_details.html.twig',["dyna_field_free"=>$dyna_field_free, "dyna_field_details"=>$dyna_field_details, "cookie_accepted"=>$cookie_disclaimer, "endpoint"=> $endpoint]);
     }
 	
 	
 	#[Route('/detail', name: 'detail')]
-	public function detail(Request $request): Response
+	public function detail(Request $request, SessionInterface $session): Response
     {
 		$endpoint=strtolower($request->get("endpoint","default"));
 		$this->client->setDefaultEndPoint($endpoint);
@@ -229,7 +235,8 @@ class ProcheController extends AbstractController
 				if(count($rs)>=1)
 				{
 					$detail=$rs[0];
-					$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+					//$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+					$cookie_disclaimer=$this->get_disclaimer_cookie_session($session);
 					return $this->render($endpoint.'/detail.html.twig',[
 						"doc"=>$detail, 
 						"detail_main_title_field"=> $detail_main_title_field, 
@@ -239,8 +246,8 @@ class ProcheController extends AbstractController
 				}
 			}
 		//}
-		$this->client->setDefaultEndPoint('default');
-		return $this->render($endpoint.'/noresults.html.twig');
+		
+		return $this->render('noresults.html.twig');
 	}
 	
 	protected function strip_accent($str) 
@@ -274,7 +281,7 @@ class ProcheController extends AbstractController
 				
 				if(mb_stripos( $term2, $term)!==false)
 				{
-					
+					$term2= trim($term2, "\s\)\(\.;,");
 					if(! in_array($term2,$control2 ) && ! in_array($term2,$control1 ))
 					{
 						
@@ -385,33 +392,36 @@ class ProcheController extends AbstractController
 						
 						//arsort($sort);
 						
+						
 						 usort($sort,
-								 function ($a, $b)
+								 function ($a, $b) //use($regex_term)
 								 {
 									 
+									$regex_term2= strtolower(trim($a['text'], "\s\)\(\.;,"));
+									
 									
 									if($a['cpt']==$b['cpt'])
 									{
 											if (strlen($a['text']) == strlen($b['text'])) 
 											{
-												return 0;
+												return 1;
 											}
 											elseif(strlen($a['text']) < strlen($b['text']))
    											{
-												return -1;
+												return -10;
 											}
 											else
 											{
-												return 1;
+												return 10;
 											}
 									}
 									elseif($a['cpt']<$b['cpt'])
 									{
-											return 10;
+											return 100;
 									}
 									elseif($a['cpt']>$b['cpt'])
 									{
-											return -10;
+											return -100;
 									}
 									//return (strlen($a['text']) < strlen($b['text'])) ? -1 : 1;
 								 }
@@ -422,7 +432,7 @@ class ProcheController extends AbstractController
 						{
 							$resp2[]=["id"=>$word["text"], "text"=>$word["text"]];
 						}
-						//array_unshift($resp2, ["id"=>$value, "text"=>$value]);
+						array_unshift($resp2, ["id"=>$value, "text"=>$value]);
 						$returned=$resp2;
 						
 					
@@ -464,7 +474,7 @@ class ProcheController extends AbstractController
 				    $resp2[]=["id"=>$tmp_v, "text"=>$tmp_v];
 			  }
 			 
-			
+				array_unshift($resp2, ["id"=>$value, "text"=>$value]);
 			   $returned=$resp2;
 			 
 		   }
@@ -472,21 +482,11 @@ class ProcheController extends AbstractController
 	}
 	
 	
-	
 	#[Route('/terms', name: 'terms')]
 	public function terms(Request $request): JsonResponse
     {
 		$field=$request->get("f","");
 		$value=$request->get("q","");
-		$endpoint=strtolower($request->get("endpoint", "default"));
-		if($endpoint!=="default")
-		{
-			$this->client->setDefaultEndPoint($endpoint);
-		}
-		else
-		{
-			$this->client->setDefaultEndPoint("default");
-		}
 		$append_term=$request->get("append_term","false");
 		 $response=$this->logic_autocomplete($field, $value);
 		 $list=preg_split("/\s+/", $value);
@@ -574,7 +574,7 @@ class ProcheController extends AbstractController
 		 $returned=[
 								"results"=>$response
 							];
-		 $this->client->setDefaultEndPoint("default");
+		
 		 return $this->json($returned); 	
 	}
 	
@@ -674,8 +674,6 @@ class ProcheController extends AbstractController
     {
 		$endpoint=strtolower($request->get("endpoint","default"));
 		$this->client->setDefaultEndPoint($endpoint);
-		
-		
 		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','fr'));
 		$this->set_lang_cookie( $request->getSession()->get('current_locale','fr'));
 		$client=$this->client;
@@ -698,17 +696,13 @@ class ProcheController extends AbstractController
 		$with_images=$request->get('with_images',"false");
 		
 		
-		/*$sort_field=$this->getParameter('sort_field',"id");
-		$dyna_field_free=$this->getParameter('free_text_search_field',[]);
-		$dyna_field_details=$this->getParameter('detailed_search_fields',[]);
-		$dyna_field_facets=$this->getParameter('facet_fields',[]);
-		*/
 		$sort_field=$this->getParameter($endpoint)['sort_field'];
 		$dyna_field_free=$this->getParameter($endpoint)['free_text_search_field'];
 		$dyna_field_details=$this->getParameter($endpoint)['detailed_search_fields'];
 		$dyna_field_facets=$this->getParameter($endpoint)['facet_fields'];
 		
 		$list_included_fields_csv=$this->getParameter($endpoint)['csv_fields'];
+		
 		
 		
 		
@@ -831,7 +825,7 @@ class ProcheController extends AbstractController
 					$elems=array_map(
 						function($x) use($endpoint)
 						{
-							return $this->getParameter($endpoint)['free_text_search_field']["field"].':'.str_replace(array('"',"(",")",":"),'',$x);
+								return $this->getParameter($endpoint)['free_text_search_field']["field"].':'.str_replace(array('"',"(",")",":"),'',$x);
 						}
 						,$elems
 					);
@@ -987,13 +981,17 @@ class ProcheController extends AbstractController
 				
 				if($nb_result>0)
 				{
+					$params= $request->query->all();
+					
+					$query_str=http_build_query($params);
 					return $this->render($endpoint.'/results.html.twig',["results"=>$rs, "nb_result"=>$nb_result, "page_size"=>$page_size, "pagination"=>$pagination,
 					'page' => $current_page,
 					'dyna_field_facets'=>$facets_twig,
 					"display_facets"=>$display_facets,
 					"title_field"=>$title_field,
 					"link_field"=>$link_field,
-					"result_fields"=>$result_fields,
+					"result_fields"=>$result_fields ,
+					"query_str"=> $query_str,
 					"endpoint"=> $endpoint]);
 				
 				}
@@ -1010,35 +1008,45 @@ class ProcheController extends AbstractController
 	}
 	
 	#[Route('/extrapage/{id}', name: 'extrapage')]	
-	public function extraPage($id, Request $request): Response
+	public function extraPage($id, Request $request, SessionInterface $session): Response
 	{
 		$lang=$this->get_lang_cookie($request);
 		$this->localeSwitcher->setLocale($this->default_lang);
-		$cookie_disclaimer=$this->get_disclaimer_cookie($request);
+		$cookie_disclaimer=$this->get_disclaimer_cookie_session($session); //$this->get_disclaimer_cookie($request);
 		return $this->render('extra_pages/page'.$id.'.html.twig',["cookie_accepted"=>$cookie_disclaimer]);
 	}
 	
 	#[Route('/set_disclaimer_cookie/{var}', name: 'set_disclaimer_cookie')]
-	public function set_disclaimer_cookie($var="not_set"): JsonResponse
+	public function set_disclaimer_cookie(SessionInterface $session, $var="not_set"): JsonResponse
 	{
 		$response = new JsonResponse();
 		if($var=="set")
 		{
-			$response->headers->setCookie( Cookie::create('disclaimer_cookie', "true"));
-			 $response->setData(["disclaimer_read"=>"true"]);
+			
+			$tmp_cookie= Cookie::create($this->name_cookie_disclaimer, "true", 7776000);
+			$response->headers->setCookie(	$tmp_cookie);
+			$session->set($this->name_cookie_disclaimer, 'true');
+			 $response->setData(["disclaimer_read"=>"true", "exp"=> $tmp_cookie->getExpiresTime()]);
 		}
 		else
 		{
-			$response->headers->setCookie( Cookie::create('disclaimer_cookie', "false"));
-			$response->setData(["disclaimer_read"=>"false"]);
+			$tmp_cookie= Cookie::create($this->name_cookie_disclaimer, "false", 7776000);
+			$response->headers->setCookie($tmp_cookie);
+			$session->set($this->name_cookie_disclaimer, 'false');
+			$response->setData(["disclaimer_read"=>"false", "exp"=> $tmp_cookie->getExpiresTime()]);
 		}
 		return $response;
 	}
+	
+	
+	
 	
 	#[Route('/get_disclaimer_cookie', name: 'get_disclaimer_cookie')]
 	public function get_disclaimer_cookie_http(Request $request): JsonResponse
 	{
 		$response = new JsonResponse();
+		$tmp_cookie= Cookie::create($this->name_cookie_disclaimer);
+		$response->headers->setCookie($tmp_cookie);
 		$response->setData(["disclaimer_read"=>$this->get_disclaimer_cookie($request)]);
 		return $response;
 	}
@@ -1047,8 +1055,22 @@ class ProcheController extends AbstractController
 	
 	protected function get_disclaimer_cookie($request)
 	{
-		$disc=$request->cookies->get('disclaimer_cookie',"false");
+		
+		$this->session = $request->getSession();
+		//disc=$request->cookies->get('disclaimer_cookie',"false");
+		$disc=$this->session->get($this->name_cookie_disclaimer, 'false');
 		return $disc;
 		
 	}
+	
+	protected function get_disclaimer_cookie_session($session)
+	{
+		
+		
+		//disc=$request->cookies->get('disclaimer_cookie',"false");
+		$disc=$session->get($this->name_cookie_disclaimer, 'false');
+		return $disc;
+		
+	}
+	
 }

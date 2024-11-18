@@ -24,12 +24,12 @@ var increase_facet_size=function(field, value)
 	
 }
 
-var select2_generic=function(url, key, val, minlen, include_pattern)
+var select2_generic=function(url, key, val, minlen, include_pattern, endpoint)
 {
-	return select2_generic_full(url, key, val, minlen, include_pattern);
+	return select2_generic_full(url, key, val, minlen, include_pattern, endpoint);
 }
 
-var select2_generic_full=function(url, key, val, minlen, include_pattern)
+var select2_generic_full=function(url, key, val, minlen, include_pattern, endpoint)
 		{
 			var global_pattern="";
 			
@@ -47,7 +47,8 @@ var select2_generic_full=function(url, key, val, minlen, include_pattern)
 									
                                     q: param.term,
                                     f: key,
-									append_term:include_pattern
+									append_term:include_pattern,
+									endpoint: endpoint
                                 };
                             }
                             
@@ -127,12 +128,23 @@ var select2_generic_full=function(url, key, val, minlen, include_pattern)
             returned={};
             for(i=0;i<results.length;i++)
             {
-                var tmp=results[i];                
+                var tmp=results[i];   
+				console.log(tmp);
                 var regexS2="([^=]+)=([^=]+)";
                 var regex2 = new RegExp( regexS2 );
-                var results2 = regex2.exec(tmp );                
-                returned[results2[1]]=results2[2];
-            }
+                var results2 = regex2.exec(tmp ); 
+				console.log(results2);
+				if(results2!==null)
+				{
+					if(results2.length>=3)
+					{
+						if(results2[2]!==null)
+						{
+							returned[results2[1]]=results2[2];
+						}
+					}
+				}
+			}
             return returned;
         }   
     }

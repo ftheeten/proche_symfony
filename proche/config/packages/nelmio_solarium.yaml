@@ -5,13 +5,13 @@ nelmio_solarium:
             host: localhost
             port: 8983
             path: /
-            core: proche-constituents
-        proche_main:
+            core: proche-prod
+        proche_constituents:
             scheme: http
             host: localhost
             port: 8983
             path: /
-            core: proche-prod
+            core: proche-constituents
     clients:
         default:
-            endpoints: [default, proche_main]
+            endpoints: [default, proche_constituents]

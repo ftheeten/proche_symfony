@@ -26,5 +26,6 @@ services:
     # please note that last definitions always *replace* previous ones
     
 imports:
+    - { resource: './proche.yaml'  }
     - { resource: './interface_fields.yaml'  }
     - { resource: './autocomplete_settings.yaml'  }
