@@ -40,7 +40,7 @@
 		{% endif %}
 	   </div>
 	   <div class="col-sm-4">
-			{% include 'proche_constituents/disclaimer_text2.html.twig' with {"i":0, "text_disclaimer": 'disclaimer_title'|trans } %}
+			{% include 'default/disclaimer_text2.html.twig' with {"i":0, "text_disclaimer": 'disclaimer_title'|trans } %}
 	   </div>
 	</div>
 	
@@ -83,7 +83,7 @@
 					{% endif %}
 					<div class="col-sm-7">
 						{% if go_disclaimer %}
-							{% include 'proche_constituents/disclaimer_text2.html.twig' with {"i":i+1, "text_disclaimer":text_disclaimer} %}
+							{% include 'default/disclaimer_text2.html.twig' with {"i":i+1, "text_disclaimer":text_disclaimer} %}
 						{% endif %}
 					</div>
 				</div>
@@ -99,6 +99,6 @@
 	
 
 <!--DISCLAIMER-->
-{% include 'proche_constituents/disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}	
+{% include 'default/disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}	
 </div>
 {% endblock %}

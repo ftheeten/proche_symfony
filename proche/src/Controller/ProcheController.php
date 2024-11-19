@@ -206,6 +206,7 @@ class ProcheController extends AbstractController
 	public function detail(Request $request, SessionInterface $session): Response
     {
 		$endpoint=strtolower($request->get("endpoint","default"));
+
 		$this->client->setDefaultEndPoint($endpoint);
 		$this->localeSwitcher->setLocale($request->getSession()->get('current_locale','fr'));		
 		$this->set_lang_cookie( $request->getSession()->get('current_locale','fr'));
@@ -222,9 +223,11 @@ class ProcheController extends AbstractController
 				$query = $client->createSelect();
 				$query->setQuery($this->getParameter($endpoint)['link_field'].":".$id);
 				$rs_tmp= $client->select($query);
+				$rs=[];
+				$doc=[];
 				foreach ($rs_tmp as $document) 
 				{
-					$doc=[];
+					
 					foreach ($document as $field => $value) 
 					{
 						$doc[$field]=$value;
@@ -242,7 +245,8 @@ class ProcheController extends AbstractController
 						"detail_main_title_field"=> $detail_main_title_field, 
 						"detail_sub_title_field"=> $detail_sub_title_field, 
 						"detail_fields"=>$detail_fields, 
-						"cookie_accepted"=>$cookie_disclaimer]);
+						"cookie_accepted"=>$cookie_disclaimer,
+						"endpoint"=> $endpoint]);
 				}
 			}
 		//}
@@ -960,7 +964,7 @@ class ProcheController extends AbstractController
 				}
 				
 				$i=0;
-				
+				$rs=Array();
 				foreach ($rs_tmp as $document) 
 				{
 					$doc=[];
@@ -1009,6 +1013,15 @@ class ProcheController extends AbstractController
 	
 	#[Route('/extrapage/{id}', name: 'extrapage')]	
 	public function extraPage($id, Request $request, SessionInterface $session): Response
+	{
+		$lang=$this->get_lang_cookie($request);
+		$this->localeSwitcher->setLocale($this->default_lang);
+		$cookie_disclaimer=$this->get_disclaimer_cookie_session($session); //$this->get_disclaimer_cookie($request);
+		return $this->render('extra_pages/page'.$id.'.html.twig',["cookie_accepted"=>$cookie_disclaimer]);
+	}
+
+	#[Route('/testpage/{id}', name: 'testpage')]	
+	public function testPage($id, Request $request, SessionInterface $session): Response
 	{
 		$lang=$this->get_lang_cookie($request);
 		$this->localeSwitcher->setLocale($this->default_lang);
