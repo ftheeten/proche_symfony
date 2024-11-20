@@ -14,18 +14,18 @@ from xml.sax.saxutils import escape
 import xml.etree.ElementTree as ET
 import re
 
-MAIN_FILTER="  "
-QUERY_PROCHE="https://proche.africamuseum.be/solradmin/solr/proche-prod/select?_=1717579280150&fl=id,object_number&indent=true&q=*:*&q.op=OR&useParams=&sort=id%20asc"
+MAIN_FILTER=" PackageID =xxxx "
+QUERY_PROCHE="https://xxx/solr/proche-prod/select?_=1717579280150&fl=id,object_number&indent=true&q=*:*&q.op=OR&useParams=&sort=id%20asc"
 QUERY_DELETE_PROCHE="https://proche.africamuseum.be/solradmin/solr/proche-prod/update"
-FOLDER_LOG="/opt/v2024/log_proche/"
-SRC_FILE_IIIF="/opt/v2024/iiif_proche/all_dieter.txt"
+FOLDER_LOG="/xxx/"
+SRC_FILE_IIIF="/xxx/all_dieter.txt"
 #IF TRUE, ONLY UPDATE THE SOLR RECORDS THAT ARE IN SRC_FILE_IIIF
 #OTHERWISE PROCEED ALL DATA, INCLUDING photos
 IIIF_ONLY=False
  
 h = httplib2.Http()
 h.add_credentials('', '') 
-SOLR_URL='' 
+SOLR_URL='https:///solradmin/solr/xxxx/' 
 
 def print_time():
     now = datetime.now()
@@ -34,15 +34,14 @@ def print_time():
 
 def getDBConnection():
     print("connect TMS")
-    params = urllib.parse.quote_plus(r'Driver={ODBC Driver 18 for SQL Server};Server=,1433;Database=TMS;Uid=;Pwd=$;TrustServerCertificate=yes;')
-    conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+    params = urllib.parse.quote_plus(r''.format(params)
     cn = sa.create_engine(conn_str)
     return cn
 
     
     
 def check_tms(cn):
-    global global_db
+    #global global_db
     sql="SELECT c1.ID , ObjectNumber FROM   [TMS].[dbo].[PackageList] c1 INNER JOIN [TMS].[dbo].[Objects] ON c1.ID=[Objects].ObjectID  WHERE   "+MAIN_FILTER+";"
     data=pnd.read_sql(sql=sql, con=cn)
     return data
@@ -100,7 +99,7 @@ def get_translations(conn):
 WHERE   "+MAIN_FILTER+"), \
 c_mor  \
 AS  \
- (SELECT * FROM  [TMS].[dbo].[Constituents] WHERE  ConstituentTypeID = 2 OR ConstituentTypeID=4), \
+ (SELECT * FROM  [TMS].[dbo].[Constituents] WHERE  ConstituentTypeID = 1 OR  ConstituentTypeID = 2 OR ConstituentTypeID=4), \
  d \
 AS \
 (  \

@@ -1,0 +1,29 @@
+{% set text_bio=text_bio??"" %}
+{% set text_alt=text_alt??"" %}
+<div class="info_disclaimer_detail">
+	<div class="row" style="border-bottom: none">
+	<div class="col-sm-2">
+	</div>	
+	<div class="col-sm-3">
+	<div class="info_disclaimer_buttons" id="trigger_disc_bio{{i}}" data-bs-toggle="collapse" data-bs-target="#div_disc_bio{{i}}" aria-expanded="false" aria-controls="collapseExample">
+		
+		<u><i style="color:black">Notice biographique</i></u>
+	</div>
+	</div>
+	<div class="col-sm-7">
+	</div>	
+	<div class="col-sm-12">
+	<div class="collapse" id="div_disc_bio{{i}}" style="margin-top: 10px">
+		{% if  text_alt|length>0 %}
+		<p style="font-size:small">
+		<b>Autres dénominations connues : </b><i>{{ text_alt }}</i>
+		</p> 
+		{% endif %}
+		<p>
+		{{ text_bio |replace({'size=2': 'size="3"'}) | raw }}
+		</p>
+		
+	</div>
+	</div>	
+	</div>
+</div>
