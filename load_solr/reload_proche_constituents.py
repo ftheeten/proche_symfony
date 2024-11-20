@@ -409,14 +409,15 @@ def format_year_life(row):
     doc["birth_date"]=None
     doc["birth_year"]=None
     doc["death_date"]=None
-    doc["death_date"]=None
+    doc["death_year"]=None
     
-    if row["BeginDateISO"] is not None:
-        doc["birth_date"]=row["BeginDateISO"]
-        doc["birth_year"]=row["BeginDateISO"][:4]
-    if row["EndDateISO"] is not None:
-        doc["death_date"]=row["EndDateISO"]
-        doc["death_year"]=row["EndDateISO"][:4]
+    if "BeginDateISO" in row and "EndDateISO" in row:
+        if row["BeginDateISO"] is not None:
+            doc["birth_date"]=row["BeginDateISO"]
+            doc["birth_year"]=row["BeginDateISO"][:4]
+        if row["EndDateISO"] is not None:
+            doc["death_date"]=row["EndDateISO"]
+            doc["death_year"]=row["EndDateISO"][:4]
     if not doc["birth_year"] is None and not doc["death_year"] is None:
         return doc["birth_year"] + "-"  + doc["death_year"]
     else:
