@@ -256,7 +256,7 @@
 						console.log(callback_url);
 						var params=$("#query_str").val();
 						console.log(params);
-						var full_url=callback_url+"?"+params;
+						var full_url=callback_url+"?"+params+"&callback=true";
 						navigator.clipboard.writeText(full_url);
 					}
 					);

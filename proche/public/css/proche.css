@@ -737,6 +737,19 @@ h3.results_list_title {
 	vertical-align: text-top;
 }
 
+.info_disclaimer_biography {
+	color: #0023f9;
+	cursor: pointer;
+}
+
+.info_disclaimer_biography img {
+	max-width: 18px;
+	height: auto;
+	border: 0;
+	display: inline;
+	vertical-align: text-top;
+}
+
 .pagination {
 	display: block;
 }

@@ -266,34 +266,39 @@ var  test_params_and_redirect=function()
 	search=search_all_docs;
 	search_csv=search_all_docs_csv;
 	var criterias=get_all_params(window.location.href);
-	
-	console.log(criterias);
-	var criterias_tmp=criterias;
-	
-	for (const [key, value] of Object.entries(criterias)) 
-					{
-						var tmp_value=decodeURI(value);
-						if(tmp_value.length>0)
-						{
-							criterias_tmp[decodeURI(key)]=tmp_value;
-						}
-					}
-	criterias=criterias_tmp;
-    //criterias = dict(map(lambda item: (decodeURI(item[0]), item[1] ), criterias.items()))
-	if(Object.keys(criterias).length>0)
+	if("callback" in criterias)
 	{
-	
-		console.log("search");
-		$.get("{{ path('main_search')}}", criterias,
-						function(data)
-						{
-							//console.log("done");
-							//console.log("page");
-							$("#spinner_search").hide();
-							$("#div_results_searchall").html(data);
-						});
+		if(criterias["callback"].toLowerCase()=="true")
+		{
+			console.log(criterias);
+			var criterias_tmp={};
+			
+			for (const [key, value] of Object.entries(criterias)) 
+							{
+								var tmp_value=decodeURIComponent(value);
+								if(tmp_value.length>0)
+								{
+									criterias_tmp[decodeURIComponent (key)]=tmp_value;
+								}
+							}
+			//criterias=criterias_tmp;
+			//criterias = dict(map(lambda item: (decodeURI(item[0]), item[1] ), criterias.items()))
+			if(Object.keys(criterias_tmp).length>0)
+			{
+				criterias_tmp["callback"]=true;
+				console.log("search");
+				$.get("{{ path('main_search')}}", criterias_tmp,
+								function(data)
+								{
+									//console.log("done");
+									//console.log("page");
+									$("#spinner_search").hide();
+									$("#div_results_searchall").html(data);
+								});
+			}
+		}
 	}
-}		
+}				
 
 $(document).ready(
 	function()

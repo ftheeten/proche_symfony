@@ -5,9 +5,9 @@
 	<div class="col-sm-2">
 	</div>	
 	<div class="col-sm-3">
-	<div class="info_disclaimer_buttons" id="trigger_disc_bio{{i}}" data-bs-toggle="collapse" data-bs-target="#div_disc_bio{{i}}" aria-expanded="false" aria-controls="collapseExample">
+	<div class="info_disclaimer_biography" id="trigger_disc_bio_{{i}}" data-bs-toggle="collapse" data-bs-target="#div_disc_bio{{i}}" aria-expanded="false" aria-controls="collapseExample">
 		
-		<u><i style="color:black">Notice biographique</i></u>
+		<img id="icon_bio_down_{{i}}" class="icon_bio_down" mode="down" src="./images/down-arrow-download-svgrepo-com.svg">&nbsp;&nbsp;</img><u><i style="color:black">Notice biographique</i></u>
 	</div>
 	</div>
 	<div class="col-sm-7">
@@ -20,7 +20,7 @@
 		</p> 
 		{% endif %}
 		<p>
-		{{ text_bio |replace({'size=2': 'size="3"'}) | raw }}
+		{{ text_bio |replace({'size=2': '', '4472c4' : 'black; font-family: Georgia , Helvetica, sans-serif;font-size:medium'}) | raw }}
 		</p>
 		
 	</div>

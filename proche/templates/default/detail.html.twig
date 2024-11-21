@@ -11,6 +11,7 @@
 
 {% block javascript %}
 {{ parent() }}
+
 {% endblock %}
 {% block body %}
 {{ parent() }}
@@ -128,7 +129,32 @@
 		{% endif %}
 	{% endif %}
 	
-
+<script>
+	$(document).ready(function()
+	{
+		$('body').on("click",".info_disclaimer_biography",
+			function(e)
+			{
+					console.log("expand bio");
+					var mode=$(this).attr("mode");
+					console.log(mode);
+					var id=$(this).attr("id").replace("trigger_disc_bio_","");
+					var id_icon="#icon_bio_down_"+id;
+					if(mode=="down")
+					{
+						$(this).attr("mode", "up");
+						$(id_icon).attr("src", "./images/down-arrow-download-svgrepo-com.svg");
+					}
+					else
+					{
+						$(this).attr("mode", "down");
+						$(id_icon).attr("src", "./images/up-arrow-download-svgrepo-com.svg");
+					}
+				}
+			);
+			console.log("loaded");
+		});
+</script>
 <!--DISCLAIMER-->
 {% include 'default/disclaimer_popup.html.twig' with {'cookie_accepted':cookie_accepted??"false" } %}	
 </div>

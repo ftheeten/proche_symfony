@@ -330,6 +330,8 @@ var select2_generic_full=function(url, key, val, minlen, include_pattern, endpoi
 				$('#modal_iiif').modal('hide');
 			}
 		)
+		
+		
 	}
 	
 	var display_iiif_thumbs_carousel=function(list, id, ctrl)
